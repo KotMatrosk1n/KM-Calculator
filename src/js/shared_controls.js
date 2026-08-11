@@ -84,6 +84,12 @@ $("input:radio[name='format']").change(function () {
 
 var defaultLevel = 100;
 
+$("input:radio[name='defaultLevel']").change(function () {
+	defaultLevel = ~~$("input:radio[name='defaultLevel']:checked").val() || 100;
+	$("#levelL1").val(defaultLevel).trigger("change");
+	$("#levelR1").val(defaultLevel).trigger("change");
+});
+
 // auto-calc stats and current HP on change
 $(".level").bind("keyup change", function () {
 	var poke = $(this).closest(".poke-info");
@@ -113,7 +119,7 @@ $(".sp .base, .sp .evs, .sp .ivs").bind("keyup change", function () {
 });
 $(".evs").bind('keyup change', function () {
 	var poke = $(this).closest(".poke-info");
-	if (isRoyalSwordProfileActive()) forceZeroEVInputs(poke);
+	if (areEVInputsDisabled()) forceZeroEVInputs(poke);
 	totalEVs(poke);
 });
 $(".sl .base, .sl .evs").keyup(function () {
@@ -264,18 +270,18 @@ $(".ability").bind("keyup change", function () {
 
 	var boostedStat = $(this).closest(".poke-info").find(".boostedStat");
 	if (ability === "Protosynthesis" || ability === "Quark Drive") {
-		boostedStat.show();
+		boostedStat.prop("hidden", false).show();
 		autosetQP($(this).closest(".poke-info"));
 	} else {
 		boostedStat.val("");
-		boostedStat.hide();
+		boostedStat.prop("hidden", true).hide();
 	}
 
 	if (ability === "Supreme Overlord") {
-		$(this).closest(".poke-info").find(".alliesFainted").show();
+		$(this).closest(".poke-info").find(".alliesFainted").prop("hidden", false).show();
 	} else {
 		$(this).closest(".poke-info").find(".alliesFainted").val('0');
-		$(this).closest(".poke-info").find(".alliesFainted").hide();
+		$(this).closest(".poke-info").find(".alliesFainted").prop("hidden", true).hide();
 	}
 
 });
@@ -514,6 +520,7 @@ $(".move-selector").change(function () {
 	} else {
 		moveGroupObj.children(".move-hits").val(1);
 		moveGroupObj.children(".move-hits").hide();
+		moveGroupObj.children(".move-times").show();
 	}
 	moveGroupObj.children(".move-z").prop("checked", false);
 });
@@ -572,7 +579,14 @@ function hideAbilityToggle(pokeObj) {
 }
 
 function getPokemonSpriteId(pokemonName) {
+	var provider = getActiveProfileProvider();
+	var context = getActiveProfileContext();
+	var suppliedId;
 	if (!pokemonName) return "";
+	if (provider && typeof provider.getPokemonSpriteId === "function") {
+		suppliedId = provider.getPokemonSpriteId(pokemonName, calc, context);
+		if (typeof suppliedId === "string" && suppliedId.trim()) return suppliedId.trim();
+	}
 	if (pokemonName === "Toxtricity-Low-Key-Gmax") return "toxtricity-gmax";
 	var pokemon = pokedex && pokedex[pokemonName];
 	var toID = calc && calc.toID ? calc.toID : function (name) {
@@ -598,8 +612,23 @@ function getDesktopSpriteBaseUrl() {
 }
 
 function getPokemonSpriteUrls(pokemonName, options) {
+	var provider = getActiveProfileProvider();
+	var context = getActiveProfileContext();
+	var suppliedUrls;
 	var spriteId = getPokemonSpriteId(pokemonName);
 	var desktopSpriteBaseUrl = getDesktopSpriteBaseUrl();
+	if (provider && typeof provider.getPokemonSpriteUrls === "function") {
+		suppliedUrls = provider.getPokemonSpriteUrls(pokemonName, options || {}, calc, context);
+		if (typeof suppliedUrls === "string") suppliedUrls = [suppliedUrls];
+		if (Array.isArray(suppliedUrls)) {
+			suppliedUrls = suppliedUrls.filter(function (url) {
+				return typeof url === "string" && url.trim();
+			}).map(function (url) {
+				return url.trim();
+			});
+			if (suppliedUrls.length) return suppliedUrls;
+		}
+	}
 	if (!desktopSpriteBaseUrl) return [getPokemonSpriteUrl(pokemonName)];
 	if (options && options.preferStatic) {
 		return [
@@ -635,8 +664,7 @@ function createPokemonSprite(pokemonName, className, options) {
 }
 
 function getPokemonLegendTitle(pokeObj) {
-	if (pokeObj.hasClass("trainer-mode")) return "Trainer";
-	return pokeObj.prop("id") === "p1" ? "Player" : "Pokemon 2";
+	return pokeObj.prop("id") === "p1" ? "Player" : "Trainer";
 }
 
 function updatePokemonLegendSprite(pokeObj, title, pokemonName) {
@@ -657,7 +685,35 @@ function getActiveRomHackProfile() {
 
 function isRoyalSwordProfileActive() {
 	var profile = getActiveRomHackProfile();
-	return !!profile && profile.calcProfile === "royal-sword" && Number(profile.baseGeneration) === Number(gen || 8);
+	return !!profile && profile.calcProfile === "royal-sword" &&
+		Number(profile.baseGeneration) === Number(gen || profile.baseGeneration);
+}
+
+function getActiveProfileContext() {
+	var registry = window.kmRomHackRegistry;
+	return registry && typeof registry.getActiveContext === "function" ? registry.getActiveContext() : null;
+}
+
+function getActiveProfileProvider() {
+	var context = getActiveProfileContext();
+	return context && context.resolvedProvider ? context.resolvedProvider : null;
+}
+
+function getActiveLayoutId() {
+	var registry = window.kmRomHackRegistry;
+	var context = registry && typeof registry.getActiveContext === "function" ? registry.getActiveContext() : null;
+	return context && context.layoutId ? context.layoutId :
+		(document.body.getAttribute("data-calc-layout") || "base");
+}
+
+function isRoyalSwordLayoutActive() {
+	return getActiveLayoutId() === "royal-sword";
+}
+
+function areEVInputsDisabled() {
+	var registry = window.kmRomHackRegistry;
+	var context = registry && typeof registry.getActiveContext === "function" ? registry.getActiveContext() : null;
+	return !!(context && context.inputPolicies && context.inputPolicies.evs === "disabled");
 }
 
 function getActiveCalcGeneration() {
@@ -755,30 +811,32 @@ function getActiveTypeChart() {
 	return result;
 }
 
-function prepareAllGenerationEVControls() {
-	$(".evs").filter("input").closest("td").removeClass("gen-specific g3 g4 g5 g6 g7 g8 g9");
-	$("th").filter(function () {
-		var text = $.trim($(this).text());
-		return text === "EVs";
-	}).removeClass("gen-specific g3 g4 g5 g6 g7 g8 g9");
-}
-
 function updateProfileEVControls() {
-	prepareAllGenerationEVControls();
 	var controls = $(".evs");
+	var inputControls = controls.filter("input");
 	var headings = $("th").filter(function () {
 		var text = $.trim($(this).text());
 		return text === "EVs";
 	});
-	if (isRoyalSwordProfileActive()) {
-		controls.val(0);
+	inputControls.prop("disabled", areEVInputsDisabled());
+	if (areEVInputsDisabled()) controls.val(0);
+	if (areEVInputsDisabled()) {
 		controls.closest("td").hide();
 		$(".totalevs").hide();
 		headings.hide();
 	} else {
-		controls.closest("td").show();
-		$(".totalevs").show();
-		headings.show();
+		controls.closest("td").each(function () {
+			var cell = $(this);
+			cell.toggle(!cell.hasClass("gen-specific") || cell.hasClass("g" + gen));
+		});
+		$(".totalevs").each(function () {
+			var row = $(this);
+			row.toggle(!row.hasClass("gen-specific") || row.hasClass("g" + gen));
+		});
+		headings.each(function () {
+			var heading = $(this);
+			heading.toggle(!heading.hasClass("gen-specific") || heading.hasClass("g" + gen));
+		});
 	}
 }
 
@@ -787,23 +845,44 @@ function getZeroEVs() {
 }
 
 function createProfilePokemon(name, options) {
-	if (isRoyalSwordProfileActive()) options.evs = getZeroEVs();
+	if (areEVInputsDisabled()) options.evs = getZeroEVs();
 	return new calc.Pokemon(getActiveCalcGeneration(), name, options);
 }
 
 window.getActiveCalcGeneration = getActiveCalcGeneration;
+window.getActivePokedex = getActivePokedex;
+window.getActiveMoves = getActiveMoves;
+window.getActiveItems = getActiveItems;
+window.getActiveAbilities = getActiveAbilities;
+window.getActiveTypeChart = getActiveTypeChart;
 window.isRoyalSwordProfileActive = isRoyalSwordProfileActive;
+window.isRoyalSwordLayoutActive = isRoyalSwordLayoutActive;
+window.areEVInputsDisabled = areEVInputsDisabled;
 
-window.addEventListener("kmcalculator:romhackchange", function (event) {
-	var profile = event && event.detail ? event.detail.profile : null;
-	if (!profile) return;
+function applyActiveRomHackProfile(context) {
+	var profile = context ? context.profile : null;
+	clearDoublesSlotSide("player");
+	clearDoublesSlotSide("opponent");
+	if (!profile) {
+		$(".gen").prop("disabled", false);
+		updateProfileEVControls();
+		return;
+	}
 	var generationInput = $("#gen" + profile.baseGeneration);
 	if (!generationInput.length) throw new Error("This build does not include Generation " + profile.baseGeneration + ".");
+	$(".gen").each(function () {
+		$(this).prop("disabled", Number($(this).val()) !== Number(profile.baseGeneration));
+	});
 	generationInput.prop("checked", true).trigger("change");
-});
+}
 
-var TEAM_BOX_LAYOUT_KEY = "royalSwordTeamBoxLayout";
-var TEAM_BOX_COLOR_OPTIONS_KEY = "royalSwordTeamBoxColorOptions";
+window.applyActiveRomHackProfile = applyActiveRomHackProfile;
+
+var PROFILE_WORKSPACE_STORAGE_PREFIX = "kmCalculatorProfileWorkspace:v1:";
+var LEGACY_CUSTOM_SETS_KEY = "customsets";
+var LEGACY_TEAM_BOX_LAYOUT_KEY = "royalSwordTeamBoxLayout";
+var LEGACY_TEAM_BOX_COLOR_OPTIONS_KEY = "royalSwordTeamBoxColorOptions";
+var customSetDexBackups = {};
 var TEAM_BOX_ZONE_IDS = ["team-poke-list", "box-poke-list", "box-poke-list2", "compost-poke-list", "trash-box"];
 var TEAM_BOX_SORT_ZONE_IDS = ["box-poke-list", "box-poke-list2"];
 var TEAM_BOX_TEAM_LIMIT = 6;
@@ -812,6 +891,45 @@ var TEAM_BOX_COLOR_CLASSES = [
 	"mon-dmg-W", "mon-dmg-WMO", "mon-dmg-1", "mon-dmg-2", "mon-dmg-3", "mon-dmg-4",
 	"mon-dmg-13", "mon-dmg-14", "mon-dmg-23", "mon-dmg-24", "mon-dmg-none"
 ];
+
+function getActiveWorkspaceProfileId() {
+	var profile = getActiveRomHackProfile();
+	return profile && profile.id ? profile.id : "canonical-gen-" + (gen || 9);
+}
+
+function getProfileWorkspaceStorageKey(kind) {
+	return PROFILE_WORKSPACE_STORAGE_PREFIX + getActiveWorkspaceProfileId() + ":" + kind;
+}
+
+function getCustomSetsStorageKey() {
+	return getProfileWorkspaceStorageKey("customsets");
+}
+
+function getTeamBoxLayoutStorageKey() {
+	return getProfileWorkspaceStorageKey("team-box-layout");
+}
+
+function getTeamBoxColorOptionsStorageKey() {
+	return getProfileWorkspaceStorageKey("team-box-color-options");
+}
+
+function readProfileWorkspaceValue(kind, legacyKey) {
+	var storage = getRoyalSwordAppStorage();
+	var key = getProfileWorkspaceStorageKey(kind);
+	var value = storage.getItem(key);
+	if (value === null && getActiveWorkspaceProfileId() === "pokemon-royal-sword" && legacyKey) {
+		value = storage.getItem(legacyKey);
+		if (value !== null) {
+			storage.setItem(key, value);
+			storage.removeItem(legacyKey);
+		}
+	}
+	return value;
+}
+
+window.getKMCalculatorCustomSetsStorageKey = getCustomSetsStorageKey;
+window.getKMCalculatorTeamBoxLayoutStorageKey = getTeamBoxLayoutStorageKey;
+window.getKMCalculatorProfileWorkspaceStorageKey = getProfileWorkspaceStorageKey;
 var TEAM_BOX_DAMAGE_SORT_RANKS = {
 	"1": 0,
 	WMO: 1,
@@ -902,6 +1020,16 @@ function clearDoublesSlotSide(side) {
 	doublesSlotState[side][2] = null;
 	doublesActiveSlot[side] = 1;
 	updateDoublesSlotHighlights();
+}
+
+function getSetSlotSelection(fullSetName) {
+	var pokemonName = getPokemonNameFromFullSetName(fullSetName);
+	return {
+		fullSetName: fullSetName,
+		pokemonName: pokemonName,
+		displayName: pokemonName,
+		label: fullSetName
+	};
 }
 
 function getDoublesSelectionKey(selection) {
@@ -1014,8 +1142,13 @@ function activateDoublesSlot(side, slot) {
 	if (selection && side === "player") {
 		loadPlayerPokemonIntoEditor(selection.fullSetName, slot);
 	}
-	if (selection && side === "opponent" && typeof window.loadTrainerSlotIntoEditor === "function") {
-		window.loadTrainerSlotIntoEditor(selection.trainerId, selection.trainerIndex, slot);
+	if (selection && side === "opponent") {
+		if (selection.trainerId !== undefined && selection.trainerIndex !== undefined &&
+			typeof window.loadTrainerSlotIntoEditor === "function") {
+			window.loadTrainerSlotIntoEditor(selection.trainerId, selection.trainerIndex, slot);
+		} else {
+			loadOpponentPokemonIntoEditor(selection.fullSetName, slot);
+		}
 	}
 }
 
@@ -1104,6 +1237,7 @@ window.clearDoublesSlotSide = clearDoublesSlotSide;
 window.applyTeamBoxFilters = applyTeamBoxFilters;
 window.getDoublesActiveSlot = getDoublesActiveSlot;
 window.getDoublesSlotSelection = getDoublesSlotSelection;
+window.hideDoublesSlotMenu = hideDoublesSlotMenu;
 window.isDoublesFormatSelected = isDoublesFormatSelected;
 window.setDoublesActiveSlot = setDoublesActiveSlot;
 window.setDoublesSlotSelection = setDoublesSlotSelection;
@@ -1131,10 +1265,10 @@ function getTeamBoxPokemonId(fullSetName) {
 }
 
 function getStoredTeamBoxLayout() {
-	var storage = getRoyalSwordAppStorage();
-	if (!storage.getItem(TEAM_BOX_LAYOUT_KEY)) return {};
+	var raw = readProfileWorkspaceValue("team-box-layout", LEGACY_TEAM_BOX_LAYOUT_KEY);
+	if (!raw) return {};
 	try {
-		return JSON.parse(storage.getItem(TEAM_BOX_LAYOUT_KEY)) || {};
+		return JSON.parse(raw) || {};
 	} catch (e) {
 		return {};
 	}
@@ -1206,7 +1340,7 @@ function saveTeamBoxLayout() {
 	if (!$("#team-box").length) return;
 	var layout = getCurrentTeamBoxLayout();
 	applyTeamBoxLayout(layout);
-	getRoyalSwordAppStorage().setItem(TEAM_BOX_LAYOUT_KEY, JSON.stringify(layout));
+	getRoyalSwordAppStorage().setItem(getTeamBoxLayoutStorageKey(), JSON.stringify(layout));
 	refreshPlayerTeamMirror();
 	applyTeamBoxFilters();
 }
@@ -1214,7 +1348,7 @@ function saveTeamBoxLayout() {
 function restoreTeamBoxLayout() {
 	var layout = normalizeTeamBoxLayout(getStoredTeamBoxLayout());
 	applyTeamBoxLayout(layout);
-	getRoyalSwordAppStorage().setItem(TEAM_BOX_LAYOUT_KEY, JSON.stringify(layout));
+	getRoyalSwordAppStorage().setItem(getTeamBoxLayoutStorageKey(), JSON.stringify(layout));
 }
 
 function clearBoxPokemonColorClasses(pokemon) {
@@ -1297,16 +1431,6 @@ function syncTeamBoxWithCustomSets(customsets) {
 	}
 }
 
-function getPlayerSlotSelection(fullSetName) {
-	var pokemonName = getPokemonNameFromFullSetName(fullSetName);
-	return {
-		fullSetName: fullSetName,
-		pokemonName: pokemonName,
-		displayName: pokemonName,
-		label: fullSetName
-	};
-}
-
 function assignBoxPokemonToSlot(fullSetName, slot) {
 	loadPlayerPokemonIntoEditor(fullSetName, slot);
 }
@@ -1328,7 +1452,17 @@ function loadPlayerPokemonIntoEditor(fullSetName, slot) {
 	setDoublesActiveSlot("player", playerSlot);
 	setSetSelectorValue(selector, fullSetName);
 	selector.change();
-	setDoublesSlotSelection("player", playerSlot, fullSetName ? getPlayerSlotSelection(fullSetName) : null);
+	setDoublesSlotSelection("player", playerSlot, fullSetName ? getSetSlotSelection(fullSetName) : null);
+}
+
+function loadOpponentPokemonIntoEditor(fullSetName, slot) {
+	var selector = $("#p2 .set-selector");
+	if (!selector.length) return;
+	var opponentSlot = slot || 1;
+	setDoublesActiveSlot("opponent", opponentSlot);
+	setSetSelectorValue(selector, fullSetName);
+	selector.change();
+	setDoublesSlotSelection("opponent", opponentSlot, fullSetName ? getSetSlotSelection(fullSetName) : null);
 }
 
 function selectBoxPokemon(fullSetName) {
@@ -1350,13 +1484,17 @@ function applyDefaultSetSelections() {
 		setSetSelectorValue($(this), firstValidSet ? firstValidSet.id : "");
 		$(this).change();
 	});
-	applyDefaultPlayerPokemonFromTeam();
+	if (getPlayerTeamDefaultSetName()) applyDefaultPlayerPokemonFromTeam();
+	else {
+		setSetSelectorValue($("#p1 .set-selector"), firstValidSet ? firstValidSet.id : "");
+		$("#p1 .set-selector").change();
+	}
 }
 
 function getDefaultSetOptionForSelector(element) {
 	if ($(element).closest("#p1").length) {
 		var playerSetName = getPlayerTeamDefaultSetName();
-		return playerSetName ? {id: playerSetName, text: playerSetName} : "";
+		if (playerSetName) return {id: playerSetName, text: playerSetName};
 	}
 	return getFirstValidSetOption() || "";
 }
@@ -1416,42 +1554,90 @@ function hasAnyCustomSets(customsets) {
 
 function readCustomSets() {
 	var storage = getRoyalSwordAppStorage();
-	var raw = storage.getItem("customsets");
+	var key = getCustomSetsStorageKey();
+	var raw = readProfileWorkspaceValue("customsets", LEGACY_CUSTOM_SETS_KEY);
 	if (!raw) return {};
 	try {
 		return JSON.parse(raw) || {};
 	} catch (e) {
-		storage.removeItem("customsets");
+		storage.removeItem(key);
 		return {};
 	}
 }
 
-function removeCustomSetFromDex(pokemonName, setName) {
-	for (var i = 0; i < SETDEX.length; i++) {
-		if (SETDEX[i][pokemonName] && SETDEX[i][pokemonName][setName]) {
-			delete SETDEX[i][pokemonName][setName];
-		}
+function getCustomSetBackup(generation, pokemonName, setName) {
+	return customSetDexBackups[generation] && customSetDexBackups[generation][pokemonName] ?
+		customSetDexBackups[generation][pokemonName][setName] : undefined;
+}
+
+function saveCustomSetBackup(generation, pokemonName, setName, set) {
+	if (!customSetDexBackups[generation]) customSetDexBackups[generation] = {};
+	if (!customSetDexBackups[generation][pokemonName]) customSetDexBackups[generation][pokemonName] = {};
+	if (!Object.prototype.hasOwnProperty.call(customSetDexBackups[generation][pokemonName], setName)) {
+		customSetDexBackups[generation][pokemonName][setName] = set;
 	}
 }
 
-function removeAllCustomSetsFromDex() {
-	for (var i = 0; i < SETDEX.length; i++) {
-		for (var pokemon in SETDEX[i]) {
-			if (!Object.prototype.hasOwnProperty.call(SETDEX[i], pokemon)) continue;
-			for (var setName in SETDEX[i][pokemon]) {
-				if (Object.prototype.hasOwnProperty.call(SETDEX[i][pokemon], setName) && SETDEX[i][pokemon][setName].isCustomSet) {
-					delete SETDEX[i][pokemon][setName];
-				}
+function clearCustomSetBackup(generation, pokemonName, setName) {
+	if (!customSetDexBackups[generation] || !customSetDexBackups[generation][pokemonName]) return;
+	delete customSetDexBackups[generation][pokemonName][setName];
+	if (!Object.keys(customSetDexBackups[generation][pokemonName]).length) {
+		delete customSetDexBackups[generation][pokemonName];
+	}
+	if (!Object.keys(customSetDexBackups[generation]).length) delete customSetDexBackups[generation];
+}
+
+function installCustomSetInDex(generation, pokemonName, setName, customSet) {
+	var generationSets = SETDEX[generation];
+	var existing;
+	if (!generationSets) return;
+	if (!generationSets[pokemonName]) generationSets[pokemonName] = {};
+	existing = generationSets[pokemonName][setName];
+	if (existing && !existing.isCustomSet) saveCustomSetBackup(generation, pokemonName, setName, existing);
+	customSet.isCustomSet = true;
+	generationSets[pokemonName][setName] = customSet;
+}
+
+function removeCustomSetFromDex(pokemonName, setName, generation) {
+	var targetGeneration = Number(generation || gen);
+	var generationSets = SETDEX[targetGeneration];
+	var backup;
+	if (!generationSets || !generationSets[pokemonName]) return;
+	if (generationSets[pokemonName][setName] && generationSets[pokemonName][setName].isCustomSet) {
+		delete generationSets[pokemonName][setName];
+	}
+	backup = getCustomSetBackup(targetGeneration, pokemonName, setName);
+	if (backup !== undefined) {
+		generationSets[pokemonName][setName] = backup;
+		clearCustomSetBackup(targetGeneration, pokemonName, setName);
+	}
+}
+
+function removeAllCustomSetsFromDex(generation) {
+	var targetGeneration = Number(generation || gen);
+	var generationSets = SETDEX[targetGeneration];
+	var removals = [];
+	var i;
+	if (!generationSets) return;
+	for (var pokemon in generationSets) {
+		if (!Object.prototype.hasOwnProperty.call(generationSets, pokemon)) continue;
+		for (var setName in generationSets[pokemon]) {
+			if (Object.prototype.hasOwnProperty.call(generationSets[pokemon], setName) &&
+				generationSets[pokemon][setName].isCustomSet) {
+				removals.push({pokemon: pokemon, setName: setName});
 			}
 		}
+	}
+	for (i = 0; i < removals.length; i++) {
+		removeCustomSetFromDex(removals[i].pokemon, removals[i].setName, targetGeneration);
 	}
 }
 
 function refreshSetSelectorsAfterTeamBoxChange(customsets) {
 	if (hasAnyCustomSets(customsets)) {
-		getRoyalSwordAppStorage().setItem("customsets", JSON.stringify(customsets));
+		getRoyalSwordAppStorage().setItem(getCustomSetsStorageKey(), JSON.stringify(customsets));
 	} else {
-		getRoyalSwordAppStorage().removeItem("customsets");
+		getRoyalSwordAppStorage().removeItem(getCustomSetsStorageKey());
 	}
 	loadDefaultLists();
 	if (!fullSetExists($("#p1 .set-selector").val())) {
@@ -1464,7 +1650,8 @@ function refreshSetSelectorsAfterTeamBoxChange(customsets) {
 }
 
 function clearTeamBoxState() {
-	getRoyalSwordAppStorage().removeItem(TEAM_BOX_LAYOUT_KEY);
+	clearDoublesSlotSide("player");
+	getRoyalSwordAppStorage().removeItem(getTeamBoxLayoutStorageKey());
 	$(".box-pokemon").remove();
 	$(".save-box-section").remove();
 	refreshPlayerTeamMirror();
@@ -1489,6 +1676,7 @@ function removeTrashedBoxPokemon() {
 	});
 	saveTeamBoxLayout();
 	refreshSetSelectorsAfterTeamBoxChange(customsets);
+	clearDoublesSlotSide("player");
 	refreshColorCode();
 }
 
@@ -1496,7 +1684,7 @@ function removeAllTeamBoxPokemon() {
 	if (!$(".box-pokemon").length) return;
 	if (!confirm("Remove all Pokemon from the Team/Box custom sets?")) return;
 	removeAllCustomSetsFromDex();
-	getRoyalSwordAppStorage().removeItem("customsets");
+	getRoyalSwordAppStorage().removeItem(getCustomSetsStorageKey());
 	clearTeamBoxState();
 	loadDefaultLists();
 	applyDefaultPlayerPokemonFromTeam();
@@ -1511,11 +1699,7 @@ function addCustomSetsToDex(customsets) {
 		if (!Object.prototype.hasOwnProperty.call(customsets, pokemon)) continue;
 		for (var setName in customsets[pokemon]) {
 			if (!Object.prototype.hasOwnProperty.call(customsets[pokemon], setName)) continue;
-			for (var index = 0; index < SETDEX.length; index++) {
-				if (!SETDEX[index]) continue;
-				if (!SETDEX[index][pokemon]) SETDEX[index][pokemon] = {};
-				SETDEX[index][pokemon][setName] = customsets[pokemon][setName];
-			}
+			installCustomSetInDex(gen, pokemon, setName, customsets[pokemon][setName]);
 		}
 	}
 }
@@ -1598,6 +1782,7 @@ function removeTeamBoxPokemon(pokemonButton) {
 	}
 	removeCustomSetFromDex(pokemonName, setName);
 	$(pokemonButton).remove();
+	clearDoublesSlotSide("player");
 	saveTeamBoxLayout();
 	refreshSetSelectorsAfterTeamBoxChange(customsets);
 	refreshColorCode();
@@ -1689,14 +1874,34 @@ function getTeamBoxSetTypeList(data) {
 function getTeamBoxSetSpeed(data) {
 	if (!data.species || !data.species.bs || !data.set) return "";
 	var ivs = data.set.ivs || {};
+	var dvs = data.set.dvs || {};
+	var evs = data.set.evs || {};
 	var speedIV = 31;
+	var speedEV = gen < 3 ? 252 : 0;
 	if (typeof ivs.sp !== "undefined") {
 		speedIV = ivs.sp;
 	} else if (typeof ivs.spe !== "undefined") {
 		speedIV = ivs.spe;
 	}
+	if (gen < 3) {
+		var speedDV = typeof dvs.sp !== "undefined" ? dvs.sp :
+			(typeof dvs.spe !== "undefined" ? dvs.spe : 15);
+		speedIV = calc.Stats && typeof calc.Stats.DVToIV === "function" ?
+			calc.Stats.DVToIV(~~speedDV) : ~~speedDV * 2 + 1;
+	}
+	if (typeof evs.sp !== "undefined") speedEV = evs.sp;
+	else if (typeof evs.spe !== "undefined") speedEV = evs.spe;
+	if (areEVInputsDisabled()) speedEV = 0;
 	try {
-		return calc.calcStat(gen, "spe", ~~data.species.bs.sp, ~~speedIV, 0, ~~data.set.level || defaultLevel, data.set.nature);
+		return calc.calcStat(
+			getActiveCalcGeneration(),
+			"spe",
+			~~data.species.bs.sp,
+			~~speedIV,
+			~~speedEV,
+			~~data.set.level || defaultLevel,
+			gen < 3 ? undefined : data.set.nature
+		);
 	} catch (e) {
 		return "";
 	}
@@ -2110,7 +2315,7 @@ function getStoredColorCodeOptions() {
 	};
 	var raw;
 	try {
-		raw = getRoyalSwordAppStorage().getItem(TEAM_BOX_COLOR_OPTIONS_KEY);
+		raw = readProfileWorkspaceValue("team-box-color-options", LEGACY_TEAM_BOX_COLOR_OPTIONS_KEY);
 	} catch (e) {
 		return options;
 	}
@@ -2129,7 +2334,7 @@ function getStoredColorCodeOptions() {
 
 function saveColorCodeOptions() {
 	try {
-		getRoyalSwordAppStorage().setItem(TEAM_BOX_COLOR_OPTIONS_KEY, JSON.stringify({
+		getRoyalSwordAppStorage().setItem(getTeamBoxColorOptionsStorageKey(), JSON.stringify({
 			speedBorder: $("#cc-spe-border").prop("checked"),
 			ohkoColor: $("#cc-ohko-color").prop("checked")
 		}));
@@ -2203,7 +2408,7 @@ function getColorCodeExampleMarkup(example) {
 	if (example.className) sampleClass += " " + example.className;
 	return [
 		"<article class='color-code-example-card'>",
-		"<div class='" + sampleClass + "' aria-hidden='true'><span class='color-code-sample-sprite'>RS</span></div>",
+		"<div class='" + sampleClass + "' aria-hidden='true'><span class='color-code-sample-sprite'>KM</span></div>",
 		"<div class='color-code-example-copy'>",
 		"<h4>" + example.title + "</h4>",
 		"<p>" + example.text + "</p>",
@@ -2296,7 +2501,7 @@ function createColorCodeExplanationWindow() {
 		"<section class='color-code-section'>",
 		"<h3>How To Read One Tile</h3>",
 		"<div class='color-code-read-example'>",
-		"<div class='color-code-sample mon-speed-F mon-dmg-14' aria-hidden='true'><span class='color-code-sample-sprite'>RS</span></div>",
+		"<div class='color-code-sample mon-speed-F mon-dmg-14' aria-hidden='true'><span class='color-code-sample-sprite'>KM</span></div>",
 		"<div><strong>Border:</strong> Speed result.<br><strong>Left half:</strong> your Pokemon attacking the Trainer target.<br><strong>Right half:</strong> the Trainer target attacking back.</div>",
 		"</div>",
 		"</section>",
@@ -2326,6 +2531,8 @@ function closeColorCodeExplanation() {
 	colorCodeExplanationWindow.prop("hidden", true);
 	$(document).off(".colorCodeExplanation");
 }
+
+window.closeKMCalculatorColorCodeExplanation = closeColorCodeExplanation;
 
 function openColorCodeExplanation(event) {
 	if (event) {
@@ -2418,6 +2625,8 @@ function closeFinderExplanation() {
 	$(document).off(".finderExplanation");
 }
 
+window.closeKMCalculatorFinderExplanation = closeFinderExplanation;
+
 function openFinderExplanation(event) {
 	if (event) {
 		event.preventDefault();
@@ -2492,26 +2701,31 @@ function installTeamBoxControls() {
 	});
 	$("#cc-auto-refr").change(refreshColorCode);
 	$("#cc-spe-width").bind("input change", widthSpeedBorder);
-	$("#p1 .set-selector").change(function () {
+	$("#p1 .set-selector, #p2 .set-selector").change(function () {
 		var fullSetName = $(this).val();
+		var side = $(this).closest(".poke-info").prop("id") === "p1" ? "player" : "opponent";
+		var activeSlot = isDoublesFormatSelected() ? doublesActiveSlot[side] : 1;
 		setDoublesSlotSelection(
-			"player",
-			doublesActiveSlot.player,
-			fullSetName ? getPlayerSlotSelection(fullSetName) : null
+			side,
+			activeSlot,
+			fullSetName ? getSetSlotSelection(fullSetName) : null
 		);
 	});
 	initializeColorCodeOptions();
 	updateTeamBoxFinderFieldControls();
 	setColorCodeControlsVisible(true);
-	if (getRoyalSwordAppStorage().getItem("customsets")) syncTeamBoxWithCustomSets(readCustomSets());
+	if (hasAnyCustomSets(readCustomSets())) syncTeamBoxWithCustomSets(readCustomSets());
 	observePlayerTeamMirror();
 	refreshPlayerTeamMirror();
 	applyDefaultPlayerPokemonFromTeam();
-	if ($("#p1 .set-selector").val()) setDoublesSlotSelection("player", 1, getPlayerSlotSelection($("#p1 .set-selector").val()));
+	if ($("#p1 .set-selector").val()) setDoublesSlotSelection("player", 1, getSetSlotSelection($("#p1 .set-selector").val()));
+	if ($("#p2 .set-selector").val()) setDoublesSlotSelection("opponent", 1, getSetSlotSelection($("#p2 .set-selector").val()));
 	refreshColorCodeAfterInitialLoad();
 }
 
 window.saveTeamBoxLayout = saveTeamBoxLayout;
+window.addCustomSetsToDex = addCustomSetsToDex;
+window.removeAllCustomSetsFromDex = removeAllCustomSetsFromDex;
 
 // auto-update set details on select
 $(".set-selector").change(function () {
@@ -2599,12 +2813,12 @@ $(".set-selector").change(function () {
 			}
 			pokeObj.find(".gmaxToggle").prop("checked", !!(pokemon.canGigantamax && set.isGmax));
 			pokeObj.find(".level").val(set.level === undefined ? 100 : set.level);
-			var evsDefault = isRoyalSwordProfileActive() ? 0 :
+			var evsDefault = areEVInputsDisabled() ? 0 :
 				(gen < 3 ? 252 : ($("#randoms").prop("checked") ? 84 : 0));
 			for (i = 0; i < LEGACY_STATS[gen].length; i++) {
 				var stat = $("#randoms").prop("checked") ? legacyStatToStat(LEGACY_STATS[gen][i]) : LEGACY_STATS[gen][i];
 				pokeObj.find("." + LEGACY_STATS[gen][i] + " .evs").val(
-					isRoyalSwordProfileActive() ? 0 :
+					areEVInputsDisabled() ? 0 :
 						((set.evs && set.evs[stat] !== undefined) ? set.evs[stat] : evsDefault));
 				pokeObj.find("." + LEGACY_STATS[gen][i] + " .ivs").val(
 					(set.ivs && set.ivs[stat] !== undefined) ? set.ivs[stat] : 31);
@@ -2649,12 +2863,12 @@ $(".set-selector").change(function () {
 			pokeObj.find(".teraType").val(getForcedTeraType(pokemonName) || pokemon.types[0]);
 			pokeObj.find(".gmaxToggle").prop("checked", false);
 			pokeObj.find(".level").val(defaultLevel);
-			pokeObj.find(".hp .evs").val(isRoyalSwordProfileActive() || gen > 2 ? 0 : 252);
+			pokeObj.find(".hp .evs").val(areEVInputsDisabled() || gen > 2 ? 0 : 252);
 			pokeObj.find(".hp .ivs").val(31);
 			pokeObj.find(".hp .dvs").val(15);
 			for (i = 0; i < LEGACY_STATS[gen].length; i++) {
 				pokeObj.find("." + LEGACY_STATS[gen][i] + " .evs").val(
-					isRoyalSwordProfileActive() || gen > 2 ? 0 : 252);
+					areEVInputsDisabled() || gen > 2 ? 0 : 252);
 				pokeObj.find("." + LEGACY_STATS[gen][i] + " .ivs").val(31);
 				pokeObj.find("." + LEGACY_STATS[gen][i] + " .dvs").val(15);
 			}
@@ -2675,7 +2889,7 @@ $(".set-selector").change(function () {
 				$(this).closest('.poke-info').find(".move-pool").hide();
 			}
 		}
-		if (isRoyalSwordProfileActive()) forceZeroEVInputs(pokeObj);
+		if (areEVInputsDisabled()) forceZeroEVInputs(pokeObj);
 		totalEVs(pokeObj);
 		if (typeof getSelectedTiers === "function") { // doesn't exist when in 1vs1 mode
 			var format = getSelectedTiers()[0];
@@ -3000,7 +3214,7 @@ function createPokemon(pokeInfo) {
 					ivs[stat] = set.ivs[stat];
 				}
 			}
-			evs[stat] = isRoyalSwordProfileActive() ? 0 :
+			evs[stat] = areEVInputsDisabled() ? 0 :
 				(set.evs && typeof set.evs[legacyStat] !== "undefined" ? set.evs[legacyStat] :
 					(set.evs && typeof set.evs[stat] !== "undefined" ? set.evs[stat] : (gen < 3 ? 252 : 0)));
 		}
@@ -3062,7 +3276,7 @@ function createPokemon(pokeInfo) {
 			ivs[stat] = gen > 2 ?
 				~~pokeInfo.find("." + LEGACY_STATS[gen][i] + " .ivs").val() :
 				~~pokeInfo.find("." + LEGACY_STATS[gen][i] + " .dvs").val() * 2 + 1;
-			evs[stat] = isRoyalSwordProfileActive() ? 0 :
+			evs[stat] = areEVInputsDisabled() ? 0 :
 				~~pokeInfo.find("." + LEGACY_STATS[gen][i] + " .evs").val();
 			boosts[stat] = ~~pokeInfo.find("." + LEGACY_STATS[gen][i] + " .boost").val();
 		}
@@ -3347,8 +3561,8 @@ function totalEVs(poke) {
 	for (var i = 0; i < LEGACY_STATS[gen].length; i++) {
 		var statName = LEGACY_STATS[gen][i];
 		var stat = poke.find("." + statName);
-		var evs = isRoyalSwordProfileActive() ? 0 : ~~stat.find(".evs").val();
-		if (isRoyalSwordProfileActive()) stat.find(".evs").val(0);
+		var evs = areEVInputsDisabled() ? 0 : ~~stat.find(".evs").val();
+		if (areEVInputsDisabled()) stat.find(".evs").val(0);
 		totalEVs += evs;
 	}
 	poke.find(".totalevs").find(".evs").text(totalEVs);
@@ -3359,7 +3573,7 @@ function calcStat(poke, StatID) {
 	var stat = poke.find("." + StatID);
 	var base = ~~stat.find(".base").val();
 	var level = ~~poke.find(".level").val();
-	var evs = isRoyalSwordProfileActive() ? 0 : ~~stat.find(".evs").val();
+	var evs = areEVInputsDisabled() ? 0 : ~~stat.find(".evs").val();
 	var nature, ivs;
 	if (gen < 3) {
 		ivs = ~~stat.find(".dvs").val() * 2;
@@ -3479,10 +3693,18 @@ var gen, genWasChanged, notation, pokedex, setdex, randdex, typeChart, moves, ab
 
 $(".gen").change(function () {
 	/*eslint-disable */
-	gen = ~~$(this).val() || 8;
+	var previousGeneration = gen;
+	gen = ~~$(this).val() || 9;
+	if (gen < 3 && $("#doubles-format").prop("checked")) {
+		$("#singles-format").prop("checked", true).change();
+	}
 	GENERATION = getActiveCalcGeneration();
+	if (typeof window.removeTrainerSetsFromDex === "function") window.removeTrainerSetsFromDex();
+	removeAllCustomSetsFromDex(previousGeneration || gen);
+	var activeCustomSets = readCustomSets();
+	addCustomSetsToDex(activeCustomSets);
 	var params = new URLSearchParams(window.location.search);
-	if (gen === 8) {
+	if (getActiveRomHackProfile() || gen === 9) {
 		params.delete('gen');
 		params = '' + params;
 		if (window.history && window.history.replaceState) {
@@ -3508,7 +3730,11 @@ $(".gen").change(function () {
 	items = getActiveItems();
 	abilities = getActiveAbilities();
 	clearField();
-	loadDefaultLists();
+	if (typeof window.resetImportedSetFilters === "function") window.resetImportedSetFilters();
+	else {
+		$(".imported-sets-only").prop("checked", false);
+		loadDefaultLists();
+	}
 	$(".gen-specific.g" + gen).show();
 	$(".gen-specific").not(".g" + gen).hide();
 	updateProfileEVControls();
@@ -3525,6 +3751,11 @@ $(".gen").change(function () {
 	var itemOptions = getSelectOptions(items, true);
 	$("select.item").find("option").remove().end().append("<option value=\"\">(none)</option>" + itemOptions);
 
+	syncTeamBoxWithCustomSets(activeCustomSets);
+	initializeColorCodeOptions();
+	if (typeof window.updateImportedSetOptionsVisibility === "function") {
+		window.updateImportedSetOptionsVisibility(hasAnyCustomSets(activeCustomSets));
+	}
 	applyDefaultSetSelections();
 });
 
@@ -3896,13 +4127,7 @@ function loadCustomList(id) {
 
 $(document).ready(function () {
 	var params = new URLSearchParams(window.location.search);
-	var g = 8;
-	if (params.has('gen')) {
-		params.delete('gen');
-		if (window.history && window.history.replaceState) {
-			window.history.replaceState({}, document.title, window.location.pathname + (params.toString() ? '?' + params : ''));
-		}
-	}
+	var g = GENERATION[params.get('gen')] || 9;
 	$("#gen" + g).prop("checked", true);
 	$("#gen" + g).change();
 	$("#percentage").prop("checked", true);

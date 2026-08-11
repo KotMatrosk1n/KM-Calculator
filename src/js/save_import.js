@@ -104,6 +104,20 @@ function getSaveImportStorage() {
 	return window.getRoyalSwordStorage ? window.getRoyalSwordStorage() : localStorage;
 }
 
+var saveImportBagItemsByWorkspace = {};
+
+function getSaveImportWorkspaceStorageKey(kind) {
+	if (typeof window.getKMCalculatorProfileWorkspaceStorageKey === "function") {
+		return window.getKMCalculatorProfileWorkspaceStorageKey(kind);
+	}
+	return kind === "customsets" ? "customsets" : SAVE_IMPORT_BAG_ITEMS_KEY;
+}
+
+function getSaveImportCustomSetsStorageKey() {
+	return typeof window.getKMCalculatorCustomSetsStorageKey === "function" ?
+		window.getKMCalculatorCustomSetsStorageKey() : "customsets";
+}
+
 function copyBytes(data, start, end) {
 	var copy = new Uint8Array(end - start);
 	copy.set(data.subarray(start, end));
@@ -502,11 +516,12 @@ function getEntityLevel(data, config, offset, experience, species) {
 }
 
 function parsePK1(data, config) {
-	var species = getNationalSpecies(data[0], 1);
+	var rawSpecies = data[0];
+	var species = getNationalSpecies(rawSpecies, 1);
 	var experience = readU24BE(data, 0x0E);
 	var dvs = getGBDVs(readU16BE(data, 0x1B));
 	return {
-		generation: 1, species: species, form: 0, item: 0, abilityIndex: null,
+		generation: 1, species: species, rawSpecies: rawSpecies, form: 0, item: 0, abilityIndex: null,
 		moves: readByteMoveIds(data, 8), experience: experience,
 		level: data.length > config.storedSize ? data[0x21] : (data[3] || getLevelFromExperience(experience, species)),
 		dvs: dvs, ivs: getGBIVs(dvs), evs: getGBEVs(data, 0x11), nature: 12
@@ -519,7 +534,7 @@ function parsePK2(data, config) {
 	var dv16 = readU16BE(data, 0x15);
 	var dvs = getGBDVs(dv16);
 	return {
-		generation: 2, species: species, form: species === 201 ? getGen2UnownForm(dv16) : 0,
+		generation: 2, species: species, rawSpecies: species, form: species === 201 ? getGen2UnownForm(dv16) : 0,
 		item: data[1], abilityIndex: null,
 		moves: readByteMoveIds(data, 2), experience: experience,
 		level: data[0x1F] || getLevelFromExperience(experience, species),
@@ -529,11 +544,12 @@ function parsePK2(data, config) {
 
 function parsePK3(data, config) {
 	var iv32 = readU32(data, 0x48);
-	var species = getNationalSpecies(readU16(data, 0x20), 3);
+	var rawSpecies = readU16(data, 0x20);
+	var species = getNationalSpecies(rawSpecies, 3);
 	var experience = readU32(data, 0x24);
 	var pid = readU32(data, 0);
 	return {
-		generation: 3, species: species, form: species === 201 ? getGen3UnownForm(pid) : 0,
+		generation: 3, species: species, rawSpecies: rawSpecies, form: species === 201 ? getGen3UnownForm(pid) : 0,
 		item: readU16(data, 0x22),
 		abilityIndex: (iv32 >>> 31) & 1, moves: readMoveIds(data, 0x2C), experience: experience,
 		level: getEntityLevel(data, config, 0x54, experience, species), ivs: getIVs(iv32),
@@ -546,7 +562,7 @@ function parsePK4(data, config) {
 	var species = readU16(data, 8);
 	var experience = readU32(data, 0x10);
 	return {
-		generation: 4, species: species, form: data[0x40] >>> 3, item: readU16(data, 0x0A),
+		generation: 4, species: species, rawSpecies: species, form: data[0x40] >>> 3, item: readU16(data, 0x0A),
 		ability: data[0x15], abilityIndex: readU32(data, 0) & 1,
 		moves: readMoveIds(data, 0x28), experience: experience,
 		level: getEntityLevel(data, config, 0x8C, experience, species), ivs: getIVs(iv32),
@@ -575,7 +591,7 @@ function parsePK67(data, config) {
 	var species = readU16(data, 8);
 	var experience = readU32(data, 0x10);
 	return {
-		generation: config.generation, species: species, form: data[0x1D] >>> 3, item: readU16(data, 0x0A),
+		generation: config.generation, species: species, rawSpecies: species, form: data[0x1D] >>> 3, item: readU16(data, 0x0A),
 		ability: data[0x14], abilityIndex: getAbilitySlotIndex(data[0x15]),
 		moves: readMoveIds(data, 0x5A), experience: experience,
 		level: getEntityLevel(data, config, 0xEC, experience, species), ivs: ivs,
@@ -594,7 +610,7 @@ function parseG8(data, config) {
 	var experience = readU32(data, 0x10);
 	var genderShift = config.generation === 9 ? 1 : 2;
 	return {
-		generation: config.generation, species: species, form: data[0x24], item: readU16(data, 0x0A),
+		generation: config.generation, species: species, rawSpecies: rawSpecies, form: data[0x24], item: readU16(data, 0x0A),
 		ability: readU16(data, 0x14), abilityIndex: getAbilitySlotIndex(data[0x16]),
 		moves: readMoveIds(data, 0x72), experience: experience,
 		level: getEntityLevel(data, config, 0x148, experience, species), ivs: ivs,
@@ -613,7 +629,7 @@ function parsePA8(data, config) {
 	var species = readU16(data, 8);
 	var experience = readU32(data, 0x10);
 	return {
-		generation: 8, species: species, form: data[0x24], item: readU16(data, 0x0A),
+		generation: 8, species: species, rawSpecies: species, form: data[0x24], item: readU16(data, 0x0A),
 		ability: readU16(data, 0x14), abilityIndex: getAbilitySlotIndex(data[0x16]),
 		moves: readMoveIds(data, 0x54), experience: experience,
 		level: getEntityLevel(data, config, 0x168, experience, species), ivs: ivs,
@@ -1148,17 +1164,29 @@ function getPokemonSaveImportData(data, fileName, adapterId) {
 	return result;
 }
 
-function getActiveSaveImportPolicy() {
+function getActiveSaveImportContext() {
 	var context = window.KMCalculatorActiveRomHackContext;
 	if (!context && window.kmRomHackRegistry && typeof window.kmRomHackRegistry.getActiveContext === "function") {
 		context = window.kmRomHackRegistry.getActiveContext();
 	}
+	return context || null;
+}
+
+function getActiveSaveImportPolicy() {
+	var context = getActiveSaveImportContext();
 	var profile = (context && context.profile) || window.KMCalculatorActiveRomHackProfile;
 	if (!profile) return null;
 	var saveImport = profile.saveImport || {};
 	var generation = context && context.saveGeneration !== undefined ? context.saveGeneration : saveImport.generation;
 	var adapter = (context && (context.saveAdapter || context.saveAdapterId)) || saveImport.adapter || saveImport.adapterId || "";
-	return {profileId: profile.id || "", profileName: profile.name || profile.id || "active profile", generation: Number(generation), adapter: adapter};
+	return {
+		profileId: profile.id || "",
+		profileName: profile.name || profile.id || "active profile",
+		profileVersion: profile.version || "",
+		providerId: context && context.resolvedProvider && context.resolvedProvider.id ? context.resolvedProvider.id : "",
+		generation: Number(generation),
+		adapter: adapter
+	};
 }
 
 function validateSaveImportPolicy(importData, policy) {
@@ -1185,6 +1213,13 @@ function addLookupEntry(map, name, value) {
 
 function getCalcData(kind, generation) {
 	var collection;
+	var policy = getActiveSaveImportPolicy();
+	if (policy && policy.generation === generation) {
+		if (kind === "species" && typeof window.getActivePokedex === "function") return window.getActivePokedex();
+		if (kind === "moves" && typeof window.getActiveMoves === "function") return window.getActiveMoves();
+		if (kind === "items" && typeof window.getActiveItems === "function") return window.getActiveItems();
+		if (kind === "abilities" && typeof window.getActiveAbilities === "function") return window.getActiveAbilities();
+	}
 	if (kind === "species") collection = calc.SPECIES;
 	else if (kind === "moves") collection = calc.MOVES;
 	else if (kind === "items") collection = calc.ITEMS;
@@ -1193,7 +1228,14 @@ function getCalcData(kind, generation) {
 }
 
 function getCalcNameMaps(generation) {
-	if (saveImportNameMaps[generation]) return saveImportNameMaps[generation];
+	var policy = getActiveSaveImportPolicy();
+	var cacheKey = [
+		policy ? policy.profileId : "canonical",
+		policy ? policy.profileVersion : "",
+		policy ? policy.providerId : "",
+		generation
+	].join(":");
+	if (saveImportNameMaps[cacheKey]) return saveImportNameMaps[cacheKey];
 	var maps = {species: {}, moves: {}, items: {}, abilities: {}};
 	var speciesData = getCalcData("species", generation);
 	var movesData = getCalcData("moves", generation);
@@ -1212,7 +1254,7 @@ function getCalcNameMaps(generation) {
 		}
 	}
 	addLookupEntry(maps.items, "Pok\u00e9 Ball", "Poke Ball");
-	saveImportNameMaps[generation] = maps;
+	saveImportNameMaps[cacheKey] = maps;
 	return maps;
 }
 
@@ -1247,6 +1289,141 @@ function resolveSpeciesName(sourceName, form, generation) {
 	return baseName;
 }
 
+/*
+ * A profile generation provider or save adapter may implement
+ * resolveRawEntityId(kind, rawId, request). Return the exact active calc-data
+ * name to override canonical tables; null/undefined delegates to the next
+ * resolver and then to canonical data. The profile provider has precedence.
+ */
+function getRawEntityIdResolver(source) {
+	if (!source) return null;
+	if (typeof source.resolveRawEntityId === "function") return source.resolveRawEntityId;
+	if (typeof source.resolveSaveEntityId === "function") return source.resolveSaveEntityId;
+	return null;
+}
+
+function createSaveImportResolutionContext(importData, policy) {
+	var activeContext = getActiveSaveImportContext();
+	var provider = activeContext && activeContext.resolvedProvider ? activeContext.resolvedProvider : null;
+	var adapterId = importData && importData.formatId && importData.formatId !== "entity" ?
+		importData.formatId : (policy && policy.adapter ? policy.adapter : "");
+	var adapter = adapterId ? getSaveImportAdapter(adapterId) : null;
+	var profileId = policy && policy.profileId ? policy.profileId : "canonical";
+	var profileVersion = policy && policy.profileVersion ? policy.profileVersion : "";
+	var activeGeneration = policy && policy.generation ? policy.generation : (importData && importData.generation);
+	var providerId = policy && policy.providerId ? policy.providerId :
+		(provider && provider.id ? String(provider.id) : "canonical-gen-" + (activeGeneration || "unknown"));
+	var identityKey = [profileId, profileVersion, providerId, adapterId || "default"].join(":");
+	return {
+		profileId: profileId,
+		profileVersion: profileVersion,
+		providerId: providerId,
+		adapterId: adapterId,
+		identityKey: identityKey,
+		provider: provider,
+		adapter: adapter
+	};
+}
+
+function normalizeRawEntityResolverResult(value, sourceName) {
+	if (value === undefined || value === null) return {handled: false, name: ""};
+	if (value && typeof value === "object") value = value.name;
+	if (typeof value !== "string") {
+		throw new TypeError(sourceName + " resolveRawEntityId must return a name string, null, or undefined");
+	}
+	return {handled: true, name: value.replace(/^\s+|\s+$/g, "")};
+}
+
+function callRawEntityIdResolver(source, sourceName, request) {
+	var resolver = getRawEntityIdResolver(source);
+	if (!resolver) return {handled: false, name: ""};
+	return normalizeRawEntityResolverResult(
+		resolver.call(source, request.kind, request.rawId, request),
+		sourceName
+	);
+}
+
+function resolveRawEntitySourceName(kind, rawId, parsed, slot, resolution, canonicalName) {
+	var request = {
+		kind: kind,
+		rawId: rawId,
+		generation: parsed.generation,
+		format: parsed.format || slot.format,
+		form: parsed.form || 0,
+		location: slot.location || "Pokemon",
+		isParty: !!slot.isParty,
+		profileId: resolution.profileId,
+		profileVersion: resolution.profileVersion,
+		providerId: resolution.providerId,
+		adapterId: resolution.adapterId,
+		identityKey: resolution.identityKey,
+		parsed: parsed
+	};
+	var resolved = callRawEntityIdResolver(resolution.provider, "The active generation provider", request);
+	if (resolved.handled) return resolved;
+	resolved = callRawEntityIdResolver(resolution.adapter, "The active save adapter", request);
+	if (resolved.handled) return resolved;
+	return {handled: false, name: canonicalName || ""};
+}
+
+function getSaveEntityResolutionLabel(resolution) {
+	if (resolution.profileId && resolution.profileId !== "canonical") return "profile " + resolution.profileId;
+	if (resolution.providerId) return "provider " + resolution.providerId;
+	return "the canonical calculator data";
+}
+
+function throwUnresolvedSaveEntityId(kind, rawId, slot, resolution) {
+	throw new Error(
+		"Could not resolve " + kind + " ID " + rawId + " for " +
+		(slot.location || "an imported Pokemon") + " using " +
+		getSaveEntityResolutionLabel(resolution)
+	);
+}
+
+function resolveImportedSpeciesName(parsed, slot, resolution) {
+	var rawSpecies = parsed.rawSpecies === undefined ? parsed.species : parsed.rawSpecies;
+	var canonicalSource = parsed.species >= 0 && parsed.species < SAVE_IMPORT_TEXT.species.length ?
+		SAVE_IMPORT_TEXT.species[parsed.species] : "";
+	var source = resolveRawEntitySourceName("species", rawSpecies, parsed, slot, resolution, canonicalSource);
+	var speciesName = source.handled ?
+		getCalcNameMaps(parsed.generation).species[normalizeLookupKey(source.name)] :
+		resolveSpeciesName(source.name, parsed.form, parsed.generation);
+	if (!speciesName) throwUnresolvedSaveEntityId("species", rawSpecies, slot, resolution);
+	return speciesName;
+}
+
+function resolveImportedMoveName(rawMove, parsed, slot, resolution) {
+	if (!rawMove) return "";
+	var canonicalSource = rawMove < SAVE_IMPORT_TEXT.moves.length ? SAVE_IMPORT_TEXT.moves[rawMove] : "";
+	var source = resolveRawEntitySourceName("move", rawMove, parsed, slot, resolution, canonicalSource);
+	var sourceName = source.name;
+	if (sourceName === "Hidden Power") {
+		var hiddenPowerType = getImportedHiddenPowerType(parsed);
+		if (hiddenPowerType) sourceName += " " + hiddenPowerType;
+	}
+	var moveName = resolveCalcName("moves", sourceName, parsed.generation);
+	if (!moveName) throwUnresolvedSaveEntityId("move", rawMove, slot, resolution);
+	return moveName;
+}
+
+function resolveImportedAbilityName(rawAbility, parsed, slot, resolution) {
+	if (!rawAbility) return "";
+	var canonicalSource = rawAbility < SAVE_IMPORT_TEXT.abilities.length ? SAVE_IMPORT_TEXT.abilities[rawAbility] : "";
+	var source = resolveRawEntitySourceName("ability", rawAbility, parsed, slot, resolution, canonicalSource);
+	var abilityName = resolveCalcName("abilities", source.name, parsed.generation);
+	if (!abilityName) throwUnresolvedSaveEntityId("ability", rawAbility, slot, resolution);
+	return abilityName;
+}
+
+function resolveImportedItemName(rawItem, parsed, slot, resolution) {
+	if (!rawItem) return "";
+	var canonicalSource = getItemSourceName(rawItem, parsed.generation);
+	var source = resolveRawEntitySourceName("item", rawItem, parsed, slot, resolution, canonicalSource);
+	var itemName = resolveCalcName("items", source.name, parsed.generation);
+	if (!itemName) throwUnresolvedSaveEntityId("item", rawItem, slot, resolution);
+	return itemName;
+}
+
 function getImportedHiddenPowerType(parsed) {
 	var typeIndex;
 	if (parsed.generation === 2 && parsed.dvs) {
@@ -1263,29 +1440,25 @@ function getImportedHiddenPowerType(parsed) {
 	return SAVE_IMPORT_HIDDEN_POWER_TYPES[typeIndex] || "";
 }
 
-function buildImportedPokemon(slot, importName) {
-	var parsed = parsePokemonEntity(slot);
-	if (!parsed || parsed.isEgg || !parsed.species || parsed.species >= SAVE_IMPORT_TEXT.species.length) return;
-	var sourceSpecies = SAVE_IMPORT_TEXT.species[parsed.species];
-	var speciesName = resolveSpeciesName(sourceSpecies, parsed.form, parsed.generation);
+function buildImportedPokemon(slot, importName, resolution, parsedPokemon) {
+	var parsed = parsedPokemon || parsePokemonEntity(slot);
+	var rawSpecies = parsed && parsed.rawSpecies === undefined ? parsed.species : (parsed && parsed.rawSpecies);
+	if (!parsed || parsed.isEgg || (!parsed.species && !rawSpecies)) return;
+	resolution = resolution || createSaveImportResolutionContext(null, getActiveSaveImportPolicy());
+	var speciesName = resolveImportedSpeciesName(parsed, slot, resolution);
 	var speciesData = getCalcData("species", parsed.generation);
-	if (!speciesName || !speciesData[speciesName]) return;
+	if (!speciesData[speciesName]) throwUnresolvedSaveEntityId("species", rawSpecies, slot, resolution);
 	var poke = JSON.parse(JSON.stringify(speciesData[speciesName]));
 	var moves = [];
 	for (var i = 0; i < parsed.moves.length; i++) {
-		var sourceMove = SAVE_IMPORT_TEXT.moves[parsed.moves[i]];
-		if (sourceMove === "Hidden Power") {
-			var hiddenPowerType = getImportedHiddenPowerType(parsed);
-			if (hiddenPowerType) sourceMove += " " + hiddenPowerType;
-		}
-		var moveName = resolveCalcName("moves", sourceMove, parsed.generation);
+		var moveName = resolveImportedMoveName(parsed.moves[i], parsed, slot, resolution);
 		if (moveName) moves.push(moveName);
 	}
 	while (moves.length < 4) moves.push("(No Move)");
-	var ability = parsed.ability ? resolveCalcName("abilities", SAVE_IMPORT_TEXT.abilities[parsed.ability], parsed.generation) : "";
+	var ability = resolveImportedAbilityName(parsed.ability, parsed, slot, resolution);
 	if (ability && poke.abilities && poke.abilities.indexOf(ability) === -1) ability = "";
 	if (!ability && parsed.abilityIndex !== null && parsed.abilityIndex !== undefined && poke.abilities) ability = poke.abilities[parsed.abilityIndex] || poke.abilities[0];
-	var item = parsed.item ? resolveCalcName("items", getItemSourceName(parsed.item, parsed.generation), parsed.generation) : "";
+	var item = resolveImportedItemName(parsed.item, parsed, slot, resolution);
 	poke.name = speciesName;
 	poke.nameProp = importName + " - " + slot.location + " - " + speciesName;
 	poke.level = Math.max(1, Math.min(parsed.level || 100, 100));
@@ -1329,11 +1502,14 @@ function moveImportedPokemonToTeamBox(importedPokemon) {
 
 function clearTeamBoxForSaveImport() {
 	if (typeof removeAllCustomSetsFromDex === "function") removeAllCustomSetsFromDex();
-	getSaveImportStorage().removeItem("customsets");
+	getSaveImportStorage().removeItem(getSaveImportCustomSetsStorageKey());
 	if (typeof clearTeamBoxState === "function") {
 		clearTeamBoxState();
 	} else {
-		getSaveImportStorage().removeItem("royalSwordTeamBoxLayout");
+		getSaveImportStorage().removeItem(
+			typeof window.getKMCalculatorTeamBoxLayoutStorageKey === "function" ?
+				window.getKMCalculatorTeamBoxLayoutStorageKey() : "royalSwordTeamBoxLayout"
+		);
 		$(".box-pokemon").remove();
 		$(".save-box-section").remove();
 	}
@@ -1351,10 +1527,11 @@ function addImportedPokemon(importedPokemon) {
 function setImportedPlayerBagItems(items) {
 	if (!$.isArray(items)) return false;
 	var storage = getSaveImportStorage();
+	var key = getSaveImportWorkspaceStorageKey("bag-items");
+	saveImportBagItemsByWorkspace[key] = items.slice(0);
 	window.kmCalculatorImportedBagItems = items.slice(0);
-	if (items.length) storage.setItem(SAVE_IMPORT_BAG_ITEMS_KEY, JSON.stringify(items));
-	else storage.removeItem(SAVE_IMPORT_BAG_ITEMS_KEY);
-	storage.removeItem(SAVE_IMPORT_LEGACY_BAG_ITEMS_KEY);
+	if (items.length) storage.setItem(key, JSON.stringify(items));
+	else storage.removeItem(key);
 	return true;
 }
 
@@ -1370,24 +1547,34 @@ function parseImportedBagItems(raw) {
 
 function getImportedPlayerBagItems() {
 	var storage = getSaveImportStorage();
-	if ($.isArray(window.kmCalculatorImportedBagItems)) return window.kmCalculatorImportedBagItems.slice(0);
-	var items = parseImportedBagItems(storage.getItem(SAVE_IMPORT_BAG_ITEMS_KEY));
+	var key = getSaveImportWorkspaceStorageKey("bag-items");
+	var policy = getActiveSaveImportPolicy();
+	if ($.isArray(saveImportBagItemsByWorkspace[key])) return saveImportBagItemsByWorkspace[key].slice(0);
+	var items = parseImportedBagItems(storage.getItem(key));
 	if ($.isArray(items)) {
+		saveImportBagItemsByWorkspace[key] = items.slice(0);
 		window.kmCalculatorImportedBagItems = items.slice(0);
 		return items.slice(0);
 	}
-	storage.removeItem(SAVE_IMPORT_BAG_ITEMS_KEY);
+	storage.removeItem(key);
 
-	/* One-way compatibility read for inventory stored before the KM Calculator rebrand. */
-	if ($.isArray(window.royalSwordImportedBagItems)) items = window.royalSwordImportedBagItems.slice(0);
-	else items = parseImportedBagItems(storage.getItem(SAVE_IMPORT_LEGACY_BAG_ITEMS_KEY));
+	/* One-way compatibility read for Royal Sword inventory stored before profile workspaces. */
+	if (policy && policy.profileId === "pokemon-royal-sword") {
+		items = parseImportedBagItems(storage.getItem(SAVE_IMPORT_BAG_ITEMS_KEY));
+		if (!$.isArray(items) && $.isArray(window.royalSwordImportedBagItems)) {
+			items = window.royalSwordImportedBagItems.slice(0);
+		}
+		if (!$.isArray(items)) items = parseImportedBagItems(storage.getItem(SAVE_IMPORT_LEGACY_BAG_ITEMS_KEY));
+	}
 	if (!$.isArray(items)) {
-		storage.removeItem(SAVE_IMPORT_LEGACY_BAG_ITEMS_KEY);
+		saveImportBagItemsByWorkspace[key] = [];
 		window.kmCalculatorImportedBagItems = [];
 		return [];
 	}
+	saveImportBagItemsByWorkspace[key] = items.slice(0);
 	window.kmCalculatorImportedBagItems = items.slice(0);
-	if (items.length) storage.setItem(SAVE_IMPORT_BAG_ITEMS_KEY, JSON.stringify(items));
+	if (items.length) storage.setItem(key, JSON.stringify(items));
+	storage.removeItem(SAVE_IMPORT_BAG_ITEMS_KEY);
 	storage.removeItem(SAVE_IMPORT_LEGACY_BAG_ITEMS_KEY);
 	return items.slice(0);
 }
@@ -1398,26 +1585,57 @@ function getImportedBagItemTotal(items) {
 	return total;
 }
 
+function prepareImportedBagItems(items, generation) {
+	if (items === null || items === undefined) return null;
+	if (!$.isArray(items)) throw new Error("The save adapter returned invalid bag item data");
+	var prepared = [];
+	for (var i = 0; i < items.length; i++) {
+		if (!items[i] || typeof items[i].name !== "string" || !items[i].name.trim() ||
+			typeof items[i].count !== "number" || !isFinite(items[i].count) || items[i].count < 0) {
+			throw new Error("The save adapter returned an invalid bag item at index " + i);
+		}
+		var itemName = resolveCalcName("items", items[i].name, generation);
+		if (!itemName) throw new Error("The save adapter returned an unsupported bag item at index " + i);
+		prepared.push({name: itemName, count: items[i].count});
+	}
+	return prepared;
+}
+
+function prepareSaveImport(importData, importName, policy) {
+	if (!importData || !$.isArray(importData.slots)) {
+		throw new Error("The save adapter did not return a Pokemon slot list");
+	}
+	var resolution = createSaveImportResolutionContext(importData, policy);
+	var importedPokemon = [];
+	for (var i = 0; i < importData.slots.length; i++) {
+		var slot = importData.slots[i];
+		var parsed = parsePokemonEntity(slot);
+		var pokemon = buildImportedPokemon(slot, importName, resolution, parsed);
+		if (pokemon) importedPokemon.push({pokemon: pokemon, isParty: slot.isParty});
+	}
+	if (!importedPokemon.length) throw new Error("No usable Pokemon were found in this save");
+	return {
+		importedPokemon: importedPokemon,
+		bagItems: prepareImportedBagItems(importData.bagItems, importData.generation)
+	};
+}
+
 function importPokemonSaveBuffer(buffer, fileName) {
 	var data = new Uint8Array(buffer);
 	var policy = getActiveSaveImportPolicy();
 	var importData = getPokemonSaveImportData(data, fileName, policy && policy.adapter);
 	validateSaveImportPolicy(importData, policy);
 	var importName = (fileName || "Imported Save").replace(/\.[^.]+$/, "") || "Imported Save";
-	var importedPokemon = [];
-	for (var i = 0; i < importData.slots.length; i++) {
-		var pokemon = buildImportedPokemon(importData.slots[i], importName);
-		if (pokemon) importedPokemon.push({pokemon: pokemon, isParty: importData.slots[i].isParty});
-	}
-	if (!importedPokemon.length) throw new Error("No usable Pokemon were found in this save");
-	var bagItemsUpdated = setImportedPlayerBagItems(importData.bagItems);
-	addImportedPokemon(importedPokemon);
+	var prepared = prepareSaveImport(importData, importName, policy);
+	/* Commit only after every supported entity and bag record has passed preflight. */
+	addImportedPokemon(prepared.importedPokemon);
+	var bagItemsUpdated = setImportedPlayerBagItems(prepared.bagItems);
 	return {
-		pokemonCount: importedPokemon.length,
+		pokemonCount: prepared.importedPokemon.length,
 		game: importData.game,
 		generation: importData.generation,
 		bagItemsUpdated: bagItemsUpdated,
-		bagItemCount: bagItemsUpdated ? getImportedBagItemTotal(importData.bagItems) : getImportedBagItemTotal(getImportedPlayerBagItems())
+		bagItemCount: bagItemsUpdated ? getImportedBagItemTotal(prepared.bagItems) : getImportedBagItemTotal(getImportedPlayerBagItems())
 	};
 }
 

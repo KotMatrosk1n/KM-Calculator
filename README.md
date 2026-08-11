@@ -8,7 +8,7 @@
 
 KM Calculator is a Windows desktop damage calculator built for Pokémon ROM hacks and the game generations beneath them.
 
-It keeps each hack's trainers, calculation data, save rules, and optional tools inside an explicit profile. That makes Royal Sword the first supported game, not the boundary of the calculator.
+It keeps each hack's trainers, calculation data, save rules, input policies, layout, and optional tools inside an explicit profile. That makes Royal Sword the first supported game, not the boundary of the calculator.
 
 Different hacks can share a generation. Their data should never share a namespace by accident.
 
@@ -20,9 +20,11 @@ KM Calculator's canonical calculation foundation covers Generations 1 through 9.
 
 Every launch begins with **Which ROM Hack are you playing?** The available tiles come from installed profiles. Royal Sword is currently bundled and loads its data over Generation 8. A **Change ROM Hack** control lets you return to the chooser without restarting the app.
 
-The Royal Sword profile includes its trainer data and Sword/Shield battle simulator. Those features are profile-scoped; another hack does not inherit them unless its own profile declares equivalent support.
+Profiles use the standard damage-calculator layout unless bundled code explicitly selects a registered custom layout. The standard layout keeps the original calculator's generation-appropriate IV, DV, EV, level, set, field, and format controls, then adds KM Calculator's shared workflow tools. Every profile receives Team/Box, Player Notes and Clear Notes, the trainer dropdown and trainer team sprites, save import and border controls, and the enhanced Singles and Doubles experience. While a profile is active, its generation is locked to the base generation declared by that profile.
 
-Community trainer packs can be imported without editing the built-in data files. A single-generation pack can become its own selectable tile and use that generation's canonical calculation data, while a full game-data mod can register a dedicated overlay provider.
+Royal Sword explicitly selects its custom arrangement and independently disables EV input. Its layout can reposition the shared workflow tools, but those tools are not Royal Sword-only features. Royal Sword also includes its trainer data and Sword/Shield battle simulator. Those profile-specific choices do not pass to another hack unless its own bundled profile declares them.
+
+Community trainer packs can be imported without editing the built-in data files. A single-generation pack can become its own selectable tile and use that generation's canonical calculation data and standard layout, while a full game-data mod can register a dedicated overlay provider. Imported JSON cannot select or execute a custom layout.
 
 ## Your Data Stays Under Your Control
 
@@ -38,12 +40,14 @@ If a save format or modded layout cannot be recognized safely, import stops inst
 | --- | --- |
 | Calculation engine | Canonical Pokémon Generations 1 through 9 |
 | Bundled ROM-hack profile | Pokémon Royal Sword over Generation 8 |
+| Profile layouts | Standard calculator layout by default; bundled Royal Sword custom layout |
+| Shared profile workflows | Team/Box; Player Notes and Clear Notes; trainer dropdown and team sprites; save import and border controls; enhanced Singles and Doubles |
 | Trainer data | Built-in profile packs and attributed `trainer-pack-v1` JSON imports |
 | Main-series save families | R/B/Y; G/S/C; R/S/E and FR/LG; D/P/Pt and HG/SS; B/W and B2/W2; X/Y and OR/AS; S/M and US/UM; LGPE; Sw/Sh; BD/SP; Legends: Arceus; S/V; Legends: Z-A |
 | Standalone Pokémon files | `.pk1` through `.pk9`, `.pb7`, `.pb8`, `.pa8`, `.pa9`, and their supported encrypted variants |
 | Profile-only tools | Royal Sword Sword/Shield battle simulator |
 
-Format-family recognition does not make every species or form available in every calculator profile. Imports skip entries that are absent from the active profile's data.
+Format-family recognition does not make every species or form available in every calculator profile. An import stops before replacing Team/Box data when a supported entry cannot be resolved through the active profile.
 
 Save compatibility depends on the exact regional dump, storage layout, game update, and third-party tool involved. Keep a backup of the original save before importing it anywhere.
 
@@ -62,7 +66,7 @@ Packaged KM Calculator builds do not require Node.js, Git, a web server, or a se
 
 ## Trainer Data And Community Mods
 
-A trainer pack is a UTF-8 JSON file that identifies its game or mod, base generation, authors, public source, license or redistribution permission, and trainer teams. KM Calculator validates the pack before storing it and prevents an imported file from replacing a bundled pack.
+A trainer pack is a UTF-8 JSON file that identifies its game or mod, base generation, authors, public source, license or redistribution permission, and trainer teams. KM Calculator validates the pack before storing it and prevents an imported file from replacing a bundled pack. Trainer-pack JSON is data only: a custom profile layout requires a reviewed, bundled code provider.
 
 | What do you need? | Start here |
 | --- | --- |

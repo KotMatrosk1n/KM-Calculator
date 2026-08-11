@@ -27,6 +27,8 @@
 
 	var PROFILE_SCHEMA = "km-calculator.rom-hack-profile";
 	var PROFILE_SCHEMA_VERSION = 1;
+	var DEFAULT_LAYOUT_ID = "base";
+	var DEFAULT_EV_POLICY = "generation-default";
 	var DOM_EVENT_NAMES = {
 		profilechange: "kmcalculator:romhackchange",
 		profileschange: "kmcalculator:romhackprofileschange",
@@ -65,8 +67,19 @@
 
 		result = {};
 		keys = Object.keys(value);
-		for (i = 0; i < keys.length; i++) result[keys[i]] = clone(value[keys[i]]);
+		for (i = 0; i < keys.length; i++) {
+			if (keys[i] === "__proto__" || keys[i] === "constructor" || keys[i] === "prototype") continue;
+			result[keys[i]] = clone(value[keys[i]]);
+		}
 		return result;
+	}
+
+	function normalizeIdentifier(value, fallback, path, issues) {
+		var id = cleanString(value || fallback).toLowerCase();
+		if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) {
+			issues.push(path + " must be a lowercase, hyphen-separated identifier.");
+		}
+		return id;
 	}
 
 	function normalizeGeneration(value, path, issues) {
@@ -158,6 +171,10 @@
 		var tileSource;
 		var dataSource;
 		var featuresSource;
+		var uiSource;
+		var inputsSource;
+		var layoutId;
+		var evPolicy;
 		var profile;
 
 		if (!isObject(value)) {
@@ -179,6 +196,13 @@
 		tileSource = isObject(value.tile) ? value.tile : {};
 		dataSource = isObject(value.generationData) ? value.generationData : {};
 		featuresSource = isObject(value.features) ? value.features : {};
+		uiSource = isObject(value.ui) ? value.ui : {};
+		inputsSource = isObject(value.inputs) ? value.inputs : {};
+		layoutId = normalizeIdentifier(uiSource.layout, DEFAULT_LAYOUT_ID, "ui.layout", issues);
+		evPolicy = cleanString(inputsSource.evs || DEFAULT_EV_POLICY).toLowerCase();
+		if (evPolicy !== DEFAULT_EV_POLICY && evPolicy !== "disabled") {
+			issues.push("inputs.evs must be generation-default or disabled.");
+		}
 
 		if (!cleanString(value.calcProfile || calcSource.generationProfile)) {
 			issues.push("calcProfile is required.");
@@ -213,12 +237,28 @@
 				adapter: saveAdapter
 			},
 			generationData: {
-				canonicalProviderId: cleanString(dataSource.canonicalProviderId) ||
-					("canonical-gen-" + baseGeneration),
-				overrideProviderId: cleanString(dataSource.overrideProviderId)
+				canonicalProviderId: normalizeIdentifier(
+					dataSource.canonicalProviderId,
+					"canonical-gen-" + baseGeneration,
+					"generationData.canonicalProviderId",
+					issues
+				),
+				overrideProviderId: cleanString(dataSource.overrideProviderId) ?
+					normalizeIdentifier(
+						dataSource.overrideProviderId,
+						"",
+						"generationData.overrideProviderId",
+						issues
+					) : ""
 			},
 			features: {
 				battleSimulator: cleanString(featuresSource.battleSimulator)
+			},
+			ui: {
+				layout: layoutId
+			},
+			inputs: {
+				evs: evPolicy
 			},
 			tile: {
 				description: cleanString(tileSource.description),
@@ -257,7 +297,10 @@
 		this._profiles = {};
 		this._profileOrder = [];
 		this._generationProviders = {};
+		this._generationProvidersById = {};
 		this._profileOverrideProviders = {};
+		this._profileOverrideProvidersById = {};
+		this._layoutProviders = {};
 		this._overrideProviderHook = null;
 		this._listeners = {};
 		this._activeProfileId = null;
@@ -356,9 +399,15 @@
 
 	Registry.prototype.registerGenerationProvider = function (generation, provider) {
 		var normalizedGeneration = normalizeGeneration(generation, "generation", []);
+		var providerId;
 		if (!normalizedGeneration) throw new RangeError("generation must be an integer from 1 through 9.");
 		if (provider === null || provider === undefined) throw new TypeError("provider is required.");
+		providerId = cleanString(provider.id).toLowerCase();
+		if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(providerId)) {
+			throw new TypeError("generation provider id must be a lowercase, hyphen-separated identifier.");
+		}
 		this._generationProviders[normalizedGeneration] = provider;
+		this._generationProvidersById[providerId] = provider;
 		this._emit("providerchange", {
 			type: "canonical",
 			generation: normalizedGeneration,
@@ -371,11 +420,64 @@
 		return this._generationProviders[Number(generation)] || null;
 	};
 
+	Registry.prototype.getGenerationProviderById = function (id) {
+		return this._generationProvidersById[cleanString(id).toLowerCase()] || null;
+	};
+
+	Registry.prototype.registerLayoutProvider = function (id, provider) {
+		var normalizedId = cleanString(id).toLowerCase();
+		if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(normalizedId)) {
+			throw new TypeError("layout provider id must be a lowercase, hyphen-separated identifier.");
+		}
+		if (!isObject(provider)) {
+			throw new TypeError("layout provider is required.");
+		}
+		if (typeof provider.mount !== "function") {
+			throw new TypeError("layout provider mount must be a function.");
+		}
+		if (provider.ownsTrainerPlacement && typeof provider.refresh !== "function") {
+			throw new TypeError("A layout provider that owns trainer placement must provide refresh().");
+		}
+		if (cleanString(provider.id).toLowerCase() !== normalizedId) {
+			throw new Error("Layout provider id does not match " + normalizedId + ".");
+		}
+		this._layoutProviders[normalizedId] = provider;
+		this._emit("providerchange", {
+			type: "layout",
+			layoutId: normalizedId,
+			provider: provider
+		});
+		return provider;
+	};
+
+	Registry.prototype.getLayoutProvider = function (id) {
+		return this._layoutProviders[cleanString(id).toLowerCase()] || null;
+	};
+
+	Registry.prototype.resolveLayoutProvider = function (profileOrId) {
+		var profile = typeof profileOrId === "string" ? this.getProfile(profileOrId) : clone(profileOrId);
+		var layoutId;
+		var provider;
+		if (!profile) throw new Error("Cannot resolve layout for an unknown ROM-hack profile.");
+		layoutId = profile.ui && profile.ui.layout ? profile.ui.layout : DEFAULT_LAYOUT_ID;
+		provider = this.getLayoutProvider(layoutId);
+		if (!provider) {
+			throw new Error("ROM-hack profile " + profile.id + " requires unavailable layout " + layoutId + ".");
+		}
+		return provider;
+	};
+
 	Registry.prototype.registerProfileOverrideProvider = function (profileId, provider) {
 		var id = cleanString(profileId).toLowerCase();
+		var providerId;
 		if (!this._profiles[id]) throw new Error("Unknown ROM-hack profile: " + id + ".");
 		if (provider === null || provider === undefined) throw new TypeError("provider is required.");
+		providerId = cleanString(provider.id).toLowerCase();
+		if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(providerId)) {
+			throw new TypeError("profile override provider id must be a lowercase, hyphen-separated identifier.");
+		}
 		this._profileOverrideProviders[id] = provider;
+		this._profileOverrideProvidersById[providerId] = provider;
 		this._emit("providerchange", {
 			type: "profile-override",
 			profile: this.getProfile(id),
@@ -402,8 +504,27 @@
 		var hookResult;
 
 		if (!profile) throw new Error("Cannot resolve data provider for an unknown ROM-hack profile.");
-		canonicalProvider = this.getGenerationProvider(profile.baseGeneration);
-		overrideProvider = this._profileOverrideProviders[profile.id] || null;
+		canonicalProvider = this.getGenerationProviderById(profile.generationData.canonicalProviderId);
+		if (!canonicalProvider) {
+			throw new Error("ROM-hack profile " + profile.id + " requires unavailable generation provider " +
+				profile.generationData.canonicalProviderId + ".");
+		}
+		if (canonicalProvider.generation && Number(canonicalProvider.generation) !== Number(profile.baseGeneration)) {
+			throw new Error("ROM-hack profile " + profile.id + " declares base Generation " +
+				profile.baseGeneration + " but uses " + profile.generationData.canonicalProviderId + ".");
+		}
+		overrideProvider = profile.generationData.overrideProviderId ?
+			this._profileOverrideProvidersById[profile.generationData.overrideProviderId] :
+			(this._profileOverrideProviders[profile.id] || null);
+		if (profile.generationData.overrideProviderId && !overrideProvider) {
+			throw new Error("ROM-hack profile " + profile.id + " requires unavailable override provider " +
+				profile.generationData.overrideProviderId + ".");
+		}
+		if (overrideProvider && overrideProvider.baseGeneration &&
+			Number(overrideProvider.baseGeneration) !== Number(profile.baseGeneration)) {
+			throw new Error("ROM-hack profile " + profile.id + " cannot apply override " +
+				profile.generationData.overrideProviderId + " to Generation " + profile.baseGeneration + ".");
+		}
 		resolvedProvider = overrideProvider || canonicalProvider;
 
 		if (this._overrideProviderHook) {
@@ -426,8 +547,10 @@
 	Registry.prototype.getActivationContext = function (profileOrId, extraContext) {
 		var profile = typeof profileOrId === "string" ? this.getProfile(profileOrId) : clone(profileOrId);
 		var providers;
+		var layoutProvider;
 		if (!profile) throw new Error("Unknown ROM-hack profile.");
 		providers = this.resolveGenerationProvider(profile, extraContext);
+		layoutProvider = this.resolveLayoutProvider(profile);
 		return {
 			profile: profile,
 			baseGeneration: profile.baseGeneration,
@@ -438,6 +561,9 @@
 			saveGeneration: profile.saveImport.generation,
 			saveAdapter: profile.saveImport.adapter,
 			battleSimulator: profile.features.battleSimulator,
+			layoutId: profile.ui.layout,
+			layoutProvider: layoutProvider,
+			inputPolicies: clone(profile.inputs),
 			canonicalProvider: providers.canonicalProvider,
 			overrideProvider: providers.overrideProvider,
 			resolvedProvider: providers.resolvedProvider,
@@ -448,16 +574,45 @@
 	Registry.prototype.activateProfile = function (id, extraContext) {
 		var profile = this.getProfile(id);
 		var context;
+		var rollbackContext;
+		var previousProfileId = this._activeProfileId;
+		var previousExtraContext = clone(this._activeExtraContext);
+		var previousContext = this.getActiveContext();
 		if (!profile) throw new Error("Unknown ROM-hack profile: " + id + ".");
+		context = this.getActivationContext(profile, extraContext || {});
+		context.previousContext = previousContext;
 		this._activeProfileId = profile.id;
 		this._activeExtraContext = clone(extraContext || {});
-		context = this.getActivationContext(profile, this._activeExtraContext);
 
-		if (this._globalObject) {
-			this._globalObject.KMCalculatorActiveRomHackProfile = clone(profile);
-			this._globalObject.KMCalculatorActiveRomHackContext = context;
+		try {
+			if (this._globalObject) {
+				this._globalObject.KMCalculatorActiveRomHackProfile = clone(profile);
+				this._globalObject.KMCalculatorActiveRomHackContext = context;
+			}
+			this._emit("profilechange", context);
+		} catch (error) {
+			this._activeProfileId = previousProfileId;
+			this._activeExtraContext = previousExtraContext;
+			if (this._globalObject) {
+				this._globalObject.KMCalculatorActiveRomHackProfile = previousContext ?
+					clone(previousContext.profile) : null;
+				this._globalObject.KMCalculatorActiveRomHackContext = previousContext;
+			}
+			rollbackContext = previousContext ? Object.assign({}, previousContext) : {
+				profile: null,
+				layoutId: DEFAULT_LAYOUT_ID,
+				layoutProvider: this.getLayoutProvider(DEFAULT_LAYOUT_ID),
+				inputPolicies: {evs: DEFAULT_EV_POLICY}
+			};
+			rollbackContext.previousContext = context;
+			rollbackContext.rollback = true;
+			try {
+				this._emit("profilechange", rollbackContext);
+			} catch (restoreError) {
+				error.restoreError = restoreError;
+			}
+			throw error;
 		}
-		this._emit("profilechange", context);
 		return context;
 	};
 
@@ -495,14 +650,45 @@
 	};
 
 	Registry.prototype.clearActiveProfile = function () {
-		var previous = this.getActiveProfile();
+		var previousContext = this.getActiveContext();
+		var previousProfileId = this._activeProfileId;
+		var previousExtraContext = clone(this._activeExtraContext);
+		var clearContext = {
+			profile: null,
+			layoutId: DEFAULT_LAYOUT_ID,
+			layoutProvider: this.getLayoutProvider(DEFAULT_LAYOUT_ID),
+			inputPolicies: {evs: DEFAULT_EV_POLICY},
+			previousContext: previousContext
+		};
 		this._activeProfileId = null;
 		this._activeExtraContext = {};
 		if (this._globalObject) {
 			this._globalObject.KMCalculatorActiveRomHackProfile = null;
 			this._globalObject.KMCalculatorActiveRomHackContext = null;
 		}
-		this._emit("profilechange", {profile: null, previousProfile: previous});
+		try {
+			this._emit("profilechange", clearContext);
+		} catch (error) {
+			this._activeProfileId = previousProfileId;
+			this._activeExtraContext = previousExtraContext;
+			if (this._globalObject) {
+				this._globalObject.KMCalculatorActiveRomHackProfile = previousContext ?
+					clone(previousContext.profile) : null;
+				this._globalObject.KMCalculatorActiveRomHackContext = previousContext;
+			}
+			if (previousContext) {
+				var rollbackContext = Object.assign({}, previousContext, {
+					previousContext: clearContext,
+					rollback: true
+				});
+				try {
+					this._emit("profilechange", rollbackContext);
+				} catch (restoreError) {
+					error.restoreError = restoreError;
+				}
+			}
+			throw error;
+		}
 	};
 
 	Registry.prototype.requestChooser = function (reason) {
@@ -523,6 +709,8 @@
 	return {
 		PROFILE_SCHEMA: PROFILE_SCHEMA,
 		PROFILE_SCHEMA_VERSION: PROFILE_SCHEMA_VERSION,
+		DEFAULT_LAYOUT_ID: DEFAULT_LAYOUT_ID,
+		DEFAULT_EV_POLICY: DEFAULT_EV_POLICY,
 		RomHackProfileError: RomHackProfileError,
 		Registry: Registry,
 		normalizeProfile: normalizeProfile,

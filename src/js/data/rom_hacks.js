@@ -3,16 +3,17 @@
 /* Bundled ROM-hack profiles for KM Calculator. */
 (function (root, factory) {
 	if (typeof module === "object" && module.exports) {
-		module.exports = factory(require("../rom_hack_registry.js"));
+		module.exports = factory(require("../rom_hack_registry.js"), require("../rom_hack_layouts.js"));
 	} else {
-		var bundled = factory(root.KMCalculatorRomHacks);
+		var bundled = factory(root.KMCalculatorRomHacks, root.KMCalculatorRomHackLayouts);
 		root.KMCalculatorBundledRomHacks = bundled;
 		bundled.install(root.kmRomHackRegistry);
 	}
-})(typeof self !== "undefined" ? self : this, function (romHackApi) {
+})(typeof self !== "undefined" ? self : this, function (romHackApi, layoutApi) {
 	"use strict";
 
 	if (!romHackApi) throw new Error("rom_hack_registry.js must load before data/rom_hacks.js.");
+	if (!layoutApi) throw new Error("rom_hack_layouts.js must load before data/rom_hacks.js.");
 
 	var profiles = [
 		{
@@ -22,6 +23,12 @@
 			version: "1",
 			baseGeneration: 8,
 			calcProfile: "royal-sword",
+			ui: {
+				layout: "royal-sword"
+			},
+			inputs: {
+				evs: "disabled"
+			},
 			calc: {
 				dataGeneration: 8
 			},
@@ -63,17 +70,24 @@
 		}
 	];
 
-	var canonicalGenerationEightProvider = {
-		id: "canonical-gen-8",
-		kind: "canonical-generation",
-		generation: 8,
-		getGeneration: function (calcApi, profile) {
-			if (!calcApi || !calcApi.Generations || typeof calcApi.Generations.get !== "function") {
-				throw new TypeError("The canonical calculator generation provider requires calc.Generations.get.");
+	function createCanonicalGenerationProvider(generation) {
+		return {
+			id: "canonical-gen-" + generation,
+			kind: "canonical-generation",
+			generation: generation,
+			getGeneration: function (calcApi) {
+				if (!calcApi || !calcApi.Generations || typeof calcApi.Generations.get !== "function") {
+					throw new TypeError("The canonical calculator generation provider requires calc.Generations.get.");
+				}
+				return calcApi.Generations.get(generation);
 			}
-			return calcApi.Generations.get(profile.baseGeneration);
-		}
-	};
+		};
+	}
+
+	var canonicalGenerationProviders = {};
+	for (var generation = 1; generation <= 9; generation++) {
+		canonicalGenerationProviders[generation] = createCanonicalGenerationProvider(generation);
+	}
 
 	var royalSwordOverrideProvider = {
 		id: "royal-sword",
@@ -94,17 +108,21 @@
 			throw new TypeError("A KM Calculator ROM-hack registry is required.");
 		}
 
+		layoutApi.install(registry);
 		for (i = 0; i < profiles.length; i++) {
 			registry.registerProfile(profiles[i], {replace: !!registry.getProfile(profiles[i].id)});
 		}
-		registry.registerGenerationProvider(8, canonicalGenerationEightProvider);
+		for (i = 1; i <= 9; i++) {
+			registry.registerGenerationProvider(i, canonicalGenerationProviders[i]);
+		}
 		registry.registerProfileOverrideProvider("pokemon-royal-sword", royalSwordOverrideProvider);
 		return registry.listProfiles();
 	}
 
 	return {
 		profiles: profiles,
-		canonicalGenerationEightProvider: canonicalGenerationEightProvider,
+		canonicalGenerationProviders: canonicalGenerationProviders,
+		canonicalGenerationEightProvider: canonicalGenerationProviders[8],
 		royalSwordOverrideProvider: royalSwordOverrideProvider,
 		install: install
 	};

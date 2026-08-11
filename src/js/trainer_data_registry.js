@@ -54,7 +54,7 @@
 	function slug(value) {
 		return cleanString(value)
 			.toLowerCase()
-			.replace(/[^a-z0-9._-]+/g, "-")
+			.replace(/[^a-z0-9]+/g, "-")
 			.replace(/^-+|-+$/g, "") || "trainer";
 	}
 
@@ -192,6 +192,68 @@
 		return pokemon;
 	}
 
+	function normalizePokemonSlots(entries, path, issues) {
+		var hasDeclaredSlot = false;
+		var slots = {};
+		var valid = true;
+		var i;
+		var entry;
+		var slot;
+		for (i = 0; i < entries.length; i++) {
+			if (entries[i].slotDeclared) {
+				hasDeclaredSlot = true;
+				break;
+			}
+		}
+		if (!hasDeclaredSlot) return entries;
+
+		for (i = 0; i < entries.length; i++) {
+			entry = entries[i];
+			slot = entry.pokemon.slot;
+			if (!entry.slotDeclared || typeof slot === "undefined") {
+				pushIssue(
+					issues,
+					path + ".pokemon[" + entry.sourceIndex + "].slot",
+					"is required for every Pokemon when any slot is declared"
+				);
+				valid = false;
+				continue;
+			}
+			if (slot > entries.length) {
+				pushIssue(
+					issues,
+					path + ".pokemon[" + entry.sourceIndex + "].slot",
+					"must be in the complete range 1 through " + entries.length
+				);
+				valid = false;
+				continue;
+			}
+			if (slots[slot]) {
+				pushIssue(
+					issues,
+					path + ".pokemon[" + entry.sourceIndex + "].slot",
+					"duplicates slot " + slot
+				);
+				valid = false;
+				continue;
+			}
+			slots[slot] = true;
+		}
+		for (i = 1; i <= entries.length; i++) {
+			if (!slots[i]) {
+				pushIssue(issues, path + ".pokemon", "slots must form the complete sequence 1 through " + entries.length);
+				valid = false;
+				break;
+			}
+		}
+		if (valid) {
+			entries.sort(function (left, right) {
+				return left.pokemon.slot - right.pokemon.slot;
+			});
+		}
+		return entries;
+	}
+
 	function normalizeTrainer(value, index, packGenerations, issues) {
 		var path = "trainers[" + index + "]";
 		if (!isObject(value)) {
@@ -210,20 +272,57 @@
 			pushIssue(issues, path + ".pokemon", "must contain at least one Pokemon");
 			pokemonSource = [];
 		}
-		var pokemon = [];
+		if (pokemonSource.length > 6) pushIssue(issues, path + ".pokemon", "cannot contain more than six Pokemon");
+		var pokemonEntries = [];
 		for (var i = 0; i < pokemonSource.length; i++) {
 			var normalizedPokemon = normalizePokemon(pokemonSource[i], path + ".pokemon[" + i + "]", issues);
-			if (normalizedPokemon) pokemon.push(normalizedPokemon);
+			if (normalizedPokemon) {
+				pokemonEntries.push({
+					pokemon: normalizedPokemon,
+					slotDeclared: isObject(pokemonSource[i]) && pokemonSource[i].slot !== undefined,
+					sourceIndex: i
+				});
+			}
 		}
+		normalizePokemonSlots(pokemonEntries, path, issues);
+		var pokemon = [];
+		for (i = 0; i < pokemonEntries.length; i++) pokemon.push(pokemonEntries[i].pokemon);
 		var generationSource = value.generations !== undefined ? value.generations :
 			(value.generation !== undefined ? value.generation : packGenerations);
+		var generations = normalizeGenerations(generationSource, path + ".generations", issues);
+		if (!generations.length) pushIssue(issues, path + ".generations", "must include at least one generation");
+		var hasUnsupportedDoubleGeneration = false;
+		for (i = 0; i < generations.length; i++) {
+			if (packGenerations.indexOf(generations[i]) === -1) {
+				pushIssue(issues, path + ".generations", "Generation " + generations[i] + " is not declared by the pack");
+			}
+			if (battleType === "double" && generations[i] < 3) hasUnsupportedDoubleGeneration = true;
+		}
+		if (hasUnsupportedDoubleGeneration) {
+			pushIssue(issues, path + ".battleType", "Double battles require Generation 3 or later");
+		}
+		var hasLegacyGeneration = generations.some(function (generation) { return generation < 3; });
+		var hasModernGeneration = generations.some(function (generation) { return generation >= 3; });
+		for (i = 0; i < pokemonSource.length; i++) {
+			var hasIVs = isObject(pokemonSource[i]) && pokemonSource[i].ivs !== undefined;
+			var hasDVs = isObject(pokemonSource[i]) && pokemonSource[i].dvs !== undefined;
+			if (hasLegacyGeneration && !hasModernGeneration && hasIVs) {
+				pushIssue(issues, path + ".pokemon[" + i + "].ivs", "use dvs for Generations 1 and 2");
+			}
+			if (hasModernGeneration && !hasLegacyGeneration && hasDVs) {
+				pushIssue(issues, path + ".pokemon[" + i + "].dvs", "use ivs for Generations 3 through 9");
+			}
+			if (hasLegacyGeneration && hasModernGeneration && hasIVs !== hasDVs) {
+				pushIssue(issues, path + ".pokemon[" + i + "]", "must declare both ivs and dvs across legacy and modern generations");
+			}
+		}
 		var trainer = {
 			id: id,
 			area: cleanString(value.area) || "Trainers",
 			name: name,
 			trainer: name,
 			battleType: battleType === "double" ? "Double" : "Single",
-			generations: normalizeGenerations(generationSource, path + ".generations", issues),
+			generations: generations,
 			pokemon: pokemon
 		};
 		if (cleanString(value.variant)) trainer.variant = cleanString(value.variant);
@@ -289,9 +388,14 @@
 		var builtInPacks = [];
 		var importedPacks = [];
 
-		function persist() {
+		function persist(packs) {
 			if (!storage || typeof storage.setItem !== "function") return;
-			storage.setItem(storageKey, JSON.stringify(importedPacks));
+			storage.setItem(storageKey, JSON.stringify(packs));
+		}
+
+		function commitImportedPacks(packs) {
+			persist(packs);
+			importedPacks = packs;
 		}
 
 		function replacePack(collection, pack) {
@@ -317,8 +421,9 @@
 					throw new TrainerDataError("Trainer pack id is reserved by built-in data", ["id: " + pack.id + " is built in"]);
 				}
 			}
-			replacePack(importedPacks, pack);
-			persist();
+			var next = importedPacks.slice();
+			replacePack(next, pack);
+			commitImportedPacks(next);
 			return copy(pack);
 		}
 
@@ -355,15 +460,13 @@
 				if (importedPacks[i].id === normalizedId) removed = true;
 				else next.push(importedPacks[i]);
 			}
-			importedPacks = next;
-			if (removed) persist();
+			if (removed) commitImportedPacks(next);
 			return removed;
 		}
 
 		function clearImportedPacks() {
 			var count = importedPacks.length;
-			importedPacks = [];
-			persist();
+			if (count) commitImportedPacks([]);
 			return count;
 		}
 
@@ -379,13 +482,16 @@
 			return !generation || generations.indexOf(Number(generation)) !== -1;
 		}
 
-		function getTrainerEntries(generation, profileId) {
+		function getTrainerEntries(generation, profileId, primaryPackId) {
 			var entries = [];
 			var packs = builtInPacks.concat(importedPacks);
 			var selectedProfile = profileId ? slug(profileId) : "";
+			var selectedPack = primaryPackId ? slug(primaryPackId) : "";
 			for (var packIndex = 0; packIndex < packs.length; packIndex++) {
 				var pack = packs[packIndex];
-				if (selectedProfile && pack.profileId !== selectedProfile) continue;
+				var isPrimaryPack = selectedPack && pack.id === selectedPack;
+				var isProfileSupplement = selectedProfile && pack.profileId === selectedProfile;
+				if ((selectedProfile || selectedPack) && !isPrimaryPack && !isProfileSupplement) continue;
 				if (!supportsGeneration(pack.generations, generation)) continue;
 				for (var trainerIndex = 0; trainerIndex < pack.trainers.length; trainerIndex++) {
 					var trainer = pack.trainers[trainerIndex];

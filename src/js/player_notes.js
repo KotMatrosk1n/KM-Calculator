@@ -1,6 +1,7 @@
 /*global TRAINERDEX */
 (function () {
-	var NOTE_STORAGE_PREFIX = "royalSwordNotes:v1:";
+	var NOTE_STORAGE_PREFIX = "kmCalculatorNotes:v2:";
+	var LEGACY_NOTE_STORAGE_PREFIX = "royalSwordNotes:v1:";
 	var NOTE_OPTIONS_KEY = "royalSwordNotesOptions:v1";
 	var NOTE_WINDOW_KEY = "royalSwordNotesWindow:v1";
 	var DEFAULT_SCOPE = "global";
@@ -20,6 +21,8 @@
 	var notesWordWrap = null;
 	var notesFontSize = null;
 	var saveTimer = null;
+	var activeNoteKey = "";
+	var pendingSaveKey = "";
 	var activeScope = DEFAULT_SCOPE;
 	var activeTrainerId = "";
 	var dragging = null;
@@ -63,11 +66,21 @@
 		safeSet(key, JSON.stringify(value));
 	}
 
+	function getActiveProfileId() {
+		var registry = window.kmRomHackRegistry;
+		var profile = registry && typeof registry.getActiveProfile === "function" ? registry.getActiveProfile() : null;
+		return profile && profile.id ? profile.id : "unselected";
+	}
+
+	function getProfileNotePrefix() {
+		return NOTE_STORAGE_PREFIX + getActiveProfileId() + ":";
+	}
+
 	function getNoteKey(scope) {
 		if (normalizeScope(scope) === "trainer") {
-			return NOTE_STORAGE_PREFIX + "trainer:" + normalizeTrainerId(activeTrainerId);
+			return getProfileNotePrefix() + "trainer:" + normalizeTrainerId(activeTrainerId);
 		}
-		return NOTE_STORAGE_PREFIX + DEFAULT_SCOPE;
+		return getProfileNotePrefix() + DEFAULT_SCOPE;
 	}
 
 	function getScopeOptionsMarkup() {
@@ -128,7 +141,7 @@
 
 	function getTrainerGroup(entry) {
 		var area = getTrainerArea(entry);
-		return entry && entry._kmPack ? entry._kmPack.name + " — " + area : area;
+		return entry && entry._kmPack ? entry._kmPack.name + " - " + area : area;
 	}
 
 	function getCurrentTrainerId() {
@@ -226,11 +239,16 @@
 		if (activeScope === "trainer") refreshTrainerOptions(activeTrainerId);
 		if (notesScope) notesScope.val(activeScope);
 		setTrainerOptionsVisible(activeScope === "trainer");
-		notes = safeGet(getNoteKey(activeScope));
+		activeNoteKey = getNoteKey(activeScope);
+		notes = safeGet(activeNoteKey);
 		legacyMatch = activeScope === "trainer" ? /^pokemon-royal-sword:trainer-(\d+)$/.exec(activeTrainerId) : null;
-		if (notes === null && legacyMatch) {
-			notes = safeGet(NOTE_STORAGE_PREFIX + "trainer:" + (Number(legacyMatch[1]) - 1));
-			if (notes !== null) safeSet(getNoteKey(activeScope), notes);
+		if (notes === null && getActiveProfileId() === "pokemon-royal-sword") {
+			if (legacyMatch) {
+				notes = safeGet(LEGACY_NOTE_STORAGE_PREFIX + "trainer:" + (Number(legacyMatch[1]) - 1));
+			} else if (activeScope === DEFAULT_SCOPE) {
+				notes = safeGet(LEGACY_NOTE_STORAGE_PREFIX + DEFAULT_SCOPE);
+			}
+			if (notes !== null) safeSet(activeNoteKey, notes);
 		}
 		if (notesTextarea) notesTextarea.val(notes || "");
 		updateLineNumbers();
@@ -238,18 +256,22 @@
 	}
 
 	function saveNotesNow() {
+		var key;
 		if (!notesTextarea) return;
 		if (saveTimer) {
 			window.clearTimeout(saveTimer);
 			saveTimer = null;
 		}
-		safeSet(getNoteKey(activeScope), notesTextarea.val());
+		key = pendingSaveKey || activeNoteKey || getNoteKey(activeScope);
+		safeSet(key, notesTextarea.val());
+		pendingSaveKey = "";
 		setStatus("Saved");
 	}
 
 	function queueSaveNotes() {
 		setStatus("Saving...");
 		if (saveTimer) window.clearTimeout(saveTimer);
+		pendingSaveKey = activeNoteKey || getNoteKey(activeScope);
 		saveTimer = window.setTimeout(saveNotesNow, SAVE_DELAY);
 	}
 
@@ -346,12 +368,16 @@
 		notesWindow.prop("hidden", true);
 	}
 
+	window.closeKMCalculatorPlayerNotes = function () {
+		if (notesWindow && !notesWindow.prop("hidden")) closeNotesWindow();
+	};
+
 	function clearAllNotes(event) {
 		var confirmed = window.confirm("Clear all notes?");
 		if (event && event.currentTarget) $(event.currentTarget).blur();
 		if (!confirmed) return;
 		try {
-			getStorage().clearByPrefix(NOTE_STORAGE_PREFIX);
+			getStorage().clearByPrefix(getProfileNotePrefix());
 		} catch (e) {
 			safeRemove(getNoteKey(activeScope));
 		}
@@ -505,8 +531,9 @@
 		$(document).on("click", ".player-notes-open", openNotesWindow);
 		$(document).on("click", ".player-notes-clear", clearAllNotes);
 		$(document).on("kmtrainerdatachange", function () {
+			saveNotesNow();
 			refreshTrainerOptions(activeTrainerId);
-			if (activeScope === "trainer") loadNotes("trainer");
+			loadNotes(activeScope);
 		});
 	}
 

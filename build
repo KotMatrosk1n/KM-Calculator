@@ -60,6 +60,7 @@ const srcRuntimeFiles = new Set([
 	'js/moveset_import.js',
 	'js/player_notes.js',
 	'js/rom_hack_registry.js',
+	'js/rom_hack_layouts.js',
 	'js/rom_hack_selector.js',
 	'js/save_import.js',
 	'js/shared_controls.js',

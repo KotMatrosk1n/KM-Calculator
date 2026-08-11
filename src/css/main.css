@@ -426,28 +426,30 @@ th {
     vertical-align: top;
 }
 .combat-workspace {
-    align-items: stretch;
     clear: both;
+    width: 100%;
+}
+body[data-calc-layout="royal-sword"] .combat-workspace {
+    align-items: stretch;
     display: grid;
     gap: 4px;
     grid-template-columns: minmax(0, 1fr) 27.5em minmax(0, 1fr);
-    width: 100%;
 }
-.combat-workspace > .panel {
+body[data-calc-layout="royal-sword"] .combat-workspace > .panel {
     display: block;
     float: none;
     min-width: 0;
 }
-.combat-workspace > .panel > [role="region"] {
+body[data-calc-layout="royal-sword"] .combat-workspace > .panel > [role="region"] {
     height: 100%;
 }
-.combat-workspace fieldset {
+body[data-calc-layout="royal-sword"] .combat-workspace fieldset {
     box-sizing: border-box;
     float: none;
     height: 100%;
 }
-.combat-workspace .poke-info,
-.combat-workspace .field-info {
+body[data-calc-layout="royal-sword"] .combat-workspace .poke-info,
+body[data-calc-layout="royal-sword"] .combat-workspace .field-info {
     width: 100%;
 }
 .poke-info {
@@ -460,23 +462,53 @@ th {
     width: 27.5em;
 }
 .lower-workspace {
-    align-items: stretch;
     box-sizing: border-box;
     clear: both;
-    display: grid;
-    gap: 8px;
-    grid-template-columns: minmax(0, 1fr) 16em;
     padding-top: 10px;
     width: 100%;
 }
-.lower-workspace > div {
+body[data-calc-layout="royal-sword"] .lower-workspace {
+    align-items: stretch;
+    display: grid;
+    gap: 8px;
+    grid-template-columns: minmax(0, 1fr) 18em;
+}
+body[data-calc-layout="royal-sword"] .lower-workspace > div {
     min-width: 0;
 }
-.lower-workspace fieldset {
+body[data-calc-layout="royal-sword"] .lower-workspace fieldset {
     box-sizing: border-box;
     float: none;
     height: 100%;
     width: 100%;
+}
+.team-box-workspace-column,
+.team-box-info {
+    box-sizing: border-box;
+    display: block;
+    width: 100%;
+}
+
+@media (max-width: 1340px) {
+    html,
+    body {
+        min-width: 84em;
+    }
+    body[data-calc-layout="base"] .combat-workspace {
+        display: grid;
+        gap: 4px;
+        grid-template-columns: minmax(0, 1fr) 27.5em minmax(0, 1fr);
+    }
+    body[data-calc-layout="base"] .combat-workspace > .panel {
+        display: block;
+        float: none;
+        min-width: 0;
+    }
+    body[data-calc-layout="base"] .combat-workspace .poke-info,
+    body[data-calc-layout="base"] .combat-workspace .field-info {
+        box-sizing: border-box;
+        width: 100%;
+    }
 }
 
 #holder-2 tr {
@@ -554,23 +586,40 @@ th {
 .visually-hidden:disabled + .btn {
     color: #999999;
 }
-.royal-settings {
+.calc-layout-settings {
+    display: block;
+}
+.default-level-toggle {
+    margin: 0 auto 5px;
+}
+body[data-calc-layout="royal-sword"] .calc-layout-settings,
+body[data-calc-layout="royal-sword"] .base-layout-only {
     display: none;
 }
 .trainer-controls {
     box-sizing: border-box;
+    height: auto;
+    margin: 6px 0;
+    text-align: center;
+}
+body[data-calc-layout="royal-sword"] .trainer-controls {
     height: var(--combat-header-space);
     margin: 0 0 var(--combat-header-gap);
     overflow: visible;
-    text-align: center;
 }
 .player-controls-spacer {
 	align-items: flex-start;
 	box-sizing: border-box;
 	display: flex;
 	flex-direction: column;
-	height: calc(var(--combat-header-space) + var(--combat-header-gap));
+	height: auto;
 	justify-content: center;
+	margin: 6px 0;
+	padding-top: 0;
+}
+body[data-calc-layout="royal-sword"] .player-controls-spacer {
+	height: calc(var(--combat-header-space) + var(--combat-header-gap));
+	margin: 0;
 	padding-top: 5px;
 }
 .player-notes-controls {
@@ -1036,8 +1085,8 @@ th {
     transform: translateY(-2px);
     width: calc(100% - 8px);
 }
-#p2.trainer-mode > .trainer-set-selector-container,
-#p2.trainer-mode > .trainer-set-selector-input {
+body[data-calc-layout="royal-sword"] #p2.trainer-mode > .trainer-set-selector-container,
+body[data-calc-layout="royal-sword"] #p2.trainer-mode > .trainer-set-selector-input {
     display: none !important;
 }
 .team-box-info {
@@ -2277,7 +2326,9 @@ th {
 }
 
 .genSelection, .notationSelection, .modeSelection {
-    display: none;
+    display: inline-block;
+    position: relative;
+    top: -8px;
 }
 
 /* header */
@@ -2445,8 +2496,20 @@ th {
 .set-selector {
     width: 100%;
 }
-#p1 > .set-selector,
-#p1 > .select2-container {
+.imported-sets-options {
+    align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 0.85em;
+    gap: 4px 8px;
+    justify-content: center;
+    margin: 4px 0;
+}
+.imported-sets-options[hidden] {
+    display: none;
+}
+body[data-calc-layout="royal-sword"] #p1 > .set-selector,
+body[data-calc-layout="royal-sword"] #p1 > .select2-container {
 	display: none !important;
 }
 .info-selectors select {
@@ -2476,7 +2539,7 @@ select.toxic-counter {
 .move-hits {
     width: 4.5em;
 }
-.move-times {
+body[data-calc-layout="royal-sword"] .move-times {
     display: none !important;
 }
 .poke-info .crit-btn {
@@ -2516,12 +2579,14 @@ select.toxic-counter {
     width: 10.6em;
 }
 .field-terrain-toggle {
+    margin: 0 auto 5px;
+}
+body[data-calc-layout="royal-sword"] .field-terrain-toggle {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    margin: 0 auto 5px;
     width: 24.5em;
 }
-.field-terrain-toggle .btn {
+body[data-calc-layout="royal-sword"] .field-terrain-toggle .btn {
     border-radius: 0;
     box-sizing: border-box;
     margin: -1px 0 0 -1px;
@@ -2529,23 +2594,26 @@ select.toxic-counter {
     padding-right: 4px;
     width: 100%;
 }
-.field-terrain-toggle .btn-terrain-electric {
+body[data-calc-layout="royal-sword"] .field-terrain-toggle label[for="electric"] {
     border-bottom-left-radius: 8px;
     border-top-left-radius: 8px;
 }
-.field-terrain-toggle .btn-terrain-misty {
+body[data-calc-layout="royal-sword"] .field-terrain-toggle label[for="misty"] {
     border-bottom-right-radius: 8px;
     border-top-right-radius: 8px;
 }
-.field-terrain-toggle .btn-terrain-psychic {
+body[data-calc-layout="royal-sword"] .field-terrain-toggle label[for="psychic"] {
     grid-column: 2;
 }
 table.field {
     width: 100%;
 }
 
-[hidden], .hide {
-    display: none;
+[hidden] {
+	display: none !important;
+}
+.hide {
+	display: none;
 }
 
 /* select2 overrides */
@@ -2594,30 +2662,30 @@ table.field {
     overflow: auto;
     display: inline;
 }
-.lower-import .import-team-text,
-.lower-import .import-name-text {
+body[data-calc-layout="royal-sword"] .lower-import .import-team-text,
+body[data-calc-layout="royal-sword"] .lower-import .import-name-text {
     box-sizing: border-box;
     min-width: 0;
     width: 100%;
 }
-.lower-import,
-.lower-import .import-team {
+body[data-calc-layout="royal-sword"] .lower-import,
+body[data-calc-layout="royal-sword"] .lower-import .import-team {
     display: flex;
     flex-direction: column;
 }
-.lower-import #import-1_wrapper {
+body[data-calc-layout="royal-sword"] .lower-import #import-1_wrapper {
     display: grid;
     flex: 1;
     grid-template-rows: auto minmax(0, 1fr);
 }
-.lower-import .import-team {
+body[data-calc-layout="royal-sword"] .lower-import .import-team {
     flex: none;
 }
-.lower-import .import-team-text {
+body[data-calc-layout="royal-sword"] .lower-import .import-team-text {
     margin: 0.75rem 0;
     min-height: 7rem;
 }
-.lower-import .import-actions {
+body[data-calc-layout="royal-sword"] .lower-import .import-actions {
     align-items: stretch;
     align-self: center;
     flex-direction: column;
@@ -2626,7 +2694,7 @@ table.field {
     margin: 0;
     width: 12em;
 }
-.lower-import .import-actions button {
+body[data-calc-layout="royal-sword"] .lower-import .import-actions button {
     box-sizing: border-box;
     margin: 0;
     width: 100%;

@@ -136,9 +136,30 @@ function getPokemonForSlot(side, slot, playerInfo, opponentInfo) {
 }
 
 function canMoveHitDoublesTarget(move, target) {
-	if (!target || target.relation !== "ally") return true;
-	if (!move || move.target === "allAdjacentFoes") return false;
-	return move.target === "allAdjacent" || move.category !== "Status";
+	var allyTargets = {
+		adjacentAlly: true,
+		adjacentAllyOrSelf: true,
+		all: true,
+		allAdjacent: true,
+		allies: true,
+		allySide: true,
+		allyTeam: true,
+		any: true,
+		normal: true,
+		scripted: true
+	};
+	var allyOnlyTargets = {
+		adjacentAlly: true,
+		adjacentAllyOrSelf: true,
+		allies: true,
+		allySide: true,
+		allyTeam: true,
+		self: true
+	};
+	if (!move || !target) return false;
+	if (typeof isDoublesFormatSelected !== "function" || !isDoublesFormatSelected()) return true;
+	if (target.relation === "ally") return !!allyTargets[move.target];
+	return !allyOnlyTargets[move.target];
 }
 
 function calculateAttackerMoves(attackerSide, attacker, defender, target) {
@@ -284,11 +305,7 @@ function renderMovePanel(panel, locations, headerSelector, emptyLabel, alertStat
 		var move = panel.attacker.moves[i];
 		setResultMoveLabel(locations[i], getResultMoveLabel(move));
 		if (!result) {
-			setMoveResultDisplay(
-				locations[i],
-				panel.target && panel.target.relation === "ally" ? "Invalid target" : "??? - ???%",
-				panel.target && panel.target.relation === "ally" ? "invalid" : "pending"
-			);
+			setMoveResultDisplay(locations[i], "Invalid target", "invalid");
 			continue;
 		}
 		if (result.attacker && result.attacker.stats && result.attacker.stats.spe !== undefined) {

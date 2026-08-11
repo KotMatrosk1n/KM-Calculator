@@ -892,13 +892,14 @@ function readBattleScriptStoredImportedBagItems() {
 
 function getBattleScriptImportedPlayerBagItems() {
 	var rawItems = [];
+	var hasProfileReader = typeof window.getImportedPlayerBagItems === "function";
 	var counts = {};
 	var items = [];
-	if (typeof window.getImportedPlayerBagItems === "function") {
+	if (hasProfileReader) {
 		rawItems = window.getImportedPlayerBagItems();
 	}
 	if (!$.isArray(rawItems)) rawItems = [];
-	if (!rawItems.length) rawItems = readBattleScriptStoredImportedBagItems();
+	if (!rawItems.length && !hasProfileReader) rawItems = readBattleScriptStoredImportedBagItems();
 	if (!$.isArray(rawItems)) rawItems = [];
 	for (var i = 0; i < rawItems.length; i++) {
 		var rawItem = rawItems[i];

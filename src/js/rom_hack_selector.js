@@ -9,9 +9,15 @@
 		var selector = api.createSelector({
 			window: root,
 			document: root.document,
-			registry: root.kmRomHackRegistry
+			registry: root.kmRomHackRegistry,
+			layoutManager: root.KMCalculatorRomHackLayouts.createLayoutManager({
+				window: root,
+				document: root.document,
+				registry: root.kmRomHackRegistry
+			})
 		});
 		root.KMCalculatorRomHackSelector = selector;
+		root.KMCalculatorRomHackLayoutManager = selector.layoutManager;
 		if (root.document.readyState === "loading") {
 			root.document.addEventListener("DOMContentLoaded", function () {
 				selector.start();
@@ -60,6 +66,7 @@
 		this.window = options.window;
 		this.document = options.document;
 		this.registry = options.registry;
+		this.layoutManager = options.layoutManager || null;
 		this.overlay = null;
 		this.dialog = null;
 		this.tiles = null;
@@ -284,13 +291,25 @@
 
 	Selector.prototype._handleActiveProfile = function (context) {
 		var profile = context && context.profile;
+		if (this.layoutManager) this.layoutManager.apply(context && profile ? context : null);
+		this.document.body.removeAttribute("data-rom-hack");
+		this.document.body.removeAttribute("data-rom-hack-generation");
+		this.document.body.removeAttribute("data-calc-profile");
 		if (!profile) {
+			if (typeof this.window.applyActiveRomHackProfile === "function") {
+				this.window.applyActiveRomHackProfile(context || null);
+			}
 			this.changeButton.hidden = true;
+			this.changeButton.removeAttribute("title");
+			this.refresh();
 			return;
 		}
 		this.document.body.setAttribute("data-rom-hack", profile.id);
 		this.document.body.setAttribute("data-rom-hack-generation", String(profile.baseGeneration));
 		this.document.body.setAttribute("data-calc-profile", profile.calcProfile);
+		if (typeof this.window.applyActiveRomHackProfile === "function") {
+			this.window.applyActiveRomHackProfile(context);
+		}
 		this.changeButton.hidden = false;
 		this.changeButton.title = "Currently playing " + profile.name;
 		this.refresh();
@@ -299,8 +318,8 @@
 	Selector.prototype.start = function () {
 		var selector = this;
 		if (this.started) return this;
-		if (!this.window || !this.document || !this.registry) {
-			throw new Error("The ROM-hack selector requires window, document, and kmRomHackRegistry.");
+		if (!this.window || !this.document || !this.registry || !this.layoutManager) {
+			throw new Error("The ROM-hack selector requires window, document, registry, and layout manager.");
 		}
 		this.started = true;
 		this._build();
@@ -327,6 +346,7 @@
 		if (this.changeButton && this.changeButton.parentNode) {
 			this.changeButton.parentNode.removeChild(this.changeButton);
 		}
+		if (this.layoutManager) this.layoutManager.reset();
 		this.document.body.classList.remove("km-rom-hack-chooser-open");
 		this.started = false;
 	};
