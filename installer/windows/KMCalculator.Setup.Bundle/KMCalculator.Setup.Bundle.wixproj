@@ -1,0 +1,27 @@
+<Project Sdk="WixToolset.Sdk/7.0.0">
+  <PropertyGroup>
+    <OutputType>Bundle</OutputType>
+    <OutputName>KM.Calculator.Bundle</OutputName>
+    <Platform>x64</Platform>
+    <Cultures>en-US</Cultures>
+    <DefineConstants>
+      $(DefineConstants);
+      KmVersion=$(KmVersion);
+      KmMsiPath=$(KmMsiPath);
+      KmIconPath=$(KmIconPath);
+      KmLogoPath=$(KmLogoPath)
+    </DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WixToolset.BootstrapperApplications.wixext" Version="7.0.0" />
+    <PackageReference Include="WixToolset.Util.wixext" Version="7.0.0" />
+  </ItemGroup>
+
+  <Target Name="ValidateKmBundleInputs" BeforeTargets="BeforeBuild">
+    <Error Condition="'$(KmVersion)' == ''" Text="KmVersion is required." />
+    <Error Condition="!Exists('$(KmMsiPath)')" Text="KmMsiPath does not exist: $(KmMsiPath)" />
+    <Error Condition="!Exists('$(KmIconPath)')" Text="KmIconPath does not exist: $(KmIconPath)" />
+    <Error Condition="!Exists('$(KmLogoPath)')" Text="KmLogoPath does not exist: $(KmLogoPath)" />
+  </Target>
+</Project>

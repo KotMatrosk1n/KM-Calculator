@@ -1,0 +1,59 @@
+{
+  "schema": "km-calculator.trainer-pack",
+  "schemaVersion": 1,
+  "id": "example-author-example-mod",
+  "name": "Example Mod Trainers",
+  "version": "1.0.0",
+  "generation": 4,
+  "game": "Example Version",
+  "mod": "Example Mod",
+  "description": "Trainer teams distributed with Example Mod.",
+  "authors": [
+    {
+      "name": "Example Author",
+      "url": "https://example.com/author"
+    }
+  ],
+  "source": {
+    "name": "Example Mod project page",
+    "url": "https://example.com/mod"
+  },
+  "license": "Used with permission from Example Author",
+  "trainers": [
+    {
+      "id": "route-1-ace-trainer",
+      "area": "Route 1",
+      "name": "Ace Trainer One",
+      "battleType": "Single",
+      "pokemon": [
+        {
+          "slot": 1,
+          "species": "Pikachu",
+          "level": 20,
+          "gender": "F",
+          "ability": "Static",
+          "item": "Oran Berry",
+          "nature": "Timid",
+          "moves": [
+            "Thunderbolt",
+            "Quick Attack",
+            "Thunder Wave",
+            "Double Team"
+          ],
+          "ivs": {
+            "hp": 31,
+            "atk": 0,
+            "def": 31,
+            "spa": 31,
+            "spd": 31,
+            "spe": 31
+          },
+          "evs": {
+            "spa": 252,
+            "spe": 252
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "name": "km-calculator-save-import-tools",
+  "description": "Local generators for KM Calculator save-import data.",
+  "private": true,
+  "repository": "github:KotMatrosk1n/KM-Calculator",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  },
+  "scripts": {
+    "generate:save-data": "node scripts/generate-save-import-data.mjs"
+  }
+}

@@ -1,0 +1,194 @@
+#!/usr/bin/env node
+'use strict';
+
+const path = require('path');
+const fs = require('fs');
+const crypto = require('crypto');
+
+const rootDir = '.';
+const calcRuntimeFiles = new Set([
+	'adaptable.js',
+	'calc.js',
+	'data/abilities.js',
+	'data/index.js',
+	'data/items.js',
+	'data/moves.js',
+	'data/natures.js',
+	'data/royal-sword.js',
+	'data/species.js',
+	'data/types.js',
+	'desc.js',
+	'field.js',
+	'index.js',
+	'items.js',
+	'mechanics/gen789.js',
+	'mechanics/gen56.js',
+	'mechanics/gen4.js',
+	'mechanics/gen3.js',
+	'mechanics/gen12.js',
+	'mechanics/util.js',
+	'move.js',
+	'pokemon.js',
+	'result.js',
+	'stats.js',
+	'util.js'
+]);
+const srcRuntimeFiles = new Set([
+	'index.html',
+	'css/dark-theme.css',
+	'css/main.css',
+	'css/vendor/bootstrap.css',
+	'img/km-calculator-icon.png',
+	'js/app_runtime_index.js',
+	'js/battle_script.js',
+	'js/dark-theme-toggle.js',
+	'js/data/rom_hacks.js',
+	'js/data/save_import_text.js',
+	'js/data/sets/gen1.js',
+	'js/data/sets/gen2.js',
+	'js/data/sets/gen3.js',
+	'js/data/sets/gen4.js',
+	'js/data/sets/gen5.js',
+	'js/data/sets/gen6.js',
+	'js/data/sets/gen7.js',
+	'js/data/sets/gen8.js',
+	'js/data/sets/gen9.js',
+	'js/data/swsh_ai_data.js',
+	'js/data/trainers.js',
+	'js/desktop_storage.js',
+	'js/index_randoms_controls.js',
+	'js/moveset_import.js',
+	'js/player_notes.js',
+	'js/rom_hack_registry.js',
+	'js/rom_hack_selector.js',
+	'js/save_import.js',
+	'js/shared_controls.js',
+	'js/swsh_ai_engine.js',
+	'js/trainer_data_registry.js',
+	'js/update_settings.js',
+	'js/vendor/jquery-1.9.1.min.js',
+	'js/vendor/select2/select2-spinner.gif',
+	'js/vendor/select2/select2.css',
+	'js/vendor/select2/select2.min.js',
+	'js/vendor/select2/select2.png',
+	'js/vendor/select2/select2x2.png'
+]);
+const srcBuildOnlyFiles = new Set(['shared.template.html']);
+
+// update version
+function makeCachebuster(template, output) {
+	let indexContents = fs.readFileSync(path.resolve(rootDir, template), {encoding: 'utf8'});
+	let templateContents = fs.readFileSync(path.resolve(rootDir, 'src/shared.template.html'), {encoding: 'utf8'});
+
+	// add hashes to js and css files
+	process.stdout.write("Updating hashes... ");
+	indexContents = /<!-- START WRAPPER -->[\s\S]*?<!-- END WRAPPER -->/.exec(indexContents)[0];
+	indexContents = templateContents.replace('[content]', indexContents);
+	fs.writeFileSync(path.resolve(rootDir, template), indexContents);
+
+	indexContents = indexContents.replace(/(src|href)="\.\/(.*?)\?[a-z0-9]*?"/g, function (a, b, c) {
+		let hash = Math.random(); // just in case creating the hash fails
+		try {
+			const fstr = fs.readFileSync(path.resolve(rootDir, 'dist', c), 'utf8');
+			hash = crypto.createHash('md5').update(fstr).digest('hex').substr(0, 8);
+		} catch (e) {}
+
+		return b + '="./' + c + '?' + hash + '"';
+	});
+	process.stdout.write("Writing new `" + output + "` file... ");
+	fs.writeFileSync(path.resolve(rootDir, output), indexContents);
+	console.log("DONE");
+}
+
+function getRelativeBuildPath(root, src, file) {
+	var relativeDir = path.relative(root, src);
+	var relativeFile = relativeDir ? path.join(relativeDir, file) : file;
+	return relativeFile.replace(/\\/g, '/');
+}
+
+function shouldSkipRuntimeCalcFile(src, file, current) {
+	var relativeFile = getRelativeBuildPath('calc/dist', src, file);
+	if (current.isDirectory()) {
+		return !Array.from(calcRuntimeFiles).some(function (runtimeFile) {
+			return runtimeFile.startsWith(relativeFile + '/');
+		});
+	}
+	return !calcRuntimeFiles.has(relativeFile);
+}
+
+function shouldSkipSrcRuntimeFile(src, file, current) {
+	var relativeFile = getRelativeBuildPath('src', src, file);
+	if (current.isDirectory()) {
+		return !Array.from(srcRuntimeFiles).some(function (runtimeFile) {
+			return runtimeFile.startsWith(relativeFile + '/');
+		});
+	}
+	return !srcRuntimeFiles.has(relativeFile);
+}
+
+function assertSrcFileClassification(src) {
+	for (const file of fs.readdirSync(src)) {
+		var filePath = path.join(src, file);
+		var current = fs.lstatSync(filePath);
+		if (current.isDirectory()) {
+			assertSrcFileClassification(filePath);
+			continue;
+		}
+		var relativeFile = getRelativeBuildPath('src', src, file);
+		if (!srcRuntimeFiles.has(relativeFile) && !srcBuildOnlyFiles.has(relativeFile)) {
+			throw new Error('Unclassified source file: ' + relativeFile);
+		}
+	}
+}
+
+function assertRequiredSrcRuntimeFiles() {
+	for (const runtimeFile of srcRuntimeFiles) {
+		if (!fs.existsSync(path.resolve(rootDir, 'src', runtimeFile))) {
+			throw new Error('Missing runtime source file: ' + runtimeFile);
+		}
+	}
+}
+
+function cpdir(src, dest, options = {}) {
+	console.log("Copying `" + src + "` to `" + dest + "`");
+	try {
+		fs.mkdirSync(dest, '0755');
+	} catch(e) {
+		if (e.code != 'EEXIST') throw e;
+	}
+	for (const file of fs.readdirSync(src)) {
+		var current = fs.lstatSync(path.join(src, file));
+		if (current.isDirectory()) {
+			if (options.skip && options.skip(src, file, current)) continue;
+			cpdir(path.join(src, file), path.join(dest, file), options);
+		} else if (current.isSymbolicLink()) {
+			var symlink = fs.readlinkSync(path.join(src, file));
+			fs.symlinkSync(symlink, path.join(dest, file));
+		} else if (options.skip && options.skip(src, file, current)) {
+			continue;
+		} else if (file.endsWith('.js')) {
+			let contents = fs.readFileSync(path.join(src, file), 'utf8')
+				.replace(/^exports.* = void 0;$/gm, '')
+				.replace(/^\s*\/\/[#@] sourceMappingURL=.*$/gm, '');
+			// Minify the sets so we save bandwith
+			if (src === 'src/js/data/sets') {
+				const brkOpenIdx = contents.indexOf('{');
+				contents = `${contents.slice(0, brkOpenIdx)}${JSON.stringify(JSON.parse(contents.slice(brkOpenIdx, -2)))};`
+			}
+			fs.writeFileSync(path.join(dest, file), contents);
+		} else {
+			fs.copyFileSync(path.join(src, file),path.join(dest, file));
+		}
+	}
+}
+
+if (process.argv[2] !== 'view') {
+	require('child_process').execSync('npm --prefix calc/ run compile', {stdio: 'inherit'});
+}
+
+assertSrcFileClassification('src');
+assertRequiredSrcRuntimeFiles();
+fs.rmSync(path.resolve(rootDir, 'dist'), {recursive: true, force: true});
+cpdir('src', 'dist', {skip: shouldSkipSrcRuntimeFile});
+cpdir('calc/dist', 'dist/calc', {skip: shouldSkipRuntimeCalcFile});
+makeCachebuster('src/index.html', 'dist/index.html');

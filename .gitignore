@@ -1,0 +1,30 @@
+dist/
+release/
+logs/
+node_modules/
+electron/sprites/
+eslint-cache/
+.tsbuildinfo
+.eslintcache
+.DS_Store
+Thumbs.db
+pnpm-debug.log
+npm-debug.log
+.vs/
+
+# Local-only validation
+/smoketest/
+/import/test/
+/scripts/test-*.cjs
+
+# Local Windows installer intermediates
+/installer/windows/obj/
+/installer/windows/**/bin/
+/installer/windows/**/obj/
+*.pfx
+*.p12
+
+# Local Codex handoff notes
+/.codex-handoff/
+/calc-handoff/
+/Royal_Sword_Calc_Handoff.md

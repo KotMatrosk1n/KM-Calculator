@@ -1,0 +1,153 @@
+name: Release Desktop App
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Use Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 24
+        cache: npm
+
+    - name: Use .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Require version tag
+      shell: pwsh
+      run: |
+        if ("${{ github.ref_type }}" -ne "tag") {
+          throw "Run this workflow from a version tag such as v0.1.0."
+        }
+
+        $packageVersion = (Get-Content package.json | ConvertFrom-Json).version
+        $expectedTag = "v$packageVersion"
+        if ("${{ github.ref_name }}" -ne $expectedTag) {
+          throw "Release tag ${{ github.ref_name }} must match package.json version $packageVersion."
+        }
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Require authorized WiX v7 EULA acceptance
+      shell: pwsh
+      env:
+        WIX_V7_EULA_ACCEPTED: ${{ vars.WIX_V7_EULA_ACCEPTED }}
+      run: |
+        if ($env:WIX_V7_EULA_ACCEPTED -ne "true") {
+          throw "Set the repository variable WIX_V7_EULA_ACCEPTED=true only after reviewing and accepting the WiX v7 OSMF EULA."
+        }
+
+    - name: Pack Windows application
+      run: npm run electron:pack
+
+    - name: Stage required Windows signing certificate
+      shell: pwsh
+      env:
+        KM_SIGNING_CERTIFICATE_BASE64: ${{ secrets.KM_WINDOWS_SIGNING_CERTIFICATE_BASE64 }}
+        KM_SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.KM_WINDOWS_SIGNING_CERTIFICATE_PASSWORD }}
+      run: |
+        $ErrorActionPreference = "Stop"
+        if ([string]::IsNullOrWhiteSpace($env:KM_SIGNING_CERTIFICATE_BASE64)) {
+          throw "The KM_WINDOWS_SIGNING_CERTIFICATE_BASE64 release secret is required."
+        }
+        if ([string]::IsNullOrWhiteSpace($env:KM_SIGNING_CERTIFICATE_PASSWORD)) {
+          throw "The KM_WINDOWS_SIGNING_CERTIFICATE_PASSWORD release secret is required."
+        }
+
+        try {
+          $certificateBytes = [Convert]::FromBase64String($env:KM_SIGNING_CERTIFICATE_BASE64)
+        } catch {
+          throw "KM_WINDOWS_SIGNING_CERTIFICATE_BASE64 is not valid base64."
+        }
+        if ($certificateBytes.Length -eq 0) {
+          throw "KM_WINDOWS_SIGNING_CERTIFICATE_BASE64 decoded to an empty file."
+        }
+
+        $certificatePath = Join-Path $env:RUNNER_TEMP "km-calculator-release-signing.pfx"
+        "KM_SIGNING_CERTIFICATE_PATH=$certificatePath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        [IO.File]::WriteAllBytes($certificatePath, $certificateBytes)
+
+    - name: Build signed Windows installer
+      shell: pwsh
+      env:
+        WIX_V7_EULA_ACCEPTED: ${{ vars.WIX_V7_EULA_ACCEPTED }}
+        KM_REQUIRE_SIGNING: "true"
+        KM_SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.KM_WINDOWS_SIGNING_CERTIFICATE_PASSWORD }}
+      run: pwsh -NoProfile -File installer/windows/scripts/Build-KmCalculatorWindowsSetup.ps1
+
+    - name: Remove staged signing certificate
+      if: always()
+      shell: pwsh
+      run: |
+        if (-not [string]::IsNullOrWhiteSpace($env:KM_SIGNING_CERTIFICATE_PATH) -and
+            (Test-Path -LiteralPath $env:KM_SIGNING_CERTIFICATE_PATH -PathType Leaf)) {
+          Remove-Item -LiteralPath $env:KM_SIGNING_CERTIFICATE_PATH -Force
+        }
+
+    - name: Create GitHub release
+      shell: pwsh
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        $ErrorActionPreference = "Stop"
+        $packageVersion = (Get-Content package.json | ConvertFrom-Json).version
+        $installerAssetName = "KM-Calculator-Setup-$packageVersion.exe"
+        $installerTarget = Join-Path "release" $installerAssetName
+        $latestPath = Join-Path "release" "latest.yml"
+        $checksumsPath = Join-Path "release" "SHA256SUMS.txt"
+        $receiptPath = Join-Path "release" "KM-Calculator-Setup-$packageVersion.receipt.json"
+        $assets = @(
+          Get-Item -LiteralPath $installerTarget
+          Get-Item -LiteralPath $latestPath
+          Get-Item -LiteralPath $checksumsPath
+        )
+
+        $receipt = Get-Content -LiteralPath $receiptPath -Raw | ConvertFrom-Json
+        if ($receipt.signed -ne $true) {
+          throw "The installer build receipt does not confirm required signing."
+        }
+        $installerSignature = Get-AuthenticodeSignature -LiteralPath $installerTarget
+        if ($installerSignature.Status -ne [Management.Automation.SignatureStatus]::Valid -or
+            -not $installerSignature.SignerCertificate -or
+            -not $installerSignature.TimeStamperCertificate) {
+          throw "The release installer does not have a valid timestamped Authenticode signature."
+        }
+        if ($installerSignature.SignerCertificate.Subject -ne $receipt.signerSubject -or
+            $installerSignature.SignerCertificate.Thumbprint -ne $receipt.signerThumbprint) {
+          throw "The release installer signer does not match the certificate recorded by the layered build."
+        }
+
+        $latestText = Get-Content $latestPath -Raw
+        $metadataPath = [regex]::Match($latestText, '(?m)^path:\s*(?<name>[^\r\n]+)$').Groups["name"].Value.Trim()
+        $metadataPath = $metadataPath.Trim([char[]]@([char]39, [char]34))
+        if ($metadataPath -ne $installerAssetName) {
+          throw "release/latest.yml path '$metadataPath' does not match '$installerAssetName'."
+        }
+        foreach ($asset in $assets) {
+          if ($asset.Name -match '\s') {
+            throw "Release asset '$($asset.Name)' contains whitespace and may not match electron-updater metadata on GitHub."
+          }
+        }
+
+        Write-Host "Uploading release assets:"
+        $assets | ForEach-Object { Write-Host " - $($_.Name)" }
+
+        gh release create "${{ github.ref_name }}" $assets.FullName `
+          --title "KM Calculator ${{ github.ref_name }}" `
+          --generate-notes

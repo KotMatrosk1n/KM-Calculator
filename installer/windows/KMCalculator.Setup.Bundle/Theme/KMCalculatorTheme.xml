@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SPDX-License-Identifier: MIT -->
+<Theme xmlns="http://wixtoolset.org/schemas/v4/thmutil">
+  <!-- ThmUtil colors use the Windows COLORREF byte order (BBGGRR). -->
+  <Font Id="Body" Height="-13" Weight="400" Foreground="FFF8F4" Background="160D08">Segoe UI</Font>
+  <Font Id="Title" Height="-28" Weight="600" Foreground="78D9FF" Background="160D08">Segoe UI</Font>
+  <Font Id="Heading" Height="-20" Weight="600" Foreground="FFFFFF" Background="160D08">Segoe UI</Font>
+  <Font Id="Muted" Height="-12" Weight="400" Foreground="D6C5B8" Background="160D08">Segoe UI</Font>
+  <Font Id="Warning" Height="-12" Weight="600" Foreground="78D9FF" Background="160D08">Segoe UI</Font>
+  <Font Id="Button" Height="-12" Weight="600" Foreground="160D08">Segoe UI</Font>
+
+  <Window Width="760" Height="440" HexStyle="100a0000" FontId="Body" Caption="KM Calculator Setup">
+    <ImageControl X="24" Y="20" Width="72" Height="72" ImageFile="logo.png" Visible="yes" />
+    <Label X="112" Y="23" Width="620" Height="38" FontId="Title" DisablePrefix="yes">KM Calculator</Label>
+    <Label X="114" Y="64" Width="610" Height="18" FontId="Muted" DisablePrefix="yes">Multi-generation damage calculation with ROM hack profiles</Label>
+
+    <Page Name="Loading">
+      <Label X="24" Y="112" Width="712" Height="26" FontId="Heading" DisablePrefix="yes">Preparing setup</Label>
+      <Label Name="CheckingForUpdatesLabel" X="24" Y="150" Width="712" Height="36" FontId="Body" DisablePrefix="yes" Visible="no" />
+    </Page>
+
+    <Page Name="Help">
+      <Label X="24" Y="112" Width="712" Height="26" FontId="Heading" DisablePrefix="yes">Setup help</Label>
+      <Label X="24" Y="150" Width="712" Height="150" FontId="Body" DisablePrefix="yes">Install adds KM Calculator for everyone who uses this computer. Repair restores missing program files. Uninstall removes the app while preserving saved teams, notes, settings, and update caches.</Label>
+      <Button Name="HelpCloseButton" X="-24" Y="-20" Width="100" Height="30" TabStop="yes" FontId="Button">
+        <Text>Close</Text>
+        <CloseWindowAction />
+      </Button>
+    </Page>
+
+    <Page Name="Install">
+      <Label X="24" Y="112" Width="712" Height="26" FontId="Heading" DisablePrefix="yes">Install KM Calculator</Label>
+      <Label X="24" Y="150" Width="712" Height="44" FontId="Body" DisablePrefix="yes">Setup installs the complete desktop calculator and all bundled generation and ROM hack data. Existing calculator user data remains in place.</Label>
+      <Checkbox Name="KMCreateStartMenuShortcut" X="24" Y="214" Width="330" Height="22" TabStop="yes" FontId="Body">Create a Start Menu shortcut</Checkbox>
+      <Checkbox Name="KMCreateDesktopShortcut" X="24" Y="246" Width="330" Height="22" TabStop="yes" FontId="Body">Create a desktop shortcut</Checkbox>
+      <Label X="24" Y="282" Width="600" Height="18" FontId="Muted" DisablePrefix="yes">Installs to the required 64-bit Program Files\KM Calculator folder.</Label>
+      <Label Name="InstallVersion" X="24" Y="310" Width="360" Height="18" FontId="Muted" DisablePrefix="yes" VisibleCondition="WixStdBAShowVersion">Version [WixBundleVersion]</Label>
+      <Button Name="InstallButton" X="-134" Y="-20" Width="100" Height="30" TabStop="yes" FontId="Button">Install</Button>
+      <Button Name="InstallCancelButton" X="-24" Y="-20" Width="100" Height="30" TabStop="yes" FontId="Button">
+        <Text>Cancel</Text>
+        <CloseWindowAction />
+      </Button>
+    </Page>
+
+    <Page Name="Progress">
+      <Label X="24" Y="112" Width="712" Height="26" FontId="Heading" DisablePrefix="yes">Applying changes</Label>
+      <Label X="24" Y="158" Width="94" Height="20" FontId="Body" DisablePrefix="yes">Current step</Label>
+      <Label Name="OverallProgressPackageText" X="124" Y="158" Width="612" Height="20" FontId="Body" DisablePrefix="yes" />
+      <Progressbar Name="OverallCalculatedProgressbar" X="24" Y="198" Width="712" Height="22" />
+      <Label X="24" Y="238" Width="712" Height="34" FontId="Muted" DisablePrefix="yes">This progress is reported directly by the Windows installer engine. Large sprite payloads can take a moment to register.</Label>
+      <Button Name="ProgressCancelButton" X="-24" Y="-20" Width="100" Height="30" TabStop="yes" FontId="Button">Cancel</Button>
+    </Page>
+
+    <Page Name="Modify">
+      <Label X="24" Y="112" Width="712" Height="26" FontId="Heading" DisablePrefix="yes">Maintain KM Calculator</Label>
+      <Label X="24" Y="150" Width="712" Height="60" FontId="Body" DisablePrefix="yes">Repair restores missing program files. Uninstall removes the desktop app while preserving saved teams, notes, settings, and update caches.</Label>
+      <Label X="24" Y="224" Width="680" Height="34" FontId="Muted" DisablePrefix="yes">Calculator data remains available if KM Calculator is installed again later.</Label>
+      <Button Name="RepairButton" X="-244" Y="-20" Width="100" Height="30" TabStop="yes" FontId="Button" HideWhenDisabled="yes">Repair</Button>
+      <Button Name="UninstallButton" X="-134" Y="-20" Width="100" Height="30" TabStop="yes" FontId="Button">Uninstall</Button>
+      <Button Name="ModifyCancelButton" X="-24" Y="-20" Width="100" Height="30" TabStop="yes" FontId="Button">
+        <Text>Close</Text>
+        <CloseWindowAction />
+      </Button>
+    </Page>
+
+    <Page Name="Success">
+      <Label X="24" Y="112" Width="712" Height="30" FontId="Heading" DisablePrefix="yes">
+        <Text>Setup completed</Text>
+        <Text Condition="WixBundleAction = 3">KM Calculator was removed</Text>
+        <Text Condition="WixBundleAction = 5">KM Calculator is ready</Text>
+        <Text Condition="WixBundleAction = 7">Repair completed</Text>
+      </Label>
+      <Label X="24" Y="158" Width="712" Height="54" FontId="Body" DisablePrefix="yes">The requested changes completed successfully.</Label>
+      <Label X="24" Y="236" Width="712" Height="42" FontId="Warning" DisablePrefix="yes" VisibleCondition="WixStdBARestartRequired">Windows must restart before all setup changes take effect.</Label>
+      <Button Name="LaunchButton" X="-244" Y="-20" Width="100" Height="30" TabStop="yes" FontId="Button" HideWhenDisabled="yes">Launch</Button>
+      <Button Name="SuccessRestartButton" X="-134" Y="-20" Width="100" Height="30" TabStop="yes" FontId="Button" HideWhenDisabled="yes">Restart</Button>
+      <Button Name="SuccessCloseButton" X="-24" Y="-20" Width="100" Height="30" TabStop="yes" FontId="Button">
+        <Text>Finish</Text>
+        <CloseWindowAction />
+      </Button>
+    </Page>
+
+    <Page Name="Failure">
+      <Label X="24" Y="112" Width="712" Height="30" FontId="Heading" DisablePrefix="yes">
+        <Text>Setup could not complete</Text>
+        <Text Condition="WixBundleAction = 3">Uninstall could not complete</Text>
+        <Text Condition="WixBundleAction = 5">Installation could not complete</Text>
+        <Text Condition="WixBundleAction = 7">Repair could not complete</Text>
+      </Label>
+      <Hypertext Name="FailureLogFileLink" X="24" Y="156" Width="712" Height="34" FontId="Body" TabStop="yes" HideWhenDisabled="yes">Open the setup log</Hypertext>
+      <Hypertext Name="FailureMessageText" X="24" Y="198" Width="712" Height="80" FontId="Body" TabStop="yes" HideWhenDisabled="yes" />
+      <Label X="24" Y="286" Width="712" Height="34" FontId="Warning" DisablePrefix="yes" VisibleCondition="WixStdBARestartRequired">Windows must restart before setup can be tried again.</Label>
+      <Button Name="FailureRestartButton" X="-134" Y="-20" Width="100" Height="30" TabStop="yes" FontId="Button" HideWhenDisabled="yes">Restart</Button>
+      <Button Name="FailureCloseButton" X="-24" Y="-20" Width="100" Height="30" TabStop="yes" FontId="Button">
+        <Text>Close</Text>
+        <CloseWindowAction />
+      </Button>
+    </Page>
+  </Window>
+</Theme>

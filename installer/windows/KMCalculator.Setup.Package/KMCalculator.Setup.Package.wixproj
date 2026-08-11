@@ -1,0 +1,27 @@
+<Project Sdk="WixToolset.Sdk/7.0.0">
+  <PropertyGroup>
+    <OutputType>Package</OutputType>
+    <OutputName>KM.Calculator</OutputName>
+    <Platform>x64</Platform>
+    <InstallerPlatform>x64</InstallerPlatform>
+    <Cultures>en-US</Cultures>
+    <DefineConstants>
+      $(DefineConstants);
+      KmVersion=$(KmVersion);
+      KmIconPath=$(KmIconPath)
+    </DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <BindPath Include="$(KmPayloadDir)" BindName="KmPayload" />
+    <Compile Include="$(KmGeneratedPayloadWxs)" Link="GeneratedPayload.wxs" />
+    <PackageReference Include="WixToolset.Util.wixext" Version="7.0.0" />
+  </ItemGroup>
+
+  <Target Name="ValidateKmPackageInputs" BeforeTargets="BeforeBuild">
+    <Error Condition="'$(KmVersion)' == ''" Text="KmVersion is required." />
+    <Error Condition="!Exists('$(KmPayloadDir)')" Text="KmPayloadDir does not exist: $(KmPayloadDir)" />
+    <Error Condition="!Exists('$(KmGeneratedPayloadWxs)')" Text="KmGeneratedPayloadWxs does not exist: $(KmGeneratedPayloadWxs)" />
+    <Error Condition="!Exists('$(KmIconPath)')" Text="KmIconPath does not exist: $(KmIconPath)" />
+  </Target>
+</Project>

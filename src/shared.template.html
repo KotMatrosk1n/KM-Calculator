@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="author" content="Matroskin" />
+    <meta name="creator" content="Matroskin" />
+    <meta name="application-name" content="KM Calculator" />
+    <meta name="copyright" content="Copyright 2026 Matroskin" />
+    <meta name="repository" content="https://github.com/KotMatrosk1n/KM-Calculator" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' royal-sword:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: royal-sword:; font-src 'self' data:; connect-src 'self' royal-sword:; object-src 'none'; frame-src 'none'; base-uri 'self'; form-action 'none'" />
+    <title>KM Calculator</title>
+    <link rel="icon" type="image/png" href="./img/km-calculator-icon.png">
+    <link type="text/css" rel="stylesheet" href="./js/vendor/select2/select2.css" />
+    <link type="text/css" rel="stylesheet" href="./css/main.css?" />
+    <link type="text/css" rel="stylesheet" href="./css/vendor/bootstrap.css" />
+    <link type="text/css" rel="stylesheet" href="./css/dark-theme.css?" id="dark-theme-styles">
+    <script type="text/javascript" src="./js/desktop_storage.js?"></script>
+    <!-- Immediately loads the dark theme in order to reduce FOIT -->
+    <script>
+        var kmCalculatorStorage = window.getKMCalculatorStorage ? window.getKMCalculatorStorage() :
+            (window.getRoyalSwordStorage ? window.getRoyalSwordStorage() : window.localStorage);
+        if ((kmCalculatorStorage.getItem('darkTheme') || '' + window.matchMedia('(prefers-color-scheme: dark)').matches) === 'false') {
+            document.getElementById('dark-theme-styles').disabled = true;
+        }
+    </script>
+</head>
+
+<body class="dark-theme">
+
+<header>
+    <div class="km-calculator-header">
+        <img class="km-calculator-header-icon" src="img/km-calculator-icon.png" alt="" />
+        <span class="km-calculator-header-title">KM Calculator</span>
+    </div>
+    <button id="km-settings-button" class="km-settings-button" type="button" aria-controls="km-settings-overlay" aria-haspopup="dialog" aria-expanded="false" aria-label="Settings">
+        <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M19.4 13a7.8 7.8 0 0 0 .05-1 7.8 7.8 0 0 0-.05-1l2.1-1.64-2-3.46-2.55 1.03a7.6 7.6 0 0 0-1.72-1L14.85 3h-4l-.38 2.93a7.6 7.6 0 0 0-1.72 1L6.2 5.9l-2 3.46L6.3 11a7.8 7.8 0 0 0-.05 1 7.8 7.8 0 0 0 .05 1l-2.1 1.64 2 3.46 2.55-1.03a7.6 7.6 0 0 0 1.72 1l.38 2.93h4l.38-2.93a7.6 7.6 0 0 0 1.72-1l2.55 1.03 2-3.46L19.4 13Zm-6.55 2.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z"/></svg>
+        <span>Settings</span>
+        <span id="km-settings-update-badge" class="km-settings-update-badge" aria-hidden="true" hidden>!</span>
+    </button>
+</header>
+
+<div id="km-settings-overlay" class="km-settings-overlay" hidden>
+    <section id="km-settings-dialog" class="km-settings-dialog" role="dialog" aria-modal="true" aria-labelledby="km-settings-heading" tabindex="-1">
+        <div class="km-settings-heading-row">
+            <div class="km-settings-heading-copy">
+                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M19.4 13a7.8 7.8 0 0 0 .05-1 7.8 7.8 0 0 0-.05-1l2.1-1.64-2-3.46-2.55 1.03a7.6 7.6 0 0 0-1.72-1L14.85 3h-4l-.38 2.93a7.6 7.6 0 0 0-1.72 1L6.2 5.9l-2 3.46L6.3 11a7.8 7.8 0 0 0-.05 1 7.8 7.8 0 0 0 .05 1l-2.1 1.64 2 3.46 2.55-1.03a7.6 7.6 0 0 0 1.72 1l.38 2.93h4l.38-2.93a7.6 7.6 0 0 0 1.72-1l2.55 1.03 2-3.46L19.4 13Zm-6.55 2.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z"/></svg>
+                <h2 id="km-settings-heading">Settings</h2>
+            </div>
+            <button id="km-settings-close" class="km-settings-icon-button" type="button" aria-label="Close settings">
+                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6.4 4.98 5.6 5.6 5.6-5.6 1.42 1.42-5.6 5.6 5.6 5.6-1.42 1.42-5.6-5.6-5.6 5.6-1.42-1.42 5.6-5.6-5.6-5.6 1.42-1.42Z"/></svg>
+            </button>
+        </div>
+
+        <div id="km-settings-view">
+            <div class="km-settings-summary">
+                <div class="km-settings-metric">
+                    <span>Installed version</span>
+                    <strong id="km-settings-version">Unavailable</strong>
+                </div>
+                <button id="km-settings-update-action" class="km-settings-primary-button" type="button" disabled>
+                    <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.9 9h-2.05A6 6 0 1 1 16.2 7.8L13 11h8V3l-3.35 3.35Z"/></svg>
+                    <span id="km-settings-update-action-label">Check for Updates</span>
+                </button>
+                <p id="km-settings-update-status" class="km-settings-update-status" role="status" aria-live="polite">Update checks are available in the installed app.</p>
+                <button id="km-settings-open-release" class="km-settings-secondary-button" type="button" hidden>
+                    <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M14 3h7v7h-2V6.41l-9.3 9.3-1.4-1.42L17.58 5H14V3ZM5 5h6v2H5v12h12v-6h2v8H3V5h2Z"/></svg>
+                    <span>Open Release Page</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="km-update-view" hidden>
+            <div class="km-update-prompt-heading">
+                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2Zm14-9h-4V3H9v8H5l7 7 7-7Z"/></svg>
+                <h3 id="km-update-prompt-heading">Update Available</h3>
+            </div>
+            <p id="km-update-prompt-copy" class="km-update-prompt-copy"></p>
+            <pre id="km-update-release-notes" class="km-update-release-notes" hidden></pre>
+            <div id="km-update-progress-panel" class="km-update-progress-panel" role="status" hidden>
+                <div class="km-update-progress-header">
+                    <strong id="km-update-progress-title">Downloading update</strong>
+                    <span id="km-update-progress-percent"></span>
+                </div>
+                <div id="km-update-progress-track" class="km-update-progress-track" role="progressbar" aria-label="Update download progress">
+                    <span id="km-update-progress-fill" class="km-update-progress-fill"></span>
+                </div>
+                <p id="km-update-progress-message"></p>
+            </div>
+            <div id="km-update-error" class="km-update-error" role="alert" hidden>
+                <strong id="km-update-error-title"></strong>
+                <p id="km-update-error-message"></p>
+                <p id="km-update-error-next-step"></p>
+            </div>
+            <div class="km-update-actions">
+                <button id="km-update-install" class="km-settings-primary-button" type="button">
+                    <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2Zm14-9h-4V3H9v8H5l7 7 7-7Z"/></svg>
+                    <span id="km-update-install-label">Install Update</span>
+                </button>
+                <button id="km-update-dismiss" class="km-settings-secondary-button" type="button">
+                    <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6.4 4.98 5.6 5.6 5.6-5.6 1.42 1.42-5.6 5.6 5.6 5.6-1.42 1.42-5.6-5.6-5.6 5.6-1.42-1.42 5.6-5.6-5.6-5.6 1.42-1.42Z"/></svg>
+                    <span>Not Now</span>
+                </button>
+            </div>
+        </div>
+    </section>
+</div>
+
+[content]
+
+<div class="credits" aria-label="Credits">
+    <p class="project-credit"><strong>KM Calculator</strong> created and maintained by Matroskin. Multi-generation calculations with profile-based ROM-hack support.</p>
+    <ul class="credit-links"><li><a href="https://github.com/KotMatrosk1n/KM-Calculator/issues" class="links-lighten" target="_blank">Bug Reports</a></li>
+    <li><a href="https://github.com/KotMatrosk1n/KM-Calculator" class="links-lighten" target="_blank">KM Calculator GitHub repository</a></li></ul>
+    <p>Damage calculator core created by Honko; maintained by Austin, Kris, jetou, <a href="https://github.com/smogon/damage-calc/contributors" class="links-lighten" target="_blank">and other Smogon contributors</a>.</p>
+    <ul class="credit-links"><li><a href="https://github.com/smogon/damage-calc" class="links-lighten" target="_blank">Original calc GitHub repository</a></li>
+    <li>Team/Box workflow reference: <a href="https://github.com/ForwardFeed/runbuncalc" class="links-lighten" target="_blank">ForwardFeed/runbuncalc</a></li>
+    <li>Save-format reference: <a href="https://github.com/kwsch/PKHeX" class="links-lighten" target="_blank">PKHeX</a></li>
+    <li><a href="https://github.com/KotMatrosk1n/KM-Calculator/blob/master/CREDITS.md" class="links-lighten" target="_blank">Complete credits and licenses</a></li></ul>
+
+    <select id="dark-theme-toggle">
+        <option value="">Auto dark theme</option>
+        <option value="false">Light theme</option>
+        <option value="true">Dark theme</option>
+    </select>
+    <script type="text/javascript" src="./js/dark-theme-toggle.js?"></script>
+    <script type="text/javascript" src="./js/update_settings.js?"></script>
+</div>
+
+</body>
+
+</html>

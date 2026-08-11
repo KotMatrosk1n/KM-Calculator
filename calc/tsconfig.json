@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "dist",
+    "types": [],
+    "downlevelIteration": true,
+    "tsBuildInfoFile": ".tsbuildinfo"
+  },
+  "exclude": ["dist", "src/test"]
+}

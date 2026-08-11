@@ -1,0 +1,13 @@
+dist/
+node_modules/
+eslint-cache/
+coverage/
+.eslintcache
+.DS_Store
+Thumbs.db
+npm-debug.log
+.tsbuildinfo
+
+# Local-only validation
+jest.config.js
+src/test/

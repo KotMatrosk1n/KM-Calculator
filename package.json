@@ -1,0 +1,92 @@
+{
+  "name": "km-calculator",
+  "productName": "KM Calculator",
+  "version": "0.4.26",
+  "description": "A multi-generation Pokemon damage calculator with mod support.",
+  "private": true,
+  "main": "electron/main.js",
+  "homepage": "https://github.com/KotMatrosk1n/KM-Calculator",
+  "repository": "github:KotMatrosk1n/KM-Calculator",
+  "author": "Matroskin",
+  "license": "MIT",
+  "copyright": "Copyright 2026 Matroskin",
+  "kmCalculator": {
+    "project": "KM Calculator",
+    "creator": "Matroskin",
+    "repository": "KotMatrosk1n/KM-Calculator"
+  },
+  "devDependencies": {
+    "electron": "^42.5.1",
+    "electron-builder": "^26.15.0",
+    "electron-winstaller": "5.4.0",
+    "eslint": "^8.57.0",
+    "subpkg": "^4.1.0"
+  },
+  "scripts": {
+    "lint": "subpkg run lint && eslint --cache src --ext js && eslint --cache electron --ext js",
+    "fix": "subpkg run fix && eslint --fix src --ext js && eslint --fix electron --ext js",
+    "compile": "subpkg run compile && node build view",
+    "build": "subpkg run build && node build view",
+    "build-ui": "node build view",
+    "generate:swsh-ai": "node scripts/generate-swsh-ai-data.mjs",
+    "sprites:download": "node electron/download-sprites.js",
+    "electron:dev": "npm run build && npm run sprites:download && electron .",
+    "electron:pack": "npm run build && npm run sprites:download && electron-builder --win --dir",
+    "electron:dist": "npm run electron:pack && pwsh -NoProfile -File installer/windows/scripts/Build-KmCalculatorWindowsSetup.ps1",
+    "generate:third-party-notices": "node scripts/generate-third-party-notices.mjs",
+    "check:third-party-notices": "node scripts/generate-third-party-notices.mjs --check",
+    "check:workspace": "node scripts/check-workspace-paths.mjs",
+    "postinstall": "subpkg install"
+  },
+  "build": {
+    "appId": "com.kotmatrosk1n.kmcalculator",
+    "productName": "KM Calculator",
+    "copyright": "Copyright 2026 Matroskin",
+    "extraMetadata": {
+      "project": "KM Calculator",
+      "creator": "Matroskin",
+      "repository": "KotMatrosk1n/KM-Calculator"
+    },
+    "afterPack": "electron/after-pack.js",
+    "directories": {
+      "output": "release"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "KotMatrosk1n",
+        "repo": "KM-Calculator"
+      }
+    ],
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "!electron/.eslintrc",
+      "!electron/after-pack.js",
+      "!electron/assets/km-calculator-icon.ico",
+      "!electron/download-sprites.js",
+      "!electron/sprites/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "electron/sprites",
+        "to": "sprites",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "icon": "electron/assets/km-calculator-icon.ico",
+      "signAndEditExecutable": false
+    }
+  },
+  "subPackages": [
+    "calc"
+  ],
+  "dependencies": {
+    "builder-util-runtime": "9.7.0",
+    "electron-updater": "^6.8.9"
+  }
+}

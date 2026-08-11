@@ -1,0 +1,79 @@
+<!-- SPDX-License-Identifier: MIT -->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+  <Package Name="KM Calculator"
+           Manufacturer="Matroskin"
+           Version="$(var.KmVersion)"
+           UpgradeCode="9971df03-d3bd-4fb5-a51b-d975985eea2c"
+           Scope="perMachine"
+           InstallerVersion="500"
+           Language="1033"
+           Compressed="yes">
+    <SummaryInformation Description="KM Calculator desktop application"
+                        Manufacturer="Matroskin" />
+    <MajorUpgrade DowngradeErrorMessage="A newer version of KM Calculator is already installed."
+                  Schedule="afterInstallInitialize" />
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <Icon Id="KmCalculatorProductIcon.ico" SourceFile="$(var.KmIconPath)" />
+    <Property Id="ARPPRODUCTICON" Value="KmCalculatorProductIcon.ico" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/KotMatrosk1n/KM-Calculator" />
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/KotMatrosk1n/KM-Calculator" />
+    <Property Id="ARPCOMMENTS" Value="A multi-generation Pokemon damage calculator with mod support." />
+    <Property Id="MSIRESTARTMANAGERCONTROL" Value="Disable" />
+
+    <Property Id="KM_CREATE_DESKTOP_SHORTCUT" Value="1" Secure="yes" />
+    <Property Id="KM_CREATE_START_MENU_SHORTCUT" Value="1" Secure="yes" />
+    <Property Id="KM_LEGACY_CEF_VALID" Value="0" Secure="yes" />
+
+    <SetProperty Action="SetKmCanonicalInstallFolder"
+                 Id="KmCanonicalInstallFolder"
+                 Value="[ProgramFiles64Folder]KM Calculator\"
+                 Sequence="execute"
+                 After="CostFinalize" />
+    <CustomAction Id="RejectNoncanonicalKmInstallFolder"
+                  Error="KM Calculator must be installed in the 64-bit Program Files\KM Calculator folder. Custom installation locations are not supported." />
+    <InstallExecuteSequence>
+      <Custom Action="RejectNoncanonicalKmInstallFolder"
+              After="SetKmCanonicalInstallFolder"
+              Condition="NOT (REMOVE ~= &quot;ALL&quot;) AND NOT INSTALLFOLDER ~= KmCanonicalInstallFolder" />
+    </InstallExecuteSequence>
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="KM Calculator" />
+    </StandardDirectory>
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="KmCalculatorStartMenuFolder" Name="KM Calculator" />
+      <Directory Id="LegacyRoyalSwordStartMenuFolder" Name="Royal Sword Calculator" />
+      <Directory Id="LegacyPokemonRoyalSwordStartMenuFolder" Name="Pokemon Royal Sword" />
+    </StandardDirectory>
+    <StandardDirectory Id="DesktopFolder" />
+
+    <util:CloseApplication Id="CloseKmCalculator"
+                           Target="KM Calculator.exe"
+                           Description="KM Calculator must close before setup can continue."
+                           PromptToContinue="yes"
+                           CloseMessage="yes"
+                           ElevatedCloseMessage="yes"
+                           EndSessionMessage="yes"
+                           ElevatedEndSessionMessage="yes"
+                           Timeout="10"
+                           RebootPrompt="yes" />
+    <util:CloseApplication Id="CloseLegacyRoyalSwordCalculator"
+                           Target="Royal Sword Calculator.exe"
+                           Description="Royal Sword Calculator must close before setup can continue."
+                           Condition="KM_LEGACY_CEF_VALID = 1"
+                           PromptToContinue="yes"
+                           CloseMessage="yes"
+                           ElevatedCloseMessage="yes"
+                           Timeout="10"
+                           RebootPrompt="yes" />
+
+    <Feature Id="KmCalculatorFeature" Title="KM Calculator" Level="1">
+      <ComponentGroupRef Id="KmCalculatorPayloadComponents" />
+      <ComponentGroupRef Id="KmCalculatorRegistrationComponents" />
+      <ComponentGroupRef Id="KmCalculatorShortcutComponents" />
+      <ComponentGroupRef Id="KmCalculatorLegacyMigrationComponents" />
+    </Feature>
+  </Package>
+</Wix>

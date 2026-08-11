@@ -1,0 +1,30 @@
+{
+  "name": "@km-calculator/engine",
+  "version": "0.11.0",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "description": "Internal multi-generation calculation engine for KM Calculator.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KotMatrosk1n/KM-Calculator.git",
+    "directory": "calc"
+  },
+  "contributors": [
+    "Austin Couturier <austincouturier@icloud.com>"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@pkmn/eslint-config": "^2.15.0",
+    "@typescript-eslint/eslint-plugin": "^5.54.0",
+    "@typescript-eslint/parser": "^5.54.0",
+    "eslint": "^8.35.0",
+    "typescript": "^4.9.5"
+  },
+  "scripts": {
+    "lint": "eslint --cache src --ext ts --ignore-pattern src/test/",
+    "fix": "eslint --fix src --ext ts --ignore-pattern src/test/",
+    "compile": "tsc -p .",
+    "build": "npm run compile"
+  }
+}

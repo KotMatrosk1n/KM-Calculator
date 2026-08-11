@@ -1,0 +1,174 @@
+<!-- SPDX-License-Identifier: MIT -->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+  <Bundle Name="KM Calculator"
+          InProgressName="KM Calculator Setup"
+          Manufacturer="Matroskin"
+          Version="$(var.KmVersion)"
+          UpgradeCode="6fec009c-ac8f-45c2-b84b-a648204cd665"
+          ProviderKey="com.kotmatrosk1n.kmcalculator.bundle"
+          IconSourceFile="$(var.KmIconPath)"
+          Copyright="Copyright 2026 Matroskin"
+          AboutUrl="https://github.com/KotMatrosk1n/KM-Calculator"
+          HelpUrl="https://github.com/KotMatrosk1n/KM-Calculator/issues"
+          DisableModify="no"
+          DisableRemove="no"
+          Compressed="yes"
+          bal:CommandLineVariables="caseInsensitive">
+    <Log Prefix="KM-Calculator-Setup" />
+
+    <Variable Name="InstallFolder"
+              Type="formatted"
+              Value="[ProgramFiles64Folder]KM Calculator\" />
+    <Variable Name="KMCreateDesktopShortcut" Type="numeric" Value="1" bal:Overridable="yes" />
+    <Variable Name="KMCreateStartMenuShortcut" Type="numeric" Value="1" bal:Overridable="yes" />
+    <Variable Name="KMUpdaterInvocation" Type="numeric" Value="0" bal:Overridable="yes" />
+    <Variable Name="KMRelaunchAfterInstall" Type="numeric" Value="0" bal:Overridable="yes" />
+    <Variable Name="LegacyCefValidated" Type="numeric" Value="0" />
+
+    <util:RegistrySearch Id="ExistingKmMarkerPresentSearch"
+                         Root="HKLM"
+                         Key="Software\KM Calculator"
+                         Variable="ExistingKmMarkerPresent"
+                         Result="exists"
+                         Bitness="always64" />
+    <util:RegistrySearch Id="ExistingInstallLocationSearch"
+                         After="ExistingKmMarkerPresentSearch"
+                         Root="HKLM"
+                         Key="Software\KM Calculator"
+                         Value="InstallLocation"
+                         Variable="ExistingInstallLocation"
+                         Result="value"
+                         Bitness="always64" />
+    <util:RegistrySearch Id="ExistingDesktopPreferenceSearch"
+                         After="ExistingInstallLocationSearch"
+                         Root="HKLM"
+                         Key="Software\KM Calculator"
+                         Value="CreateDesktopShortcut"
+                         Variable="KMCreateDesktopShortcut"
+                         Result="value"
+                         Bitness="always64" />
+    <util:RegistrySearch Id="ExistingStartMenuPreferenceSearch"
+                         After="ExistingDesktopPreferenceSearch"
+                         Root="HKLM"
+                         Key="Software\KM Calculator"
+                         Value="CreateStartMenuShortcut"
+                         Variable="KMCreateStartMenuShortcut"
+                         Result="value"
+                         Bitness="always64" />
+
+    <util:RegistrySearch Id="LegacyCefProductKeyPresentSearch"
+                         After="ExistingStartMenuPreferenceSearch"
+                         Root="HKLM"
+                         Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970"
+                         Variable="LegacyCefProductKeyPresent"
+                         Result="exists"
+                         Bitness="always64" />
+    <util:RegistrySearch Id="LegacyCefArpKeyPresentSearch"
+                         After="LegacyCefProductKeyPresentSearch"
+                         Root="HKLM"
+                         Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\cef17072-1d18-5c82-9672-1f987b4e4970"
+                         Variable="LegacyCefArpKeyPresent"
+                         Result="exists"
+                         Bitness="always64" />
+    <util:RegistrySearch Id="LegacyCefLocationSearch"
+                         After="LegacyCefArpKeyPresentSearch"
+                         Root="HKLM"
+                         Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970"
+                         Value="InstallLocation"
+                         Variable="LegacyCefInstallLocation"
+                         Result="value"
+                         Bitness="always64" />
+    <util:RegistrySearch Id="LegacyCefDisplayNameSearch"
+                         After="LegacyCefLocationSearch"
+                         Root="HKLM"
+                         Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\cef17072-1d18-5c82-9672-1f987b4e4970"
+                         Value="DisplayName"
+                         Variable="LegacyCefDisplayName"
+                         Result="value"
+                         Bitness="always64" />
+    <util:RegistrySearch Id="LegacyCefPublisherSearch"
+                         After="LegacyCefDisplayNameSearch"
+                         Root="HKLM"
+                         Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\cef17072-1d18-5c82-9672-1f987b4e4970"
+                         Value="Publisher"
+                         Variable="LegacyCefPublisher"
+                         Result="value"
+                         Bitness="always64" />
+    <util:RegistrySearch Id="LegacyCefVersionSearch"
+                         After="LegacyCefPublisherSearch"
+                         Root="HKLM"
+                         Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\cef17072-1d18-5c82-9672-1f987b4e4970"
+                         Value="DisplayVersion"
+                         Variable="LegacyCefDisplayVersion"
+                         Result="value"
+                         Bitness="always64" />
+    <util:FileSearch Id="LegacyCefExecutableSearch"
+                     After="LegacyCefVersionSearch"
+                     Path="[LegacyCefInstallLocation]\Royal Sword Calculator.exe"
+                     Variable="LegacyCefExecutableVersion"
+                     Result="version"
+                     DisableFileRedirection="yes" />
+    <util:FileSearch Id="LegacyCefUninstallerSearch"
+                     After="LegacyCefExecutableSearch"
+                     Path="[LegacyCefInstallLocation]\Uninstall Royal Sword Calculator.exe"
+                     Variable="LegacyCefUninstallerExists"
+                     Result="exists"
+                     DisableFileRedirection="yes" />
+    <util:FileSearch Id="LegacyCefAppArchiveSearch"
+                     After="LegacyCefUninstallerSearch"
+                     Path="[LegacyCefInstallLocation]\resources\app.asar"
+                     Variable="LegacyCefAppArchiveExists"
+                     Result="exists"
+                     DisableFileRedirection="yes" />
+    <util:FileSearch Id="LegacyCefUpdaterConfigSearch"
+                     After="LegacyCefAppArchiveSearch"
+                     Path="[LegacyCefInstallLocation]\resources\app-update.yml"
+                     Variable="LegacyCefUpdaterConfigExists"
+                     Result="exists"
+                     DisableFileRedirection="yes" />
+    <util:FileSearch Id="LegacyCefSpriteManifestSearch"
+                     After="LegacyCefUpdaterConfigSearch"
+                     Path="[LegacyCefInstallLocation]\resources\sprites\manifest.json"
+                     Variable="LegacyCefSpriteManifestExists"
+                     Result="exists"
+                     DisableFileRedirection="yes" />
+    <SetVariable Id="ValidateLegacyCefInstall"
+                 After="LegacyCefSpriteManifestSearch"
+                 Variable="LegacyCefValidated"
+                 Value="1"
+                 Type="numeric"
+                 Condition="LegacyCefInstallLocation ~= &quot;[ProgramFiles64Folder]Royal Sword Calculator&quot; AND LegacyCefDisplayName = &quot;Royal Sword Calculator&quot; AND LegacyCefPublisher = &quot;Matroskin&quot; AND ((LegacyCefDisplayVersion = &quot;0.2.2&quot; AND LegacyCefExecutableVersion = v0.2.2.0) OR (LegacyCefDisplayVersion = &quot;0.3.21&quot; AND LegacyCefExecutableVersion = v0.3.21.0) OR (LegacyCefDisplayVersion = &quot;0.4.26&quot; AND LegacyCefExecutableVersion = v0.4.26.0)) AND LegacyCefUninstallerExists AND LegacyCefAppArchiveExists AND LegacyCefUpdaterConfigExists AND LegacyCefSpriteManifestExists" />
+
+    <bal:Condition Condition="WixBundleInstalled OR NOT ExistingKmMarkerPresent OR (ExistingInstallLocation AND ExistingInstallLocation ~= InstallFolder)"
+                   Message="A KM Calculator installation was detected outside the required Program Files\KM Calculator folder. Uninstall that copy first, then run setup again." />
+    <bal:Condition Condition="WixBundleInstalled OR (NOT LegacyCefProductKeyPresent AND NOT LegacyCefArpKeyPresent) OR LegacyCefValidated = 1"
+                   Message="A Royal Sword Calculator installation was detected but cannot be migrated safely. Uninstall Royal Sword Calculator from Windows Settings first, then run KM Calculator Setup again. The legacy uninstaller preserves saved calculator data by default." />
+
+    <BootstrapperApplication>
+      <bal:WixStandardBootstrapperApplication Theme="hyperlinkLargeLicense"
+                                               ThemeFile="Theme\KMCalculatorTheme.xml"
+                                               LogoFile="$(var.KmLogoPath)"
+                                               LicenseUrl=""
+                                               ShowVersion="yes"
+                                               SuppressOptionsUI="yes"
+                                               SuppressDowngradeFailure="no"
+                                               LaunchTarget="[InstallFolder]KM Calculator.exe" />
+    </BootstrapperApplication>
+
+    <Chain>
+      <MsiPackage Id="KmCalculatorMsi"
+                  SourceFile="$(var.KmMsiPath)"
+                  Visible="no"
+                  Vital="yes"
+                  Cache="keep"
+                  bal:DisplayFilesInUseDialogCondition="1">
+        <MsiProperty Name="INSTALLFOLDER" Value="[InstallFolder]" />
+        <MsiProperty Name="KM_CREATE_DESKTOP_SHORTCUT" Value="[KMCreateDesktopShortcut]" />
+        <MsiProperty Name="KM_CREATE_START_MENU_SHORTCUT" Value="[KMCreateStartMenuShortcut]" />
+        <MsiProperty Name="KM_LEGACY_CEF_VALID" Value="[LegacyCefValidated]" />
+      </MsiPackage>
+    </Chain>
+  </Bundle>
+</Wix>

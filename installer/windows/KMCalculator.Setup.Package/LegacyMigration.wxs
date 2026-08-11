@@ -1,0 +1,210 @@
+<!-- SPDX-License-Identifier: MIT -->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+  <Fragment>
+    <Property Id="KmLegacyCefInstallLocation">
+      <RegistrySearch Id="KmLegacyCefInstallLocationSearch"
+                      Root="HKLM"
+                      Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970"
+                      Name="InstallLocation"
+                      Type="raw"
+                      Bitness="always64" />
+    </Property>
+    <Property Id="KmLegacyCefDisplayName">
+      <RegistrySearch Id="KmLegacyCefDisplayNameSearch"
+                      Root="HKLM"
+                      Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\cef17072-1d18-5c82-9672-1f987b4e4970"
+                      Name="DisplayName"
+                      Type="raw"
+                      Bitness="always64" />
+    </Property>
+    <Property Id="KmLegacyCefPublisher">
+      <RegistrySearch Id="KmLegacyCefPublisherSearch"
+                      Root="HKLM"
+                      Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\cef17072-1d18-5c82-9672-1f987b4e4970"
+                      Name="Publisher"
+                      Type="raw"
+                      Bitness="always64" />
+    </Property>
+    <Property Id="KmLegacyCefDisplayVersion">
+      <RegistrySearch Id="KmLegacyCefDisplayVersionSearch"
+                      Root="HKLM"
+                      Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\cef17072-1d18-5c82-9672-1f987b4e4970"
+                      Name="DisplayVersion"
+                      Type="raw"
+                      Bitness="always64" />
+    </Property>
+    <Property Id="KmLegacyCefExecutable022">
+      <RegistrySearch Id="KmLegacyCefExecutable022RootSearch"
+                      Root="HKLM"
+                      Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970"
+                      Name="InstallLocation"
+                      Type="directory"
+                      Bitness="always64">
+        <FileSearch Id="KmLegacyCefExecutable022Search"
+                    Name="Royal Sword Calculator.exe"
+                    MinVersion="0.2.2.0"
+                    MaxVersion="0.2.2.0" />
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyCefUninstallCommand">
+      <RegistrySearch Id="KmLegacyCefUninstallCommandSearch"
+                      Root="HKLM"
+                      Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\cef17072-1d18-5c82-9672-1f987b4e4970"
+                      Name="UninstallString"
+                      Type="raw"
+                      Bitness="always64" />
+    </Property>
+    <Property Id="KmLegacyCefExecutable0321">
+      <RegistrySearch Id="KmLegacyCefExecutable0321RootSearch"
+                      Root="HKLM"
+                      Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970"
+                      Name="InstallLocation"
+                      Type="directory"
+                      Bitness="always64">
+        <FileSearch Id="KmLegacyCefExecutable0321Search"
+                    Name="Royal Sword Calculator.exe"
+                    MinVersion="0.3.21.0"
+                    MaxVersion="0.3.21.0" />
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyCefExecutable0426">
+      <RegistrySearch Id="KmLegacyCefExecutable0426RootSearch"
+                      Root="HKLM"
+                      Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970"
+                      Name="InstallLocation"
+                      Type="directory"
+                      Bitness="always64">
+        <FileSearch Id="KmLegacyCefExecutable0426Search"
+                    Name="Royal Sword Calculator.exe"
+                    MinVersion="0.4.26.0"
+                    MaxVersion="0.4.26.0" />
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyCefUninstaller">
+      <RegistrySearch Id="KmLegacyCefUninstallerRootSearch"
+                      Root="HKLM"
+                      Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970"
+                      Name="InstallLocation"
+                      Type="directory"
+                      Bitness="always64">
+        <FileSearch Id="KmLegacyCefUninstallerSearch"
+                    Name="Uninstall Royal Sword Calculator.exe" />
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyCefAppArchive">
+      <RegistrySearch Id="KmLegacyCefAppArchiveRootSearch"
+                      Root="HKLM"
+                      Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970"
+                      Name="InstallLocation"
+                      Type="directory"
+                      Bitness="always64">
+        <DirectorySearch Id="KmLegacyCefResourcesSearch" Path="resources">
+          <FileSearch Id="KmLegacyCefAppArchiveSearch" Name="app.asar" />
+        </DirectorySearch>
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyCefUpdaterConfig">
+      <RegistrySearch Id="KmLegacyCefUpdaterConfigRootSearch"
+                      Root="HKLM"
+                      Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970"
+                      Name="InstallLocation"
+                      Type="directory"
+                      Bitness="always64">
+        <DirectorySearch Id="KmLegacyCefUpdaterResourcesSearch" Path="resources">
+          <FileSearch Id="KmLegacyCefUpdaterConfigSearch" Name="app-update.yml" />
+        </DirectorySearch>
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyCefSpriteManifest">
+      <RegistrySearch Id="KmLegacyCefSpriteManifestRootSearch"
+                      Root="HKLM"
+                      Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970"
+                      Name="InstallLocation"
+                      Type="directory"
+                      Bitness="always64">
+        <DirectorySearch Id="KmLegacyCefSpriteResourcesSearch" Path="resources">
+          <DirectorySearch Id="KmLegacyCefSpritesSearch" Path="sprites">
+            <FileSearch Id="KmLegacyCefSpriteManifestSearch" Name="manifest.json" />
+          </DirectorySearch>
+        </DirectorySearch>
+      </RegistrySearch>
+    </Property>
+
+    <SetProperty Action="SetKmLegacyCefRoot"
+                 Id="KmLegacyCefRoot"
+                 Value="[%ProgramFiles]\Royal Sword Calculator"
+                 Sequence="execute"
+                 After="AppSearch" />
+    <SetProperty Action="ValidateKmLegacyCefIdentity"
+                 Id="KmLegacyCefIdentityValidated"
+                 Value="1"
+                 Sequence="execute"
+                 After="SetKmLegacyCefRoot"
+                 Condition="KM_LEGACY_CEF_VALID = 1 AND KmLegacyCefInstallLocation ~= KmLegacyCefRoot AND KmLegacyCefDisplayName = &quot;Royal Sword Calculator&quot; AND KmLegacyCefPublisher = &quot;Matroskin&quot; AND ((KmLegacyCefDisplayVersion = &quot;0.2.2&quot; AND KmLegacyCefExecutable022) OR (KmLegacyCefDisplayVersion = &quot;0.3.21&quot; AND KmLegacyCefExecutable0321) OR (KmLegacyCefDisplayVersion = &quot;0.4.26&quot; AND KmLegacyCefExecutable0426)) AND KmLegacyCefUninstaller AND KmLegacyCefAppArchive AND KmLegacyCefUpdaterConfig AND KmLegacyCefSpriteManifest" />
+    <CustomAction Id="BlockUnvalidatedLegacyCefInstall"
+                  Error="A Royal Sword Calculator installation was detected but cannot be migrated safely. Uninstall it from Windows Settings, then run KM Calculator Setup again. The legacy uninstaller preserves saved calculator data by default." />
+    <InstallExecuteSequence>
+      <Custom Action="BlockUnvalidatedLegacyCefInstall"
+              After="ValidateKmLegacyCefIdentity"
+              Condition="NOT (REMOVE ~= &quot;ALL&quot;) AND (KmLegacyCefInstallLocation OR KmLegacyCefDisplayName OR KmLegacyCefPublisher OR KmLegacyCefDisplayVersion OR KmLegacyCefUninstallCommand) AND NOT KmLegacyCefIdentityValidated" />
+    </InstallExecuteSequence>
+    <ComponentGroup Id="KmCalculatorLegacyMigrationComponents">
+      <Component Id="KmCalculatorLegacyCefMigrationComponent"
+                 Directory="INSTALLFOLDER"
+                 Guid="deb65f11-dab3-4d6a-a15f-85f596f60e1b"
+                 Bitness="always64"
+                 Transitive="yes"
+                 Condition="KmLegacyCefIdentityValidated = 1">
+        <util:RemoveFolderEx Id="RemoveValidatedLegacyCefInstallRoot"
+                             Property="KmLegacyCefRoot"
+                             On="install"
+                             Condition="KmLegacyCefIdentityValidated = 1" />
+        <RemoveRegistryKey Id="RemoveLegacyCefProductKey"
+                           Root="HKLM"
+                           Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970"
+                           Action="removeOnInstall" />
+        <RemoveRegistryKey Id="RemoveLegacyCefArpKey"
+                           Root="HKLM"
+                           Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\cef17072-1d18-5c82-9672-1f987b4e4970"
+                           Action="removeOnInstall" />
+        <RemoveFile Id="RemoveLegacyRoyalSwordDesktopShortcut"
+                    Directory="DesktopFolder"
+                    Name="Royal Sword Calculator.lnk"
+                    On="install" />
+        <RemoveFile Id="RemoveLegacyPokemonRoyalSwordDesktopShortcut"
+                    Directory="DesktopFolder"
+                    Name="Pokemon Royal Sword.lnk"
+                    On="install" />
+        <RemoveFile Id="RemoveLegacyRoyalSwordStartMenuShortcut"
+                    Directory="ProgramMenuFolder"
+                    Name="Royal Sword Calculator.lnk"
+                    On="install" />
+        <RemoveFile Id="RemoveLegacyPokemonRoyalSwordStartMenuShortcut"
+                    Directory="ProgramMenuFolder"
+                    Name="Pokemon Royal Sword.lnk"
+                    On="install" />
+        <RemoveFile Id="RemoveNestedLegacyRoyalSwordShortcut"
+                    Directory="LegacyRoyalSwordStartMenuFolder"
+                    Name="Royal Sword Calculator.lnk"
+                    On="install" />
+        <RemoveFile Id="RemoveNestedLegacyPokemonRoyalSwordShortcut"
+                    Directory="LegacyPokemonRoyalSwordStartMenuFolder"
+                    Name="Pokemon Royal Sword.lnk"
+                    On="install" />
+        <RemoveFolder Id="RemoveLegacyRoyalSwordStartMenuFolder"
+                      Directory="LegacyRoyalSwordStartMenuFolder"
+                      On="install" />
+        <RemoveFolder Id="RemoveLegacyPokemonRoyalSwordStartMenuFolder"
+                      Directory="LegacyPokemonRoyalSwordStartMenuFolder"
+                      On="install" />
+        <RegistryValue Root="HKLM"
+                       Key="Software\KM Calculator"
+                       Name="MigratedLegacyCef17072"
+                       Value="1"
+                       Type="integer"
+                       KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>

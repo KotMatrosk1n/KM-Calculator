@@ -1,0 +1,47 @@
+<!-- SPDX-License-Identifier: MIT -->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Fragment>
+    <ComponentGroup Id="KmCalculatorShortcutComponents">
+      <Component Id="KmCalculatorStartMenuShortcutComponent"
+                 Directory="KmCalculatorStartMenuFolder"
+                 Guid="bef42067-a9e7-4646-ac39-858b79526746"
+                 Bitness="always64"
+                 Transitive="yes"
+                 Condition="KM_CREATE_START_MENU_SHORTCUT = 1">
+        <Shortcut Id="KmCalculatorStartMenuShortcut"
+                  Name="KM Calculator"
+                  Description="Open KM Calculator"
+                  Target="[#KmCalculatorMainExecutableFile]"
+                  WorkingDirectory="INSTALLFOLDER"
+                  Icon="KmCalculatorProductIcon.ico" />
+        <RemoveFolder Id="RemoveKmCalculatorStartMenuFolder" Directory="KmCalculatorStartMenuFolder" On="uninstall" />
+        <RegistryValue Root="HKLM"
+                       Key="Software\KM Calculator\Components"
+                       Name="StartMenuShortcut"
+                       Value="1"
+                       Type="integer"
+                       KeyPath="yes" />
+      </Component>
+
+      <Component Id="KmCalculatorDesktopShortcutComponent"
+                 Directory="DesktopFolder"
+                 Guid="a494ddc2-4d0f-4d31-a523-2b2e08fa8e33"
+                 Bitness="always64"
+                 Transitive="yes"
+                 Condition="KM_CREATE_DESKTOP_SHORTCUT = 1">
+        <Shortcut Id="KmCalculatorDesktopShortcut"
+                  Name="KM Calculator"
+                  Description="Open KM Calculator"
+                  Target="[#KmCalculatorMainExecutableFile]"
+                  WorkingDirectory="INSTALLFOLDER"
+                  Icon="KmCalculatorProductIcon.ico" />
+        <RegistryValue Root="HKLM"
+                       Key="Software\KM Calculator\Components"
+                       Name="DesktopShortcut"
+                       Value="1"
+                       Type="integer"
+                       KeyPath="yes" />
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>
