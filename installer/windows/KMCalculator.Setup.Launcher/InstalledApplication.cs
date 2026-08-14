@@ -1,13 +1,21 @@
 // SPDX-License-Identifier: MIT
 
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Security.Principal;
+using System.Text;
 using Microsoft.Win32;
 
 namespace KMCalculator.Setup.Launcher;
 
+internal sealed record LegacyCleanupReceipt(string Value, string OwnerSid);
+
 internal static class InstalledApplication
 {
+    private const uint ErrorNoMoreItems = 259;
+    private const string PackageUpgradeCode = "{9971DF03-D3BD-4FB5-A51B-D975985EEA2C}";
     private const string RegistryPath = @"Software\KM Calculator";
     private const string MainBinaryName = "KM Calculator.exe";
 
@@ -45,6 +53,72 @@ internal static class InstalledApplication
         }
     }
 
+    internal static bool IsInstalled()
+    {
+        var candidates = new List<string>();
+        AddValidatedCandidate(ReadExpectedVersion(), candidates);
+        return candidates.Count == 1;
+    }
+
+    internal static bool IsAnyVersionRegistered()
+    {
+        var productCode = new StringBuilder(39);
+        var enumResult = MsiEnumRelatedProductsW(PackageUpgradeCode, 0, 0, productCode);
+        if (enumResult == ErrorNoMoreItems)
+        {
+            return false;
+        }
+        if (enumResult != 0)
+        {
+            throw new Win32Exception((int)enumResult, "KM Calculator registration could not be inspected.");
+        }
+
+        // Any related Windows Installer registration, including an advertised or
+        // damaged one, is maintenance state rather than proof of a first install.
+        // Treat it as registered so ambiguous MSI state can never authorize the
+        // destructive one-time Royal Sword cleanup path.
+        return true;
+    }
+
+    internal static string GetCurrentUserSid()
+    {
+        using var identity = WindowsIdentity.GetCurrent();
+        return identity.User?.Value
+            ?? throw new InvalidOperationException("The current Windows user SID could not be determined.");
+    }
+
+    internal static bool HasCleanupReceipt(string expectedReceipt, string expectedOwnerSid)
+    {
+        var receipt = ReadCleanupReceipt();
+        return receipt is not null &&
+               EqualsExact(receipt.Value, expectedReceipt) &&
+               EqualsExact(receipt.OwnerSid, expectedOwnerSid);
+    }
+
+    internal static LegacyCleanupReceipt? ReadCleanupReceipt()
+    {
+        try
+        {
+            using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
+            using var key = baseKey.OpenSubKey(RegistryPath, writable: false);
+            var value = key?.GetValue("LegacyCleanupReceipt") as string;
+            var ownerSid = key?.GetValue("LegacyCleanupOwnerSid") as string;
+            if (!Guid.TryParseExact(value, "N", out _) || string.IsNullOrWhiteSpace(ownerSid))
+            {
+                return null;
+            }
+
+            var normalizedOwnerSid = new SecurityIdentifier(ownerSid).Value;
+            return EqualsExact(normalizedOwnerSid, ownerSid)
+                ? new LegacyCleanupReceipt(value, ownerSid)
+                : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     private static void AddValidatedCandidate(string expectedVersion, ICollection<string> candidates)
     {
         try
@@ -55,6 +129,7 @@ internal static class InstalledApplication
                 !EqualsExact(key.GetValue("InstallerFamily") as string, "BurnMsi") ||
                 !EqualsExact(key.GetValue("MainBinaryName") as string, MainBinaryName) ||
                 !EqualsExact(key.GetValue("InstallScope") as string, "perMachine") ||
+                !EqualsExact(key.GetValue("LegacyCleanupRevision") as string, "1") ||
                 !VersionsMatch(key.GetValue("Version") as string, expectedVersion))
             {
                 return;
@@ -165,4 +240,11 @@ internal static class InstalledApplication
 
     private static bool EqualsExact(string? left, string right) =>
         string.Equals(left, right, StringComparison.Ordinal);
+
+    [DllImport("msi.dll", EntryPoint = "MsiEnumRelatedProductsW", CharSet = CharSet.Unicode, ExactSpelling = true)]
+    private static extern uint MsiEnumRelatedProductsW(
+        string upgradeCode,
+        uint reserved,
+        uint productIndex,
+        StringBuilder productCode);
 }

@@ -2,6 +2,18 @@
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
      xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
   <Fragment>
+    <Property Id="KmLegacyCefRoyalCanonicalRootPresent">
+      <DirectorySearch Id="KmLegacyCefRoyalCanonicalRootPresentSearch"
+                       Path="[ProgramFiles64Folder]Royal Sword Calculator" />
+    </Property>
+    <Property Id="KmLegacyCefPokemonCanonicalRootPresent">
+      <DirectorySearch Id="KmLegacyCefPokemonCanonicalRootPresentSearch"
+                       Path="[ProgramFiles64Folder]Pokemon Royal Sword" />
+    </Property>
+    <Property Id="KmLegacyCefRoyalNestedRootPresent">
+      <DirectorySearch Id="KmLegacyCefRoyalNestedRootPresentSearch"
+                       Path="[ProgramFiles64Folder]Pokemon Royal Sword\Royal Sword Calculator" />
+    </Property>
     <Property Id="KmLegacyCefInstallLocation">
       <RegistrySearch Id="KmLegacyCefInstallLocationSearch"
                       Root="HKLM"
@@ -34,19 +46,6 @@
                       Type="raw"
                       Bitness="always64" />
     </Property>
-    <Property Id="KmLegacyCefExecutable022">
-      <RegistrySearch Id="KmLegacyCefExecutable022RootSearch"
-                      Root="HKLM"
-                      Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970"
-                      Name="InstallLocation"
-                      Type="directory"
-                      Bitness="always64">
-        <FileSearch Id="KmLegacyCefExecutable022Search"
-                    Name="Royal Sword Calculator.exe"
-                    MinVersion="0.2.2.0"
-                    MaxVersion="0.2.2.0" />
-      </RegistrySearch>
-    </Property>
     <Property Id="KmLegacyCefUninstallCommand">
       <RegistrySearch Id="KmLegacyCefUninstallCommandSearch"
                       Root="HKLM"
@@ -55,41 +54,129 @@
                       Type="raw"
                       Bitness="always64" />
     </Property>
-    <Property Id="KmLegacyCefExecutable0321">
-      <RegistrySearch Id="KmLegacyCefExecutable0321RootSearch"
-                      Root="HKLM"
-                      Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970"
-                      Name="InstallLocation"
-                      Type="directory"
-                      Bitness="always64">
-        <FileSearch Id="KmLegacyCefExecutable0321Search"
-                    Name="Royal Sword Calculator.exe"
-                    MinVersion="0.3.21.0"
-                    MaxVersion="0.3.21.0" />
+    <Property Id="KmLegacyPokemonMainElectron">
+      <RegistrySearch Id="KmLegacyPokemonMainElectronRoot" Root="HKLM" Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970" Name="InstallLocation" Type="directory" Bitness="always64">
+        <FileSearch Id="KmLegacyPokemonMainElectronSearch" Name="Pokemon Royal Sword.exe" MinVersion="42.3.3.0" MaxVersion="42.3.3.0" Languages="1033" />
       </RegistrySearch>
     </Property>
-    <Property Id="KmLegacyCefExecutable0426">
-      <RegistrySearch Id="KmLegacyCefExecutable0426RootSearch"
-                      Root="HKLM"
-                      Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970"
-                      Name="InstallLocation"
-                      Type="directory"
-                      Bitness="always64">
-        <FileSearch Id="KmLegacyCefExecutable0426Search"
-                    Name="Royal Sword Calculator.exe"
-                    MinVersion="0.4.26.0"
-                    MaxVersion="0.4.26.0" />
+    <Property Id="KmLegacyRoyalMainElectron">
+      <RegistrySearch Id="KmLegacyRoyalMainElectronRoot" Root="HKLM" Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970" Name="InstallLocation" Type="directory" Bitness="always64">
+        <FileSearch Id="KmLegacyRoyalMainElectronSearch" Name="Royal Sword Calculator.exe" MinVersion="42.3.3.0" MaxVersion="42.3.3.0" Languages="1033" />
       </RegistrySearch>
     </Property>
-    <Property Id="KmLegacyCefUninstaller">
-      <RegistrySearch Id="KmLegacyCefUninstallerRootSearch"
-                      Root="HKLM"
-                      Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970"
-                      Name="InstallLocation"
-                      Type="directory"
-                      Bitness="always64">
-        <FileSearch Id="KmLegacyCefUninstallerSearch"
-                    Name="Uninstall Royal Sword Calculator.exe" />
+    <Property Id="KmLegacyRoyalMain017">
+      <RegistrySearch Id="KmLegacyRoyalMain017Root" Root="HKLM" Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970" Name="InstallLocation" Type="directory" Bitness="always64">
+        <FileSearch Id="KmLegacyRoyalMain017Search" Name="Royal Sword Calculator.exe" MinVersion="0.1.7.0" MaxVersion="0.1.7.0" Languages="1033" />
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyRoyalMain018">
+      <RegistrySearch Id="KmLegacyRoyalMain018Root" Root="HKLM" Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970" Name="InstallLocation" Type="directory" Bitness="always64">
+        <FileSearch Id="KmLegacyRoyalMain018Search" Name="Royal Sword Calculator.exe" MinVersion="0.1.8.0" MaxVersion="0.1.8.0" Languages="1033" />
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyRoyalMain019">
+      <RegistrySearch Id="KmLegacyRoyalMain019Root" Root="HKLM" Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970" Name="InstallLocation" Type="directory" Bitness="always64">
+        <FileSearch Id="KmLegacyRoyalMain019Search" Name="Royal Sword Calculator.exe" MinVersion="0.1.9.0" MaxVersion="0.1.9.0" Languages="1033" />
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyRoyalMain020">
+      <RegistrySearch Id="KmLegacyRoyalMain020Root" Root="HKLM" Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970" Name="InstallLocation" Type="directory" Bitness="always64">
+        <FileSearch Id="KmLegacyRoyalMain020Search" Name="Royal Sword Calculator.exe" MinVersion="0.2.0.0" MaxVersion="0.2.0.0" Languages="1033" />
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyRoyalMain021">
+      <RegistrySearch Id="KmLegacyRoyalMain021Root" Root="HKLM" Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970" Name="InstallLocation" Type="directory" Bitness="always64">
+        <FileSearch Id="KmLegacyRoyalMain021Search" Name="Royal Sword Calculator.exe" MinVersion="0.2.1.0" MaxVersion="0.2.1.0" Languages="1033" />
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyRoyalMain022">
+      <RegistrySearch Id="KmLegacyRoyalMain022Root" Root="HKLM" Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970" Name="InstallLocation" Type="directory" Bitness="always64">
+        <FileSearch Id="KmLegacyRoyalMain022Search" Name="Royal Sword Calculator.exe" MinVersion="0.2.2.0" MaxVersion="0.2.2.0" Languages="1033" />
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyRoyalMain0321">
+      <RegistrySearch Id="KmLegacyRoyalMain0321Root" Root="HKLM" Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970" Name="InstallLocation" Type="directory" Bitness="always64">
+        <FileSearch Id="KmLegacyRoyalMain0321Search" Name="Royal Sword Calculator.exe" MinVersion="0.3.21.0" MaxVersion="0.3.21.0" Languages="1033" />
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyRoyalMain0426">
+      <RegistrySearch Id="KmLegacyRoyalMain0426Root" Root="HKLM" Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970" Name="InstallLocation" Type="directory" Bitness="always64">
+        <FileSearch Id="KmLegacyRoyalMain0426Search" Name="Royal Sword Calculator.exe" MinVersion="0.4.26.0" MaxVersion="0.4.26.0" Languages="1033" />
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyPokemonUninstall010">
+      <RegistrySearch Id="KmLegacyPokemonUninstall010Root" Root="HKLM" Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970" Name="InstallLocation" Type="directory" Bitness="always64">
+        <FileSearch Id="KmLegacyPokemonUninstall010Search" Name="Uninstall Pokemon Royal Sword.exe" MinVersion="0.1.0.0" MaxVersion="0.1.0.0" Languages="1033" />
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyPokemonUninstall011">
+      <RegistrySearch Id="KmLegacyPokemonUninstall011Root" Root="HKLM" Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970" Name="InstallLocation" Type="directory" Bitness="always64">
+        <FileSearch Id="KmLegacyPokemonUninstall011Search" Name="Uninstall Pokemon Royal Sword.exe" MinVersion="0.1.1.0" MaxVersion="0.1.1.0" Languages="1033" />
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyPokemonUninstall012">
+      <RegistrySearch Id="KmLegacyPokemonUninstall012Root" Root="HKLM" Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970" Name="InstallLocation" Type="directory" Bitness="always64">
+        <FileSearch Id="KmLegacyPokemonUninstall012Search" Name="Uninstall Pokemon Royal Sword.exe" MinVersion="0.1.2.0" MaxVersion="0.1.2.0" Languages="1033" />
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyRoyalUninstall013">
+      <RegistrySearch Id="KmLegacyRoyalUninstall013Root" Root="HKLM" Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970" Name="InstallLocation" Type="directory" Bitness="always64">
+        <FileSearch Id="KmLegacyRoyalUninstall013Search" Name="Uninstall Royal Sword Calculator.exe" MinVersion="0.1.3.0" MaxVersion="0.1.3.0" Languages="1033" />
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyRoyalUninstall014">
+      <RegistrySearch Id="KmLegacyRoyalUninstall014Root" Root="HKLM" Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970" Name="InstallLocation" Type="directory" Bitness="always64">
+        <FileSearch Id="KmLegacyRoyalUninstall014Search" Name="Uninstall Royal Sword Calculator.exe" MinVersion="0.1.4.0" MaxVersion="0.1.4.0" Languages="1033" />
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyRoyalUninstall015">
+      <RegistrySearch Id="KmLegacyRoyalUninstall015Root" Root="HKLM" Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970" Name="InstallLocation" Type="directory" Bitness="always64">
+        <FileSearch Id="KmLegacyRoyalUninstall015Search" Name="Uninstall Royal Sword Calculator.exe" MinVersion="0.1.5.0" MaxVersion="0.1.5.0" Languages="1033" />
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyRoyalUninstall016">
+      <RegistrySearch Id="KmLegacyRoyalUninstall016Root" Root="HKLM" Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970" Name="InstallLocation" Type="directory" Bitness="always64">
+        <FileSearch Id="KmLegacyRoyalUninstall016Search" Name="Uninstall Royal Sword Calculator.exe" MinVersion="0.1.6.0" MaxVersion="0.1.6.0" Languages="1033" />
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyRoyalUninstall017">
+      <RegistrySearch Id="KmLegacyRoyalUninstall017Root" Root="HKLM" Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970" Name="InstallLocation" Type="directory" Bitness="always64">
+        <FileSearch Id="KmLegacyRoyalUninstall017Search" Name="Uninstall Royal Sword Calculator.exe" MinVersion="0.1.7.0" MaxVersion="0.1.7.0" Languages="1033" />
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyRoyalUninstall018">
+      <RegistrySearch Id="KmLegacyRoyalUninstall018Root" Root="HKLM" Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970" Name="InstallLocation" Type="directory" Bitness="always64">
+        <FileSearch Id="KmLegacyRoyalUninstall018Search" Name="Uninstall Royal Sword Calculator.exe" MinVersion="0.1.8.0" MaxVersion="0.1.8.0" Languages="1033" />
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyRoyalUninstall019">
+      <RegistrySearch Id="KmLegacyRoyalUninstall019Root" Root="HKLM" Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970" Name="InstallLocation" Type="directory" Bitness="always64">
+        <FileSearch Id="KmLegacyRoyalUninstall019Search" Name="Uninstall Royal Sword Calculator.exe" MinVersion="0.1.9.0" MaxVersion="0.1.9.0" Languages="1033" />
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyRoyalUninstall020">
+      <RegistrySearch Id="KmLegacyRoyalUninstall020Root" Root="HKLM" Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970" Name="InstallLocation" Type="directory" Bitness="always64">
+        <FileSearch Id="KmLegacyRoyalUninstall020Search" Name="Uninstall Royal Sword Calculator.exe" MinVersion="0.2.0.0" MaxVersion="0.2.0.0" Languages="1033" />
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyRoyalUninstall021">
+      <RegistrySearch Id="KmLegacyRoyalUninstall021Root" Root="HKLM" Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970" Name="InstallLocation" Type="directory" Bitness="always64">
+        <FileSearch Id="KmLegacyRoyalUninstall021Search" Name="Uninstall Royal Sword Calculator.exe" MinVersion="0.2.1.0" MaxVersion="0.2.1.0" Languages="1033" />
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyRoyalUninstall022">
+      <RegistrySearch Id="KmLegacyRoyalUninstall022Root" Root="HKLM" Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970" Name="InstallLocation" Type="directory" Bitness="always64">
+        <FileSearch Id="KmLegacyRoyalUninstall022Search" Name="Uninstall Royal Sword Calculator.exe" MinVersion="0.2.2.0" MaxVersion="0.2.2.0" Languages="1033" />
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyRoyalUninstall0321">
+      <RegistrySearch Id="KmLegacyRoyalUninstall0321Root" Root="HKLM" Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970" Name="InstallLocation" Type="directory" Bitness="always64">
+        <FileSearch Id="KmLegacyRoyalUninstall0321Search" Name="Uninstall Royal Sword Calculator.exe" MinVersion="0.3.21.0" MaxVersion="0.3.21.0" Languages="1033" />
+      </RegistrySearch>
+    </Property>
+    <Property Id="KmLegacyRoyalUninstall0426">
+      <RegistrySearch Id="KmLegacyRoyalUninstall0426Root" Root="HKLM" Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970" Name="InstallLocation" Type="directory" Bitness="always64">
+        <FileSearch Id="KmLegacyRoyalUninstall0426Search" Name="Uninstall Royal Sword Calculator.exe" MinVersion="0.4.26.0" MaxVersion="0.4.26.0" Languages="1033" />
       </RegistrySearch>
     </Property>
     <Property Id="KmLegacyCefAppArchive">
@@ -131,23 +218,89 @@
       </RegistrySearch>
     </Property>
 
-    <SetProperty Action="SetKmLegacyCefRoot"
-                 Id="KmLegacyCefRoot"
-                 Value="[%ProgramFiles]\Royal Sword Calculator"
+    <SetProperty Action="SetKmLegacyCefRoyalRoot"
+                 Id="KmLegacyCefRoyalRoot"
+                 Value="[ProgramFiles64Folder]Royal Sword Calculator"
                  Sequence="execute"
                  After="AppSearch" />
+    <SetProperty Action="SetKmLegacyCefPokemonRoot"
+                 Id="KmLegacyCefPokemonRoot"
+                 Value="[ProgramFiles64Folder]Pokemon Royal Sword"
+                 Sequence="execute"
+                 After="SetKmLegacyCefRoyalRoot" />
+    <SetProperty Action="SetKmLegacyCefRoyalNestedRoot"
+                 Id="KmLegacyCefRoyalNestedRoot"
+                 Value="[ProgramFiles64Folder]Pokemon Royal Sword\Royal Sword Calculator"
+                 Sequence="execute"
+                 After="SetKmLegacyCefPokemonRoot" />
+    <SetProperty Action="SetKmLegacyCefRoyalCanonicalUninstallCommand"
+                 Id="KmLegacyCefRoyalCanonicalUninstallCommand"
+                 Value="&quot;[ProgramFiles64Folder]Royal Sword Calculator\Uninstall Royal Sword Calculator.exe&quot; /allusers"
+                 Sequence="execute"
+                 After="SetKmLegacyCefRoyalNestedRoot" />
+    <SetProperty Action="SetKmLegacyCefPokemonCanonicalUninstallCommand"
+                 Id="KmLegacyCefPokemonCanonicalUninstallCommand"
+                 Value="&quot;[ProgramFiles64Folder]Pokemon Royal Sword\Uninstall Pokemon Royal Sword.exe&quot; /allusers"
+                 Sequence="execute"
+                 After="SetKmLegacyCefRoyalCanonicalUninstallCommand" />
+    <SetProperty Action="SetKmLegacyCefRoyalAtPokemonUninstallCommand"
+                 Id="KmLegacyCefRoyalAtPokemonUninstallCommand"
+                 Value="&quot;[ProgramFiles64Folder]Pokemon Royal Sword\Uninstall Royal Sword Calculator.exe&quot; /allusers"
+                 Sequence="execute"
+                 After="SetKmLegacyCefPokemonCanonicalUninstallCommand" />
+    <SetProperty Action="SetKmLegacyCefRoyalNestedUninstallCommand"
+                 Id="KmLegacyCefRoyalNestedUninstallCommand"
+                 Value="&quot;[ProgramFiles64Folder]Pokemon Royal Sword\Royal Sword Calculator\Uninstall Royal Sword Calculator.exe&quot; /allusers"
+                 Sequence="execute"
+                 After="SetKmLegacyCefRoyalAtPokemonUninstallCommand" />
+    <SetProperty Action="ValidateKmLegacyCefRoyalPayload"
+                 Id="KmLegacyCefRoyalPayloadValidated"
+                 Value="1"
+                 Sequence="execute"
+                 After="SetKmLegacyCefRoyalNestedUninstallCommand"
+                 Condition="KM_REMOVE_LEGACY = 1 AND KM_LEGACY_CEF_VALID = 1 AND KmLegacyCefDisplayName = &quot;Royal Sword Calculator&quot; AND KmLegacyCefAppArchive AND KmLegacyCefUpdaterConfig AND ((KmLegacyCefPublisher = &quot;KotMatrosk1n&quot; AND ((KmLegacyCefDisplayVersion = &quot;0.1.3&quot; AND KmLegacyRoyalMainElectron AND KmLegacyRoyalUninstall013) OR (KmLegacyCefDisplayVersion = &quot;0.1.4&quot; AND KmLegacyRoyalMainElectron AND KmLegacyRoyalUninstall014) OR (KmLegacyCefDisplayVersion = &quot;0.1.5&quot; AND KmLegacyRoyalMainElectron AND KmLegacyRoyalUninstall015) OR (KmLegacyCefDisplayVersion = &quot;0.1.6&quot; AND KmLegacyRoyalMainElectron AND KmLegacyRoyalUninstall016) OR (KmLegacyCefDisplayVersion = &quot;0.1.7&quot; AND KmLegacyRoyalMain017 AND KmLegacyRoyalUninstall017) OR (KmLegacyCefDisplayVersion = &quot;0.1.8&quot; AND KmLegacyRoyalMain018 AND KmLegacyRoyalUninstall018 AND KmLegacyCefSpriteManifest) OR (KmLegacyCefDisplayVersion = &quot;0.1.9&quot; AND KmLegacyRoyalMain019 AND KmLegacyRoyalUninstall019 AND KmLegacyCefSpriteManifest) OR (KmLegacyCefDisplayVersion = &quot;0.2.0&quot; AND KmLegacyRoyalMain020 AND KmLegacyRoyalUninstall020 AND KmLegacyCefSpriteManifest))) OR (KmLegacyCefPublisher = &quot;Matroskin&quot; AND ((KmLegacyCefDisplayVersion = &quot;0.2.1&quot; AND KmLegacyRoyalMain021 AND KmLegacyRoyalUninstall021 AND KmLegacyCefSpriteManifest) OR (KmLegacyCefDisplayVersion = &quot;0.2.2&quot; AND KmLegacyRoyalMain022 AND KmLegacyRoyalUninstall022 AND KmLegacyCefSpriteManifest) OR (KmLegacyCefDisplayVersion = &quot;0.3.21&quot; AND KmLegacyRoyalMain0321 AND KmLegacyRoyalUninstall0321 AND KmLegacyCefSpriteManifest) OR (KmLegacyCefDisplayVersion = &quot;0.4.26&quot; AND KmLegacyRoyalMain0426 AND KmLegacyRoyalUninstall0426 AND KmLegacyCefSpriteManifest))))" />
+    <SetProperty Action="ValidateKmLegacyCefPokemonPayload"
+                 Id="KmLegacyCefPokemonPayloadValidated"
+                 Value="1"
+                 Sequence="execute"
+                 After="ValidateKmLegacyCefRoyalPayload"
+                 Condition="KM_REMOVE_LEGACY = 1 AND KM_LEGACY_CEF_VALID = 1 AND KmLegacyCefPublisher = &quot;KotMatrosk1n&quot; AND KmLegacyPokemonMainElectron AND KmLegacyCefAppArchive AND KmLegacyCefUpdaterConfig AND ((KmLegacyCefDisplayName = &quot;Pokemon Royal Sword 0.1.0&quot; AND KmLegacyCefDisplayVersion = &quot;0.1.0&quot; AND KmLegacyPokemonUninstall010) OR (KmLegacyCefDisplayName = &quot;Pokemon Royal Sword 0.1.1&quot; AND KmLegacyCefDisplayVersion = &quot;0.1.1&quot; AND KmLegacyPokemonUninstall011) OR (KmLegacyCefDisplayName = &quot;Pokemon Royal Sword 0.1.2&quot; AND KmLegacyCefDisplayVersion = &quot;0.1.2&quot; AND KmLegacyPokemonUninstall012))" />
+    <SetProperty Action="ValidateKmLegacyCefRoyalIdentity"
+                 Id="KmLegacyCefRoyalIdentityValidated"
+                 Value="1"
+                 Sequence="execute"
+                 After="ValidateKmLegacyCefPokemonPayload"
+                 Condition="KmLegacyCefRoyalPayloadValidated = 1 AND KmLegacyCefInstallLocation ~= KmLegacyCefRoyalRoot AND KmLegacyCefUninstallCommand ~= KmLegacyCefRoyalCanonicalUninstallCommand" />
+    <SetProperty Action="ValidateKmLegacyCefPokemonIdentity"
+                 Id="KmLegacyCefPokemonIdentityValidated"
+                 Value="1"
+                 Sequence="execute"
+                 After="ValidateKmLegacyCefRoyalIdentity"
+                 Condition="KmLegacyCefPokemonPayloadValidated = 1 AND KmLegacyCefInstallLocation ~= KmLegacyCefPokemonRoot AND KmLegacyCefUninstallCommand ~= KmLegacyCefPokemonCanonicalUninstallCommand" />
+    <SetProperty Action="ValidateKmLegacyCefRoyalAtPokemonIdentity"
+                 Id="KmLegacyCefRoyalAtPokemonIdentityValidated"
+                 Value="1"
+                 Sequence="execute"
+                 After="ValidateKmLegacyCefPokemonIdentity"
+                 Condition="KmLegacyCefRoyalPayloadValidated = 1 AND KmLegacyCefInstallLocation ~= KmLegacyCefPokemonRoot AND KmLegacyCefUninstallCommand ~= KmLegacyCefRoyalAtPokemonUninstallCommand" />
+    <SetProperty Action="ValidateKmLegacyCefRoyalNestedIdentity"
+                 Id="KmLegacyCefRoyalNestedIdentityValidated"
+                 Value="1"
+                 Sequence="execute"
+                 After="ValidateKmLegacyCefRoyalAtPokemonIdentity"
+                 Condition="KmLegacyCefRoyalPayloadValidated = 1 AND KmLegacyCefInstallLocation ~= KmLegacyCefRoyalNestedRoot AND KmLegacyCefUninstallCommand ~= KmLegacyCefRoyalNestedUninstallCommand" />
     <SetProperty Action="ValidateKmLegacyCefIdentity"
                  Id="KmLegacyCefIdentityValidated"
                  Value="1"
                  Sequence="execute"
-                 After="SetKmLegacyCefRoot"
-                 Condition="KM_LEGACY_CEF_VALID = 1 AND KmLegacyCefInstallLocation ~= KmLegacyCefRoot AND KmLegacyCefDisplayName = &quot;Royal Sword Calculator&quot; AND KmLegacyCefPublisher = &quot;Matroskin&quot; AND ((KmLegacyCefDisplayVersion = &quot;0.2.2&quot; AND KmLegacyCefExecutable022) OR (KmLegacyCefDisplayVersion = &quot;0.3.21&quot; AND KmLegacyCefExecutable0321) OR (KmLegacyCefDisplayVersion = &quot;0.4.26&quot; AND KmLegacyCefExecutable0426)) AND KmLegacyCefUninstaller AND KmLegacyCefAppArchive AND KmLegacyCefUpdaterConfig AND KmLegacyCefSpriteManifest" />
+                 After="ValidateKmLegacyCefRoyalNestedIdentity"
+                 Condition="KmLegacyCefRoyalIdentityValidated = 1 OR KmLegacyCefPokemonIdentityValidated = 1 OR KmLegacyCefRoyalAtPokemonIdentityValidated = 1 OR KmLegacyCefRoyalNestedIdentityValidated = 1" />
     <CustomAction Id="BlockUnvalidatedLegacyCefInstall"
-                  Error="A Royal Sword Calculator installation was detected but cannot be migrated safely. Uninstall it from Windows Settings, then run KM Calculator Setup again. The legacy uninstaller preserves saved calculator data by default." />
+                  Error="A Royal Sword Calculator installation or leftover program folder was detected but cannot be removed safely. Uninstall it from Windows Settings, or remove its leftover Program Files folder if it is no longer registered, then run KM Calculator Setup again. After KM Calculator installs successfully, setup removes the remaining Royal Sword Calculator data for the current Windows user." />
     <InstallExecuteSequence>
       <Custom Action="BlockUnvalidatedLegacyCefInstall"
               After="ValidateKmLegacyCefIdentity"
-              Condition="NOT (REMOVE ~= &quot;ALL&quot;) AND (KmLegacyCefInstallLocation OR KmLegacyCefDisplayName OR KmLegacyCefPublisher OR KmLegacyCefDisplayVersion OR KmLegacyCefUninstallCommand) AND NOT KmLegacyCefIdentityValidated" />
+              Condition="KM_REMOVE_LEGACY = 1 AND (KmLegacyCefRoyalCanonicalRootPresent OR KmLegacyCefPokemonCanonicalRootPresent OR KmLegacyCefRoyalNestedRootPresent OR KmLegacyCefInstallLocation OR KmLegacyCefDisplayName OR KmLegacyCefPublisher OR KmLegacyCefDisplayVersion OR KmLegacyCefUninstallCommand) AND (NOT KmLegacyCefIdentityValidated OR (KmLegacyCefRoyalCanonicalRootPresent AND NOT KmLegacyCefRoyalIdentityValidated) OR (KmLegacyCefPokemonCanonicalRootPresent AND NOT (KmLegacyCefPokemonIdentityValidated OR KmLegacyCefRoyalAtPokemonIdentityValidated OR KmLegacyCefRoyalNestedIdentityValidated)) OR (KmLegacyCefRoyalNestedRootPresent AND NOT KmLegacyCefRoyalNestedIdentityValidated))" />
     </InstallExecuteSequence>
     <ComponentGroup Id="KmCalculatorLegacyMigrationComponents">
       <Component Id="KmCalculatorLegacyCefMigrationComponent"
@@ -155,11 +308,22 @@
                  Guid="deb65f11-dab3-4d6a-a15f-85f596f60e1b"
                  Bitness="always64"
                  Transitive="yes"
-                 Condition="KmLegacyCefIdentityValidated = 1">
-        <util:RemoveFolderEx Id="RemoveValidatedLegacyCefInstallRoot"
-                             Property="KmLegacyCefRoot"
+                 Condition="KmLegacyCefRoyalIdentityValidated = 1 OR KmLegacyCefPokemonIdentityValidated = 1 OR KmLegacyCefRoyalAtPokemonIdentityValidated = 1 OR KmLegacyCefRoyalNestedIdentityValidated = 1">
+        <util:RemoveFolderEx Id="RemoveValidatedLegacyCefRoyalInstallRoot"
+                             Property="KmLegacyCefRoyalRoot"
                              On="install"
-                             Condition="KmLegacyCefIdentityValidated = 1" />
+                             Condition="KmLegacyCefRoyalIdentityValidated = 1" />
+        <util:RemoveFolderEx Id="RemoveValidatedLegacyCefPokemonInstallRoot"
+                             Property="KmLegacyCefPokemonRoot"
+                             On="install"
+                             Condition="KmLegacyCefPokemonIdentityValidated = 1 OR KmLegacyCefRoyalAtPokemonIdentityValidated = 1" />
+        <util:RemoveFolderEx Id="RemoveValidatedLegacyCefRoyalNestedInstallRoot"
+                             Property="KmLegacyCefRoyalNestedRoot"
+                             On="install"
+                             Condition="KmLegacyCefRoyalNestedIdentityValidated = 1" />
+        <RemoveFolder Id="RemoveEmptyValidatedLegacyCefPokemonParent"
+                      Directory="LegacyPokemonRoyalSwordProgramFilesFolder"
+                      On="install" />
         <RemoveRegistryKey Id="RemoveLegacyCefProductKey"
                            Root="HKLM"
                            Key="Software\cef17072-1d18-5c82-9672-1f987b4e4970"
@@ -168,42 +332,72 @@
                            Root="HKLM"
                            Key="Software\Microsoft\Windows\CurrentVersion\Uninstall\cef17072-1d18-5c82-9672-1f987b4e4970"
                            Action="removeOnInstall" />
-        <RemoveFile Id="RemoveLegacyRoyalSwordDesktopShortcut"
-                    Directory="DesktopFolder"
-                    Name="Royal Sword Calculator.lnk"
-                    On="install" />
-        <RemoveFile Id="RemoveLegacyPokemonRoyalSwordDesktopShortcut"
-                    Directory="DesktopFolder"
-                    Name="Pokemon Royal Sword.lnk"
-                    On="install" />
-        <RemoveFile Id="RemoveLegacyRoyalSwordStartMenuShortcut"
-                    Directory="ProgramMenuFolder"
-                    Name="Royal Sword Calculator.lnk"
-                    On="install" />
-        <RemoveFile Id="RemoveLegacyPokemonRoyalSwordStartMenuShortcut"
-                    Directory="ProgramMenuFolder"
-                    Name="Pokemon Royal Sword.lnk"
-                    On="install" />
-        <RemoveFile Id="RemoveNestedLegacyRoyalSwordShortcut"
-                    Directory="LegacyRoyalSwordStartMenuFolder"
-                    Name="Royal Sword Calculator.lnk"
-                    On="install" />
-        <RemoveFile Id="RemoveNestedLegacyPokemonRoyalSwordShortcut"
-                    Directory="LegacyPokemonRoyalSwordStartMenuFolder"
-                    Name="Pokemon Royal Sword.lnk"
-                    On="install" />
-        <RemoveFolder Id="RemoveLegacyRoyalSwordStartMenuFolder"
-                      Directory="LegacyRoyalSwordStartMenuFolder"
-                      On="install" />
-        <RemoveFolder Id="RemoveLegacyPokemonRoyalSwordStartMenuFolder"
-                      Directory="LegacyPokemonRoyalSwordStartMenuFolder"
-                      On="install" />
         <RegistryValue Root="HKLM"
                        Key="Software\KM Calculator"
                        Name="MigratedLegacyCef17072"
                        Value="1"
                        Type="integer"
                        KeyPath="yes" />
+      </Component>
+      <Component Id="KmCalculatorLegacyShortcutCleanupComponent"
+                 Directory="INSTALLFOLDER"
+                 Guid="efafc760-66b7-48ea-9cd4-7e890c6f144c"
+                 Bitness="always64"
+                 Transitive="yes"
+                 Condition="KM_REMOVE_LEGACY = 1">
+        <RemoveFile Id="RemoveOrphanedLegacyRoyalSwordDesktopShortcut"
+                    Directory="DesktopFolder"
+                    Name="Royal Sword Calculator.lnk"
+                    On="install" />
+        <RemoveFile Id="RemoveOrphanedLegacyPokemonRoyalSwordDesktopShortcut"
+                    Directory="DesktopFolder"
+                    Name="Pokemon Royal Sword.lnk"
+                    On="install" />
+        <RemoveFile Id="RemoveOrphanedLegacyRoyalSwordStartMenuShortcut"
+                    Directory="ProgramMenuFolder"
+                    Name="Royal Sword Calculator.lnk"
+                    On="install" />
+        <RemoveFile Id="RemoveOrphanedLegacyPokemonRoyalSwordStartMenuShortcut"
+                    Directory="ProgramMenuFolder"
+                    Name="Pokemon Royal Sword.lnk"
+                    On="install" />
+        <RemoveFile Id="RemoveOrphanedNestedLegacyRoyalSwordShortcut"
+                    Directory="LegacyRoyalSwordStartMenuFolder"
+                    Name="Royal Sword Calculator.lnk"
+                    On="install" />
+        <RemoveFile Id="RemoveOrphanedNestedLegacyPokemonRoyalSwordShortcut"
+                    Directory="LegacyPokemonRoyalSwordStartMenuFolder"
+                    Name="Pokemon Royal Sword.lnk"
+                    On="install" />
+        <RemoveFolder Id="RemoveOrphanedLegacyRoyalSwordStartMenuFolder"
+                      Directory="LegacyRoyalSwordStartMenuFolder"
+                      On="install" />
+        <RemoveFolder Id="RemoveOrphanedLegacyPokemonRoyalSwordStartMenuFolder"
+                      Directory="LegacyPokemonRoyalSwordStartMenuFolder"
+                      On="install" />
+        <RegistryValue Root="HKLM"
+                       Key="Software\KM Calculator"
+                       Name="LegacyShortcutCleanupRevision"
+                       Value="1"
+                       Type="integer"
+                       KeyPath="yes" />
+      </Component>
+      <Component Id="KmCalculatorLegacyCleanupReceiptComponent"
+                 Directory="INSTALLFOLDER"
+                 Guid="15a40ddd-09bb-482c-a6c1-0049ce7011be"
+                 Bitness="always64"
+                 Condition="KM_LEGACY_CLEANUP_RECEIPT AND KM_LEGACY_CLEANUP_OWNER_SID">
+        <RegistryValue Root="HKLM"
+                       Key="Software\KM Calculator"
+                       Name="LegacyCleanupReceipt"
+                       Value="[KM_LEGACY_CLEANUP_RECEIPT]"
+                       Type="string"
+                       KeyPath="yes" />
+        <RegistryValue Root="HKLM"
+                       Key="Software\KM Calculator"
+                       Name="LegacyCleanupOwnerSid"
+                       Value="[KM_LEGACY_CLEANUP_OWNER_SID]"
+                       Type="string" />
       </Component>
     </ComponentGroup>
   </Fragment>

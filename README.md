@@ -125,7 +125,7 @@ The Windows installer uses WiX Toolset v7. WiX requires explicit acceptance of i
 
 Local builds may be unsigned. Release builds are fail-closed and require a password-protected code-signing PFX: the build signs and verifies the stamped application executable, MSI, embedded Burn bundle, and public launcher with SHA-256 plus an RFC 3161 timestamp. The exact certificate subject is written into the packaged `app-update.yml`, so `electron-updater` rejects an installer signed by a different publisher. GitHub Actions expects `KM_WINDOWS_SIGNING_CERTIFICATE_BASE64` and `KM_WINDOWS_SIGNING_CERTIFICATE_PASSWORD` secrets and never publishes when either credential or any signature is missing.
 
-The generated Burn setup, `latest.yml`, checksums, smoke-test output, and local build logs remain in ignored local paths and are not source files. See [Windows setup documentation](installer/windows/README.md) for the installer identity, signing controls, migration safeguards, and updater argument contract.
+The generated Burn setup, `latest.yml`, checksums, smoke-test output, and local build logs remain in ignored local paths and are not source files. See [Windows setup documentation](installer/windows/README.md) for the installer identity, signing controls, legacy-removal safeguards, and updater argument contract.
 
 Before submitting a change, build the app and check the public source:
 
