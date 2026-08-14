@@ -5,7 +5,8 @@ namespace KMCalculator.Setup.Launcher;
 internal sealed record LauncherArguments(
     IReadOnlyList<string> BurnArguments,
     bool RelaunchAfterSuccess,
-    bool SuppressErrors)
+    bool SuppressErrors,
+    bool InvokedByUpdater)
 {
     private static readonly HashSet<string> FlagArguments = new(StringComparer.OrdinalIgnoreCase)
     {
@@ -148,9 +149,19 @@ internal sealed record LauncherArguments(
         parsed = new LauncherArguments(
             forwarded,
             RelaunchAfterSuccess: invokedByUpdater && forceRun,
-            SuppressErrors: !invokedByUpdater && (nsisSilent || forwarded.Any(IsQuietArgument)));
+            SuppressErrors: !invokedByUpdater && (nsisSilent || forwarded.Any(IsQuietArgument)),
+            InvokedByUpdater: invokedByUpdater);
         return true;
     }
+
+    internal static LauncherArguments ForInteractiveLegacyUpdaterTransition(LauncherArguments source) =>
+        source with
+        {
+            BurnArguments = [],
+            RelaunchAfterSuccess = false,
+            SuppressErrors = false,
+            InvokedByUpdater = false
+        };
 
     private static bool IsDisplayModeArgument(string argument) =>
         argument.Equals("/quiet", StringComparison.OrdinalIgnoreCase) ||

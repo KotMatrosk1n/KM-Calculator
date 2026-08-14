@@ -25,6 +25,37 @@
     <Property Id="KM_CREATE_DESKTOP_SHORTCUT" Value="1" Secure="yes" />
     <Property Id="KM_CREATE_START_MENU_SHORTCUT" Value="1" Secure="yes" />
     <Property Id="KM_LEGACY_CEF_VALID" Value="0" Secure="yes" />
+    <Property Id="KM_REMOVE_LEGACY" Value="0" Secure="yes" />
+    <Property Id="KM_LEGACY_CLEANUP_RECEIPT" Secure="yes" Hidden="yes" />
+    <Property Id="KM_LEGACY_CLEANUP_OWNER_SID" Secure="yes" Hidden="yes" />
+    <Property Id="KM_EXISTING_LEGACY_CLEANUP_RECEIPT" Hidden="yes">
+      <RegistrySearch Id="KmExistingLegacyCleanupReceiptSearch"
+                      Root="HKLM"
+                      Key="Software\KM Calculator"
+                      Name="LegacyCleanupReceipt"
+                      Type="raw"
+                      Bitness="always64" />
+    </Property>
+    <Property Id="KM_EXISTING_LEGACY_CLEANUP_OWNER_SID" Hidden="yes">
+      <RegistrySearch Id="KmExistingLegacyCleanupOwnerSidSearch"
+                      Root="HKLM"
+                      Key="Software\KM Calculator"
+                      Name="LegacyCleanupOwnerSid"
+                      Type="raw"
+                      Bitness="always64" />
+    </Property>
+    <SetProperty Action="PreserveKmLegacyCleanupReceipt"
+                 Id="KM_LEGACY_CLEANUP_RECEIPT"
+                 Value="[KM_EXISTING_LEGACY_CLEANUP_RECEIPT]"
+                 Sequence="both"
+                 After="AppSearch"
+                 Condition="NOT KM_LEGACY_CLEANUP_RECEIPT AND KM_EXISTING_LEGACY_CLEANUP_RECEIPT" />
+    <SetProperty Action="PreserveKmLegacyCleanupOwnerSid"
+                 Id="KM_LEGACY_CLEANUP_OWNER_SID"
+                 Value="[KM_EXISTING_LEGACY_CLEANUP_OWNER_SID]"
+                 Sequence="both"
+                 After="PreserveKmLegacyCleanupReceipt"
+                 Condition="NOT KM_LEGACY_CLEANUP_OWNER_SID AND KM_EXISTING_LEGACY_CLEANUP_OWNER_SID" />
 
     <SetProperty Action="SetKmCanonicalInstallFolder"
                  Id="KmCanonicalInstallFolder"
@@ -41,6 +72,7 @@
 
     <StandardDirectory Id="ProgramFiles64Folder">
       <Directory Id="INSTALLFOLDER" Name="KM Calculator" />
+      <Directory Id="LegacyPokemonRoyalSwordProgramFilesFolder" Name="Pokemon Royal Sword" />
     </StandardDirectory>
     <StandardDirectory Id="ProgramMenuFolder">
       <Directory Id="KmCalculatorStartMenuFolder" Name="KM Calculator" />
@@ -62,7 +94,16 @@
     <util:CloseApplication Id="CloseLegacyRoyalSwordCalculator"
                            Target="Royal Sword Calculator.exe"
                            Description="Royal Sword Calculator must close before setup can continue."
-                           Condition="KM_LEGACY_CEF_VALID = 1"
+                           Condition="KM_REMOVE_LEGACY = 1"
+                           PromptToContinue="yes"
+                           CloseMessage="yes"
+                           ElevatedCloseMessage="yes"
+                           Timeout="10"
+                           RebootPrompt="yes" />
+    <util:CloseApplication Id="CloseLegacyPokemonRoyalSword"
+                           Target="Pokemon Royal Sword.exe"
+                           Description="Pokemon Royal Sword must close before setup can continue."
+                           Condition="KM_REMOVE_LEGACY = 1"
                            PromptToContinue="yes"
                            CloseMessage="yes"
                            ElevatedCloseMessage="yes"

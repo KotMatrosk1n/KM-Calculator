@@ -11,6 +11,7 @@
           <RegistryValue Name="InstallScope" Value="perMachine" Type="string" />
           <RegistryValue Name="Version" Value="[ProductVersion]" Type="string" />
           <RegistryValue Name="MainBinaryName" Value="KM Calculator.exe" Type="string" />
+          <RegistryValue Name="LegacyCleanupRevision" Value="1" Type="string" />
           <RegistryValue Name="CreateDesktopShortcut" Value="[KM_CREATE_DESKTOP_SHORTCUT]" Type="integer" />
           <RegistryValue Name="CreateStartMenuShortcut" Value="[KM_CREATE_START_MENU_SHORTCUT]" Type="integer" />
         </RegistryKey>

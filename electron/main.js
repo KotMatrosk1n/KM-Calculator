@@ -26,23 +26,12 @@ var APP_ICON_PATH = path.join(__dirname, "assets", "km-calculator-icon.png");
 var APP_STORAGE_FILE = "app-storage.json";
 var MAIN_WINDOW_STATE_FILE = "main-window-state.json";
 var UPDATER_LOG_FILE = "updater.log";
-// These legacy directory names are retained only to migrate existing user data after the rebrand.
-var LEGACY_USER_DATA_DIR_NAMES = [
-	"Royal Sword Calculator",
-	"Pokemon Royal Sword",
-	"royal-sword-calculator"
-];
 var MAIN_WINDOW_DEFAULT_WIDTH = 1480;
 var MAIN_WINDOW_DEFAULT_HEIGHT = 960;
 var MAIN_WINDOW_MIN_WIDTH = 1180;
 var MAIN_WINDOW_MIN_HEIGHT = 720;
 var LOCAL_SPRITE_ROUTE_PREFIX = "/local-sprites/";
-var UPDATER_CACHE_DIR_NAMES = [
-	"km-calculator-updater",
-	// Previous updater cache names remain here so stale installers from older releases can be cleaned safely.
-	"royal-sword-calculator-updater",
-	"pokemon-royal-sword-updater"
-];
+var UPDATER_CACHE_DIR_NAMES = ["km-calculator-updater"];
 var UPDATE_CHECK_DELAY_MS = 0;
 var UPDATE_FIRST_PROGRESS_TIMEOUT_MS = 30000;
 var UPDATE_STALL_TIMEOUT_MS = 90000;
@@ -80,38 +69,9 @@ var updaterState = {
 };
 var appStorageCache = null;
 var appStorageWriteTimer = null;
-
-function migrateLegacyUserData(targetPath) {
-	var targetHasData = false;
-	try {
-		targetHasData = fsSync.existsSync(targetPath) && fsSync.readdirSync(targetPath).length > 0;
-	} catch (error) {
-		console.warn("Could not inspect KM Calculator user data:", error.message || error);
-		return;
-	}
-	if (targetHasData) return;
-
-	for (var i = 0; i < LEGACY_USER_DATA_DIR_NAMES.length; i++) {
-		var sourcePath = path.join(app.getPath("appData"), LEGACY_USER_DATA_DIR_NAMES[i]);
-		if (!fsSync.existsSync(sourcePath) || path.resolve(sourcePath) === path.resolve(targetPath)) continue;
-		try {
-			if (!fsSync.existsSync(targetPath)) {
-				fsSync.renameSync(sourcePath, targetPath);
-			} else {
-				fsSync.cpSync(sourcePath, targetPath, {recursive: true, force: false, errorOnExist: false});
-			}
-			console.info("Migrated legacy calculator user data to KM Calculator.");
-		} catch (error) {
-			console.warn("Could not migrate legacy calculator user data:", error.message || error);
-		}
-		return;
-	}
-}
-
 app.setName(APP_DISPLAY_NAME);
 if (app.isPackaged) {
 	var kmCalculatorUserDataPath = path.join(app.getPath("appData"), APP_DISPLAY_NAME);
-	migrateLegacyUserData(kmCalculatorUserDataPath);
 	app.setPath("userData", kmCalculatorUserDataPath);
 }
 
