@@ -55,6 +55,7 @@ const srcRuntimeFiles = new Set([
 	'js/data/sets/gen9.js',
 	'js/data/swsh_ai_data.js',
 	'js/data/trainers.js',
+	'js/desktop_dialogs.js',
 	'js/desktop_storage.js',
 	'js/index_randoms_controls.js',
 	'js/moveset_import.js',

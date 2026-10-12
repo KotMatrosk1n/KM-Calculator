@@ -63,6 +63,14 @@ function createDesktopBridge() {
 	return {
 		// The legacy scheme is retained because localStorage is scoped to this origin.
 		localSpriteBaseUrl: "royal-sword://app/local-sprites",
+		dialogs: {
+			alert: function (message) {
+				ipcRenderer.sendSync("km-calculator-dialog", "alert", message);
+			},
+			confirm: function (message) {
+				return ipcRenderer.sendSync("km-calculator-dialog", "confirm", message) === true;
+			}
+		},
 		storage: {
 			getItem: function (key) {
 				key = normalizeStorageKey(key);

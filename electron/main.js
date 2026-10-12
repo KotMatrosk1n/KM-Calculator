@@ -9,6 +9,7 @@ var electronUpdater = require("electron-updater");
 var CancellationToken = builderUtilRuntime.CancellationToken;
 var app = electron.app;
 var BrowserWindow = electron.BrowserWindow;
+var dialog = electron.dialog;
 var ipcMain = electron.ipcMain;
 var Menu = electron.Menu;
 var net = electron.net;
@@ -305,6 +306,46 @@ function registerAppStorageIpc() {
 	});
 	ipcMain.on("km-calculator-storage-clear-prefix", function (event, prefix) {
 		clearAppStorageByPrefix(prefix);
+	});
+}
+
+function registerAppDialogIpc() {
+	ipcMain.on("km-calculator-dialog", function (event, kind, message) {
+		var parent = null;
+		var accepted = false;
+		try {
+			if (kind !== "alert" && kind !== "confirm") return;
+			if (typeof message !== "string") return;
+			if (!event.senderFrame || event.senderFrame !== event.sender.mainFrame ||
+				!isAppUrl(event.senderFrame.url)) return;
+			parent = BrowserWindow.fromWebContents(event.sender);
+			if (!parent || parent.isDestroyed() || event.sender.isDestroyed()) return;
+			var isConfirm = kind === "confirm";
+			var response = dialog.showMessageBoxSync(parent, {
+				type: isConfirm ? "question" : "info",
+				title: APP_DISPLAY_NAME,
+				message: message,
+				buttons: isConfirm ? ["OK", "Cancel"] : ["OK"],
+				defaultId: isConfirm ? 1 : 0,
+				cancelId: isConfirm ? 1 : 0,
+				noLink: true
+			});
+			accepted = response === 0;
+		} catch (error) {
+			console.warn("Could not show calculator dialog:", error.message || error);
+		} finally {
+			// Native dialogs can leave the Windows renderer without keyboard focus.
+			try {
+				if (parent && !parent.isDestroyed() && !event.sender.isDestroyed()) {
+					parent.focus();
+					event.sender.focus();
+				}
+			} catch (error) {
+				console.warn("Could not restore calculator focus:", error.message || error);
+			} finally {
+				event.returnValue = accepted;
+			}
+		}
 	});
 }
 
@@ -1085,6 +1126,7 @@ app.whenReady().then(function () {
 	scheduleStaleUpdaterCacheCleanup();
 	registerAppProtocol();
 	registerAppStorageIpc();
+	registerAppDialogIpc();
 	registerUpdaterIpc();
 	configureRendererRequestPolicy();
 	Menu.setApplicationMenu(null);
