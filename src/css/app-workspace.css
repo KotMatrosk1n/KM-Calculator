@@ -1,0 +1,205 @@
+/* Full-window app workspace. Calculator controls retain their existing identities. */
+:root {
+    --km-bg: #11151c;
+    --km-panel: #1a202a;
+    --km-inset: #141a23;
+    --km-hover: #252f3d;
+    --km-line: #344052;
+    --km-text: #edf2fa;
+    --km-muted: #a6b3c5;
+    --km-accent: #9bc0ff;
+    --km-selection: #263e60;
+}
+:root[data-km-theme="light"] {
+    --km-bg: #f1f4f8;
+    --km-panel: #ffffff;
+    --km-inset: #f5f7fb;
+    --km-hover: #e7edf5;
+    --km-line: #c9d2df;
+    --km-text: #202d3e;
+    --km-muted: #54647a;
+    --km-accent: #215eb8;
+    --km-selection: #dceaff;
+}
+html, body.km-app { min-width: 0; font: 14px/1.5 "Segoe UI", sans-serif; background: var(--km-bg); color: var(--km-text); }
+body.km-app { margin: 0; }
+body.km-app *, body.km-app *::before, body.km-app *::after { box-sizing: border-box; }
+body.km-app [hidden] { display: none !important; }
+body.km-app > header { display: flex; align-items: center; gap: 16px; margin: 0; padding: 14px 28px; background: var(--km-panel); border-bottom: 1px solid var(--km-line); height: auto; min-height: 72px; }
+body.km-app .km-calculator-header { display: flex; align-items: center; gap: 12px; margin-right: auto; }
+body.km-app .km-calculator-header-icon { width: 36px; height: 36px; }
+body.km-app .km-calculator-header-title { font-size: 18px; font-weight: 650; }
+.km-active-profile { border-left: 1px solid var(--km-line); padding-left: 18px; margin-left: 12px; color: var(--km-muted); font-size: 13px; }
+body.km-app .km-settings-button, body.km-app .km-rom-hack-change { margin: 0; position: static; }
+.km-app-tabs { display: flex; padding: 0 28px; gap: 26px; background: var(--km-panel); border-bottom: 1px solid var(--km-line); position: sticky; top: 0; z-index: 50; }
+body.km-app button.km-app-tab { padding: 16px 6px; border: 0; border-bottom: 3px solid transparent; border-radius: 0; background: transparent; color: var(--km-muted); font-size: 14px; box-shadow: none; }
+body.km-app button.km-app-tab[aria-selected="true"] { color: var(--km-accent); border-bottom-color: var(--km-accent); }
+body.km-app button.km-app-tab:hover { color: var(--km-text); background: var(--km-inset); }
+body.km-app .wrapper, .km-reference-panel { width: 100%; max-width: none; padding: 24px 28px 36px; margin: 0; }
+.km-page-heading { display: flex; align-items: center; justify-content: space-between; gap: 20px; margin-bottom: 22px; }
+.km-page-heading h1 { font-size: 28px; font-weight: 650; line-height: 1.2; margin: 4px 0 8px; letter-spacing: -0.6px; }
+.km-page-heading p { margin: 0; }
+.km-eyebrow { display: block; font-size: 10px; font-weight: 700; color: var(--km-accent); letter-spacing: 1.5px; }
+.km-muted { color: var(--km-muted); font-size: 13px; }
+.km-heading-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+body.km-app button, body.km-app .btn { font-family: inherit; cursor: pointer; background: var(--km-inset); color: var(--km-text); border: 1px solid var(--km-line); border-radius: 6px; box-shadow: none; text-shadow: none; padding: 7px 10px; height: auto; line-height: 1.35; }
+body.km-app button:hover, body.km-app .btn:hover { background: var(--km-hover); border-color: var(--km-muted); color: var(--km-text); box-shadow: none; }
+body.km-app button:disabled { opacity: 0.5; cursor: default; }
+body.km-app .visually-hidden:checked + .btn, body.km-app .visually-hidden:checked + .btn:hover { background: var(--km-selection); border-color: var(--km-accent); color: var(--km-text); box-shadow: none; }
+body.km-app :focus-visible { outline: 2px solid var(--km-accent); outline-offset: 3px; }
+body.km-app .visually-hidden:focus-visible + .btn { outline: 2px solid var(--km-accent); outline-offset: 2px; }
+body.km-app input:not([type="checkbox"]):not([type="radio"]), body.km-app select, body.km-app textarea { border: 1px solid var(--km-line); border-radius: 5px; background: var(--km-inset); color: var(--km-text); font-family: inherit; font-size: 13px; line-height: 1.4; box-shadow: none; padding: 5px 7px; min-height: 31px; max-width: 100%; }
+body.km-app .select2-container .select2-choice { background: var(--km-inset); border: 1px solid var(--km-line); border-radius: 5px; color: var(--km-text); min-height: 32px; height: auto; line-height: 30px; box-shadow: none; }
+body.km-app .select2-container .select2-choice .select2-arrow { background: transparent; border: 0; }
+body.km-app .select2-drop { color: var(--km-text); background: var(--km-panel); border-color: var(--km-accent); }
+body.km-app .select2-results .select2-highlighted { background: var(--km-selection); color: var(--km-text); }
+body.km-app .select2-search input { background: var(--km-inset); }
+body.km-app .wrapper > hr { display: none; }
+.km-disclosure { border: 1px solid var(--km-line); border-radius: 8px; background: var(--km-panel); margin: 10px 0 16px; }
+.km-disclosure > summary { cursor: pointer; padding: 12px 14px; font-size: 13px; font-weight: 600; color: var(--km-text); }
+.km-disclosure[open] > summary { border-bottom: 1px solid var(--km-line); }
+.km-disclosure > :not(summary) { padding: 12px; }
+body.km-app .calc-layout-settings { display: flex !important; align-items: center; flex-wrap: wrap; gap: 14px; }
+body.km-app .genSelection, body.km-app .notationSelection, body.km-app .modeSelection { top: auto; }
+body.km-app .genSelection { display: inline-flex; flex-wrap: wrap; }
+body.km-app .genSelection .btn { width: auto; min-width: 42px; margin: 0; }
+.km-calculator-grid { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 20px; align-items: start; }
+.km-battle-column { min-width: 0; }
+body.km-app .combat-workspace { display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+body.km-app .combat-workspace > .panel { display: block; float: none; min-width: 0; }
+body.km-app .combat-workspace > .panel:first-child { order: 0; }
+body.km-app .combat-workspace > .panel:last-child { order: 1; }
+body.km-app .combat-workspace > .km-field-panel { order: -1; grid-column: 1 / -1; }
+body.km-app .combat-workspace fieldset, body.km-app .lower-workspace fieldset { width: 100%; height: auto; float: none; min-width: 0; border: 1px solid var(--km-line); border-radius: 10px; background: var(--km-panel); padding: 16px; color: var(--km-text); }
+body.km-app fieldset > legend { color: var(--km-accent); font-size: 15px; font-weight: 650; width: auto; margin: 0 0 4px; padding: 0 8px; text-align: left; }
+body.km-app .poke-info > .km-disclosure { background: var(--km-inset); margin: 14px 0; }
+body.km-app .poke-info .info-group { margin: 12px 0; }
+body.km-app .poke-info .info-selectors > div, body.km-app .poke-info .top > div { margin-bottom: 7px; }
+body.km-app .poke-info .info-selectors select { width: calc(100% - 100px); max-width: 260px; }
+body.km-app .poke-info label { font-size: 12px; color: var(--km-muted); }
+body.km-app .poke-info .btn { color: var(--km-text); }
+body.km-app .poke-info table { width: 100%; }
+body.km-app .poke-info th, body.km-app .poke-info td { padding: 3px 1px; font-size: 12px; }
+body.km-app .poke-info th label { width: auto; }
+body.km-app .poke-info input:not([type]), body.km-app .poke-info input[type="text"] { width: 56px; }
+body.km-app .poke-info .base, body.km-app .poke-info .ivs, body.km-app .poke-info .evs, body.km-app .poke-info .dvs { width: 48px; max-width: 48px; padding: 5px 3px; }
+body.km-app .poke-info input[type="number"] { appearance: textfield; }
+body.km-app .poke-info input::-webkit-inner-spin-button { appearance: none; }
+body.km-app .poke-info .player-controls-spacer, body.km-app .poke-info .trainer-controls { height: auto; min-height: 80px; margin: 0 0 12px; padding: 0; }
+body.km-app .player-notes-controls { justify-content: flex-start; flex-wrap: wrap; gap: 6px; }
+body.km-app .player-notes-controls button { font-size: 11px; min-width: 0; padding: 6px 9px; }
+body.km-app .player-notes-controls button span { width: auto; }
+body.km-app .player-notes-controls .btn-battle-sim { min-width: 0; }
+body.km-app .trainer-data-attribution, body.km-app .trainer-data-attribution a { color: var(--km-muted); }
+body.km-app .km-results-column .move-result-no-effect { color: var(--km-muted); }
+body.km-app #p1 > .select2-container { display: block !important; }
+body.km-app .poke-info #player-team, body.km-app #trainer-team { width: 100%; min-height: 48px; margin: 10px 0 0; }
+body.km-app .poke-info .move1, body.km-app .poke-info .move2, body.km-app .poke-info .move3, body.km-app .poke-info .move4 { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; margin: 10px 0; padding: 10px; background: var(--km-inset); border-radius: 7px; border: 1px solid var(--km-line); }
+body.km-app .poke-info [class^="move"] > .select2-container { flex: 1 0 100%; width: 100% !important; }
+body.km-app .poke-info .move-type { width: 80px; }
+body.km-app .poke-info .move-cat { width: 82px; }
+body.km-app .poke-info input.move-bp { width: 48px; }
+body.km-app .poke-info .crit-btn, body.km-app .poke-info .z-btn, body.km-app .poke-info .max-btn { height: auto; width: auto; padding: 6px; margin: 0; }
+.km-section-heading { font-size: 13px; margin: 20px 0 10px; color: var(--km-text); }
+body.km-app .field-format-toggle { width: auto; margin: 0; display: inline-flex; }
+body.km-app .field-format-toggle .btn { width: 78px; margin: 0; }
+body.km-app .km-field-panel > .km-disclosure { margin: 0; }
+body.km-app .km-field-panel .field-info { border: 0; padding: 12px; }
+body.km-app .km-field-panel .field-info > legend { display: none; }
+body.km-app .field-info .btn { margin: 2px; padding: 7px; }
+body.km-app .field-info .field-terrain-toggle { max-width: 100%; margin: 12px auto; }
+body.km-app .lower-workspace { display: grid; grid-template-columns: minmax(0, 1fr) 300px; grid-column: 1 / -1; gap: 18px; padding-top: 0; }
+body.km-app .lower-workspace fieldset { padding-top: 12px; }
+body.km-app .calculator-import-column { width: 100%; }
+body.km-app .calculator-import-column textarea { width: 100%; min-height: 120px; }
+body.km-app .calculator-import-column .import-actions { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+body.km-app .calculator-import-column .import-actions button { width: 100%; min-width: 0; white-space: normal; }
+body.km-app .km-box-tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+body.km-app .km-box-tools .team-box-section { border: 0; margin: 0; padding: 0; }
+body.km-app .team-box-layout { gap: 12px; }
+body.km-app .team-box-section { background: var(--km-inset); border-color: var(--km-line); }
+body.km-app .team-box-heading { background: var(--km-hover); color: var(--km-text); padding: 8px 10px; }
+body.km-app .team-box-actions { display: flex; flex-wrap: wrap; gap: 5px; }
+.km-results-column { position: sticky; top: 78px; max-height: calc(100vh - 98px); overflow-y: auto; padding: 20px; border: 1px solid var(--km-line); border-radius: 10px; background: var(--km-panel); }
+.km-results-column h2 { font-size: 19px; margin: 6px 0; }
+body.km-app .km-results-column .move-result-group { display: flex; flex-direction: column; gap: 20px; min-width: 0; width: 100%; }
+body.km-app .km-results-column .move-result-column { width: 100%; }
+body.km-app .km-results-column .move-result-group .btn { width: 100%; margin: 4px 0; text-align: left; font-size: 13px; }
+body.km-app .km-results-column .move-result-subgroup > div { display: flex; flex-wrap: wrap; align-items: center; }
+body.km-app .km-results-column .result-move-header { font-size: 12px; color: var(--km-muted); margin-bottom: 8px; }
+body.km-app .km-results-column .main-result-group { padding-top: 16px; border-top: 1px solid var(--km-line); margin: 18px 0 0; overflow-wrap: anywhere; }
+body.km-app .km-results-column .big-text { font-size: 13px; font-weight: 600; }
+body.km-app .km-results-column .small-text { font-size: 12px; color: var(--km-muted); }
+.km-reference-filters { display: flex; align-items: flex-end; gap: 14px; padding: 18px; border: 1px solid var(--km-line); border-radius: 10px; background: var(--km-panel); }
+.km-filter { display: flex; flex-direction: column; gap: 6px; min-width: 140px; }
+.km-filter > span { font-size: 12px; font-weight: 600; color: var(--km-muted); }
+.km-filter.km-search { flex: 1; }
+body.km-app .km-filter input, body.km-app .km-filter select { width: 100%; min-height: 39px; }
+body.km-app .km-reference-filters button { min-height: 39px; }
+.km-reference-note { padding: 12px 0 0; color: var(--km-muted); font-size: 12px; max-width: 1050px; }
+.km-result-count { font-size: 12px; color: var(--km-muted); margin: 18px 0 10px; }
+.km-reference-browser { display: grid; grid-template-columns: 252px minmax(0, 1fr); gap: 24px; align-items: start; }
+.km-location-list { position: sticky; top: 78px; max-height: calc(100vh - 100px); overflow-y: auto; border: 1px solid var(--km-line); border-radius: 9px; background: var(--km-panel); padding: 7px; }
+body.km-app button.km-location-button { display: flex; flex-direction: column; width: 100%; gap: 5px; text-align: left; background: transparent; border-color: transparent; padding: 12px; margin: 0 0 3px; }
+.km-location-button span { font-size: 13px; font-weight: 600; }
+.km-location-button small { font-size: 11px; color: var(--km-muted); }
+body.km-app .km-location-button[aria-current="true"] { background: var(--km-selection); border-color: var(--km-accent); }
+.km-reference-detail { min-width: 0; }
+.km-reference-detail > h2 { font-size: 23px; font-weight: 600; margin: 0 0 18px; }
+.km-reference-card { padding: 20px; border: 1px solid var(--km-line); border-radius: 9px; background: var(--km-panel); margin-bottom: 16px; overflow-wrap: anywhere; }
+.km-reference-card h3 { font-size: 16px; font-weight: 600; margin: 0 0 12px; }
+.km-data-table { width: 100%; border-collapse: collapse; }
+.km-data-table th { text-align: left; font-size: 11px; font-weight: 600; color: var(--km-muted); background: var(--km-inset); padding: 10px 12px; }
+.km-data-table td { padding: 12px; border-bottom: 1px solid var(--km-line); font-size: 13px; }
+.km-data-table tr:last-child td { border-bottom: 0; }
+.km-data-table th:last-child, .km-data-table td:last-child { text-align: right; }
+.km-pokemon-name { font-weight: 600; }
+.km-rate { color: var(--km-accent); font-variant-numeric: tabular-nums; }
+.km-empty-state { padding: 60px 24px; text-align: center; border: 1px dashed var(--km-line); border-radius: 10px; }
+.km-empty-state h2 { font-size: 20px; }
+.km-trainer-roster { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.km-trainer-roster .km-reference-card { margin: 0; }
+.km-trainer-roster .km-eyebrow { margin-bottom: 8px; }
+.km-pokemon-facts { display: grid; grid-template-columns: 65px 1fr; gap: 6px 10px; font-size: 13px; }
+.km-pokemon-facts dt { color: var(--km-muted); font-weight: normal; }
+.km-pokemon-facts dd { margin: 0; }
+.km-move-list { list-style: none; margin: 14px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.km-move-list li { background: var(--km-inset); border-radius: 4px; padding: 8px; font-size: 12px; }
+.km-recorded-stats { background: var(--km-inset); color: var(--km-muted); border: 0; margin: 0; font: 12px/1.8 Consolas, monospace; white-space: pre-wrap; }
+.km-card-heading { display: flex; align-items: start; justify-content: space-between; gap: 20px; }
+.km-tag { flex-shrink: 0; border: 1px solid var(--km-line); padding: 4px 8px; border-radius: 4px; font-size: 11px; color: var(--km-muted); }
+.km-item-directions { font-size: 14px; line-height: 1.7; margin: 4px 0 14px; }
+.km-edition { color: var(--km-accent); font-size: 12px; }
+.km-item-card .km-disclosure { margin: 12px 0 0; background: var(--km-inset); }
+.km-item-evidence { font-size: 12px; }
+body.km-app a.km-source-link { display: inline-block; color: var(--km-accent); margin-right: 18px; text-decoration: underline; }
+.km-about { margin: 0 28px 24px; background: transparent; }
+body.km-app .credits { max-width: none; margin: 0; font-size: 12px; color: var(--km-muted); }
+@media (min-width: 1800px) {
+    .km-calculator-grid { grid-template-columns: minmax(0, 1fr) 390px; gap: 24px; }
+    body.km-app .lower-workspace { display: grid; grid-template-columns: minmax(0, 1fr) 300px; }
+}
+@media (max-width: 1300px) {
+    .km-calculator-grid { grid-template-columns: minmax(0, 1fr); }
+    .km-results-column { position: static; max-height: none; }
+    body.km-app .km-results-column .move-result-group { flex-direction: row; }
+    .km-active-profile { display: none; }
+}
+@media (max-width: 800px) {
+    body.km-app > header { flex-wrap: wrap; gap: 10px; padding: 12px 16px; }
+    body.km-app .km-calculator-header { width: 100%; }
+    .km-app-tabs { gap: 12px; padding: 0 12px; overflow-x: auto; }
+    body.km-app button.km-app-tab { white-space: nowrap; }
+    body.km-app .wrapper, .km-reference-panel { padding: 20px 14px; }
+    .km-page-heading { flex-direction: column; align-items: flex-start; }
+    body.km-app .combat-workspace { grid-template-columns: minmax(0, 1fr); }
+    body.km-app .km-results-column .move-result-group { flex-direction: column; }
+    .km-reference-filters { flex-wrap: wrap; }
+    .km-filter.km-search { flex-basis: 100%; }
+    .km-reference-browser { grid-template-columns: minmax(0, 1fr); gap: 16px; }
+    .km-location-list { position: static; max-height: 230px; }
+    .km-card-heading { flex-direction: column; gap: 4px; margin-bottom: 12px; }
+    body.km-app .team-box-layout { display: flex; flex-direction: column; }
+    body.km-app .lower-workspace { grid-template-columns: minmax(0, 1fr); }
+    .km-about { margin: 0 14px 20px; }
+}

@@ -218,13 +218,17 @@ function drawHealthBar(poke, max, current) {
 	healthbar.css("background", "linear-gradient(to right, " + fillColor + " " + fillPercent + "%, white 0%");
 }
 // TODO: these HP inputs should really be input type=number with min=0, step=1, constrained by max=maxHP or 100
-$(".current-hp").keyup(function () {
+$(".current-hp").on("input change keyup", function (event) {
+	// Real edits are handled by input/change; retain synthetic keyup callers.
+	// A Tab keyup on the percent box must not round an exact HP value.
+	if (event.type === "keyup" && event.originalEvent) return;
 	var max = $(this).parent().children(".max-hp").text();
 	validate($(this), 0, max);
 	var current = $(this).val();
 	calcPercentHP($(this).parent(), max, current);
 });
-$(".percent-hp").keyup(function () {
+$(".percent-hp").on("input change keyup", function (event) {
+	if (event.type === "keyup" && event.originalEvent) return;
 	var max = $(this).parent().children(".max-hp").text();
 	validate($(this), 0, 100);
 	var percent = $(this).val();
