@@ -19,6 +19,7 @@ function updateTheme() {
 
 	var darkStyles = document.getElementById('dark-theme-styles');
 	darkStyles.disabled = !isDark;
+	document.documentElement.setAttribute('data-km-theme', isDark ? 'dark' : 'light');
 }
 
 /*

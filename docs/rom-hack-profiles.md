@@ -22,6 +22,8 @@ Royal Sword is the first bundled profile. It uses canonical Generation 8 as its 
 
 ## Layouts And Input Policies
 
+The shared [app workspace](app-workspace.md) provides the full-window calculator and profile reference sections. Layout providers operate within that shell and must preserve the live calculator controls and shared workflow anchors.
+
 The `base` layout is the default for every profile that does not explicitly name another layout. It starts with the original damage calculator's core controls, including the generation-appropriate IV, DV, EV, level, set, field, and format controls. It also provides KM Calculator's shared workflow layer: Team/Box, Player Notes and Clear Notes, the trainer dropdown and trainer team sprites, save import and border controls, and the enhanced Singles and Doubles experience. The active profile still locks the generation selector to its declared base generation.
 
 Layout and input behavior are independent profile layers:

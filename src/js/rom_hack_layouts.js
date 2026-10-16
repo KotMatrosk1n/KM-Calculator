@@ -200,7 +200,7 @@
 
 	var baseLayoutProvider = createProvider(BASE_LAYOUT_ID, "Player", "Trainer", function (runtime) {
 		return combineDisposers([
-			moveNode(runtime, ".calculator-import-column", ".combat-workspace > .panel:nth-child(2)"),
+			moveNode(runtime, ".calculator-import-column", ".lower-workspace"),
 			placeTrainerControls(runtime, BASE_LAYOUT_ID)
 		]);
 	});
