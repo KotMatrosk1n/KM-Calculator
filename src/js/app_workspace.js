@@ -2,12 +2,12 @@
 /* The app shell keeps the live calculator mounted while profile reference views change. */
 (function () {
 	"use strict";
-	var tabs = ["Calculator", "Encounters", "Trainers", "Route Items", "Team & Boxes"];
+	var tabs = ["Calculator", "Encounters", "Trainers", "Route Items"];
 	var panels = [];
 	var buttons = [];
 	var views = [];
 	var activeTab = 0;
-	var tabScroll = [0, 0, 0, 0, 0];
+	var tabScroll = [0, 0, 0, 0];
 	var registry;
 	var profileLabel;
 	var sourceData;
@@ -116,11 +116,77 @@
 		content.appendChild(globals); content.appendChild(sides); field.appendChild(content); field.appendChild(descriptions);
 		dialog.appendChild(field);
 	}
+	function setupTeamDrawer(wrapper) {
+		var drawer = el("section", "km-team-drawer");
+		var bar = el("div", "km-team-drawer-bar");
+		var content = el("div", "km-team-drawer-content"); content.id = "km-team-drawer-content"; content.hidden = true;
+		var lower = wrapper.querySelector(".lower-workspace");
+		var box = lower.querySelector("#team-box");
+		var open = false;
+		var activePanel = null;
+		var tools = [];
+		var toggle = button("Team & Boxes", function () { setOpen(!open); }, "km-team-drawer-toggle");
+		toggle.id = "km-team-drawer-toggle"; toggle.setAttribute("aria-controls", content.id); toggle.setAttribute("aria-expanded", "false");
+		content.setAttribute("role", "region"); content.setAttribute("aria-labelledby", toggle.id);
+		var hint = el("span", "km-muted km-team-drawer-hint", "Drag to rearrange · Right-click to assign"); hint.hidden = true;
+		var actions = el("div", "km-team-drawer-actions"); actions.hidden = true;
+		function setOpen(value) {
+			open = value; content.hidden = !open; actions.hidden = !open; hint.hidden = !open;
+			toggle.setAttribute("aria-expanded", String(open));
+			drawer.classList.toggle("km-team-drawer-open", open);
+			resizeWorkspace();
+		}
+		function showPanel(name) {
+			activePanel = name;
+			tools.forEach(function (tool) {
+				tool.panel.hidden = tool.name !== name;
+				tool.button.setAttribute("aria-expanded", String(tool.name === name));
+			});
+			lower.classList.toggle("km-drawer-has-tools", !!name);
+			setOpen(true);
+		}
+		function addPanel(name, label, panel) {
+			panel.id = "km-drawer-" + name; panel.classList.add("km-drawer-tool-panel"); panel.hidden = true;
+			var opener = button(label, function () { showPanel(activePanel === name ? null : name); });
+			opener.id = panel.id + "-button"; opener.setAttribute("aria-controls", panel.id); opener.setAttribute("aria-expanded", "false");
+			panel.setAttribute("role", "region"); panel.setAttribute("aria-labelledby", opener.id);
+			tools.push({name: name, panel: panel, button: opener}); actions.appendChild(opener); lower.appendChild(panel);
+		}
+		var search = el("div", "km-drawer-search");
+		search.appendChild(box.querySelector(".team-box-filter-section")); search.appendChild(box.querySelector(".team-box-sort-section"));
+		addPanel("search", "Search & sort", search);
+		addPanel("colors", "Color coding", box.querySelector(".color-coding-controls"));
+		addPanel("manage", "Manage boxes", box.querySelector(".team-box-control-section"));
+		addPanel("import", "Import / Export", lower.querySelector(".calculator-import-column"));
+		bar.appendChild(toggle); bar.appendChild(hint); bar.appendChild(actions);
+		content.appendChild(lower); drawer.appendChild(bar); drawer.appendChild(content); wrapper.appendChild(drawer);
+		wrapper.classList.add("km-has-team-drawer");
+		drawer.addEventListener("keydown", function (event) {
+			if (event.key !== "Escape" || event.defaultPrevented || event.target.closest("dialog")) return;
+			if (window.jQuery && window.jQuery(".select2-drop-active").length) return;
+			if (!open) return;
+			event.preventDefault(); event.stopPropagation(); setOpen(false); toggle.focus({preventScroll: true});
+		});
+		return {
+			lower: lower,
+			box: box,
+			openImport: function () { showPanel("import"); },
+			resize: function (height) {
+				var size = open ? Math.min(330, Math.max(260, Math.floor(height * 0.31))) : 40;
+				wrapper.style.setProperty("--km-team-drawer-size", size + "px");
+				return size;
+			}
+		};
+	}
 	function setupCalculator(wrapper) {
-		var statsViews = [];
 		var boxViews = [];
-		var heading = el("div", "km-page-heading");
+		var heading = el("div", "km-page-heading km-calculator-heading");
 		heading.appendChild(el("h1", "", "Calculator"));
+		var trainerNavigation = el("div", "km-trainer-navigation"); trainerNavigation.id = "km-trainer-navigation";
+		trainerNavigation.setAttribute("role", "group"); trainerNavigation.setAttribute("aria-label", "Trainer navigation");
+		var trainerRow = wrapper.querySelector(".trainer-selector-row");
+		if (trainerRow) trainerNavigation.appendChild(trainerRow);
+		heading.appendChild(trainerNavigation);
 		var actions = el("div", "km-heading-actions"); heading.appendChild(actions);
 		wrapper.insertBefore(heading, wrapper.firstChild);
 		var title = wrapper.querySelector(".main-title-text"); if (title) title.hidden = true;
@@ -146,18 +212,21 @@
 		document.addEventListener("click", function (event) {
 			var slot = event.target.closest(".doubles-slot-card"); if (slot) showSlot(Number(slot.getAttribute("data-slot")));
 		}, true);
-		Array.prototype.forEach.call(wrapper.querySelectorAll(":scope > .move-result-group, :scope > .main-result-group"), function (node) { results.appendChild(node); });
-		Array.prototype.forEach.call(results.querySelectorAll(".move-result-column"), function (column, i) {
+		[".main-result-group", ".move-result-group"].forEach(function (selector) {
+			Array.prototype.forEach.call(wrapper.querySelectorAll(":scope > " + selector), function (node) { results.appendChild(node); });
+		});
+		Array.prototype.forEach.call(results.querySelectorAll(".move-result-column"), function (column) {
 			Array.prototype.forEach.call(column.querySelectorAll(".result-move-header"), function (header, slot) {
-				var side = el("strong", "km-result-side", i ? "Opponent" : "Me");
-				side.appendChild(el("small", "km-result-slot-number doubles-result-only", " · Slot " + (slot + 1)));
-				header.insertBefore(side, header.firstChild);
+				var name = header.querySelector("span"); name.classList.add("km-result-side");
+				name.after(el("small", "km-result-slot-number doubles-result-only", "Slot " + (slot + 1)));
 			});
 		});
 		Array.prototype.forEach.call(results.querySelectorAll(".small-text details"), function (details) {
 			var old = details.querySelector("summary");
 			var values = el("div", "km-damage-values"); values.id = old.id; values.textContent = old.textContent;
-			old.replaceWith(values); details.insertBefore(el("summary", "", "Damage rolls"), details.firstChild);
+			old.remove(); details.before(values); details.classList.add("km-extra-damage-rolls");
+			details.hidden = !details.querySelector("p").textContent.trim();
+			details.insertBefore(el("summary", "", "More damage rolls"), details.firstChild);
 		});
 		var combat = wrapper.querySelector(".combat-workspace"); wrapper.insertBefore(layout, combat);
 		main.appendChild(combat); layout.appendChild(main); layout.appendChild(results);
@@ -173,12 +242,9 @@
 				var setContainer = pokemon.querySelector(":scope > .select2-container");
 				if (setContainer) pokemon.insertBefore(setContainer, playerControls);
 				pokemon.insertBefore(setInput, playerControls);
+				var editorActions = el("div", "km-editor-actions"); pokemon.parentNode.appendChild(editorActions);
+				editorActions.appendChild(pokemon.querySelector(".player-notes-controls"));
 			}
-			var editorActions = el("div", "km-editor-actions"); pokemon.appendChild(editorActions);
-			if (!index) editorActions.appendChild(pokemon.querySelector(".player-notes-controls"));
-			var statsDialog = modal((index ? "Opponent" : "Me") + " · Stats & details", "km-stats-" + index, pokemon);
-			var statsButton = button("Stats & details", function () { statsDialog.showModal(); }); editorActions.appendChild(statsButton);
-			editorActions.appendChild(field.querySelector(index ? "#exportR" : "#exportL"));
 			var health = pokemon.querySelector(".current-hp").parentNode; health.classList.add("km-health-controls");
 			health.querySelector("label").textContent = "HP";
 			var level = pokemon.querySelector(".level").parentNode; level.classList.add("km-level-control"); health.insertBefore(level, health.firstChild);
@@ -187,30 +253,26 @@
 			});
 			pokemon.querySelector(".percent-hp").setAttribute("aria-label", "Current HP percentage");
 			var statsContent = el("div", "km-stats-content");
-			statsContent.appendChild(pokemon.querySelector(".info-group.top"));
+			var statsTop = pokemon.querySelector(".info-group.top"); statsContent.appendChild(statsTop);
+			var genderControl = statsTop.querySelector(".gender").parentNode; genderControl.classList.add("km-gender-control");
+			statsTop.querySelector(".pokemon-type-row").after(genderControl, statsTop.querySelector(".pokemon-forme-control"));
 			var statsTable = pokemon.querySelector(".info-group table");
 			var headers = statsTable.querySelectorAll("thead th");
 			headers[5].textContent = "Stat"; headers[6].textContent = "Stage";
 			var modified = el("th", "", "Final"); modified.scope = "col"; headers[0].parentNode.appendChild(modified);
-			statsContent.appendChild(statsTable.parentNode); statsDialog.appendChild(statsContent);
+			statsContent.appendChild(statsTable.parentNode);
 			var firstMove = pokemon.querySelector(".move1");
-			var inlineStats = el("details", "km-inline-stats"); inlineStats.open = true; inlineStats.hidden = true;
-			inlineStats.appendChild(el("summary", "", "Stats & details")); pokemon.insertBefore(inlineStats, firstMove);
-			statsViews.push({dialog: statsDialog, content: statsContent, inline: inlineStats, button: statsButton});
+			var inlineStats = el("section", "km-inline-stats");
+			var statsHeading = el("h3", "", "Stats & details"); statsHeading.id = "km-stats-heading-" + index;
+			inlineStats.setAttribute("aria-labelledby", statsHeading.id);
+			inlineStats.appendChild(statsHeading); inlineStats.appendChild(statsContent); pokemon.insertBefore(inlineStats, firstMove);
 			if (firstMove) pokemon.insertBefore(el("h3", "km-section-heading", "Moves"), firstMove);
 			Array.prototype.forEach.call(pokemon.querySelectorAll(".move-bp"), function (input) { input.setAttribute("aria-label", "Move base power"); input.title = "Base power"; });
 		});
 		setupField(field, fieldDialog);
-		var teamPanel = el("section", "km-team-panel");
-		var teamHeading = el("div", "km-page-heading"); teamHeading.appendChild(el("h1", "", "Team & Boxes"));
-		teamHeading.appendChild(button("Back to calculator", function () { activateTab(0, true); })); teamPanel.appendChild(teamHeading);
-		teamPanel.appendChild(el("p", "km-muted km-team-help", "Drag Pokémon between boxes. Right-click a Pokémon to assign a battle slot or manage its set."));
-		var lower = wrapper.querySelector(".lower-workspace"); teamPanel.appendChild(lower);
-		var box = lower.querySelector("#team-box"); var tools = el("div", "km-box-tools");
-		[".team-box-filter-section", ".team-box-sort-section", ".color-coding-controls", ".team-box-control-section"].forEach(function (selector) { tools.appendChild(box.querySelector(selector)); });
-		var boxTools = modal("Search, sorting & box tools", "km-box-tools-dialog", box); boxTools.appendChild(tools);
-		var toolsButton = button("Search, sorting & box tools", function () { boxTools.showModal(); }, "km-box-tools-open");
-		box.insertBefore(toolsButton, box.querySelector(".team-box-layout"));
+		var drawer = setupTeamDrawer(wrapper);
+		var lower = drawer.lower;
+		var box = drawer.box;
 		Array.prototype.forEach.call(box.querySelectorAll(".box-poke"), function (zone) {
 			var name = zone.parentNode.querySelector(".team-box-heading").textContent;
 			var pager = el("div", "km-box-pages"); var status = el("span"); status.setAttribute("aria-live", "polite");
@@ -219,23 +281,23 @@
 			view.next = button("›", function () { view.page++; resizeWorkspace(); }); view.next.setAttribute("aria-label", "Next " + name + " page");
 			pager.appendChild(view.previous); pager.appendChild(status); pager.appendChild(view.next); zone.after(pager); boxViews.push(view);
 			new window.MutationObserver(function (records) {
-				if (records.some(function (record) { return record.type === "attributes"; })) view.page = 0;
+				if (records.some(function (record) {
+					return record.type === "attributes" && /\bteam-box-filter-hidden\b/.test(record.oldValue || "") !== record.target.classList.contains("team-box-filter-hidden");
+				})) view.page = 0;
 				resizeWorkspace();
-			}).observe(zone, {childList: true, subtree: true, attributes: true, attributeFilter: ["class"]});
+			}).observe(zone, {childList: true, subtree: true, attributes: true, attributeOldValue: true, attributeFilter: ["class"]});
 		});
 		resizeWorkspace = function () {
 			var scale = Number(window.getComputedStyle(document.body).zoom) || 1;
-			var expanded = window.innerWidth / scale >= 1500 && window.innerHeight / scale >= 960;
+			var availableHeight = window.innerHeight / scale - drawer.resize(window.innerHeight / scale);
+			var expanded = window.innerWidth / scale >= 1500 && availableHeight >= 960;
 			results.classList.toggle("km-results-expanded", expanded);
-			statsViews.forEach(function (view) {
-				var target = expanded ? view.inline : view.dialog;
-				if (view.content.parentNode !== target) { if (view.dialog.open) view.dialog.close(); target.appendChild(view.content); }
-				view.inline.hidden = !expanded; view.button.hidden = expanded;
-			});
 			boxViews.forEach(function (view) {
 				var rect = view.zone.getBoundingClientRect(); if (!rect.width) return;
-				var columns = Math.max(1, Math.floor((rect.width / scale - 12) / 72));
-				var rows = Math.max(1, Math.min(5, Math.floor(((window.innerHeight - rect.top) / scale - 64) / 72)));
+				var columns = Math.max(1, Math.floor((rect.width / scale - 8) / 72));
+				var section = view.zone.parentNode;
+				var available = (section.getBoundingClientRect().height - section.querySelector(".team-box-heading").getBoundingClientRect().height) / scale - 34;
+				var rows = Math.max(1, Math.min(5, Math.floor((available - 8) / 72)));
 				var capacity = columns * rows;
 				var matches = Array.prototype.filter.call(view.zone.children, function (node) { return node.classList.contains("box-pokemon") && !node.classList.contains("team-box-filter-hidden"); });
 				var pages = Math.max(1, Math.ceil(matches.length / capacity)); view.page = Math.max(0, Math.min(view.page, pages - 1));
@@ -249,15 +311,9 @@
 				view.previous.disabled = view.page === 0; view.next.disabled = view.page === pages - 1;
 			});
 		};
-		window.addEventListener("resize", resizeWorkspace); boxTools.addEventListener("toggle", resizeWorkspace);
-		actions.insertBefore(button("Import", function () { activateTab(4, true); lower.querySelector("textarea").focus(); }), preferences || null);
-		["exportL", "exportR"].forEach(function (id) {
-			document.getElementById(id).addEventListener("click", function () {
-				activateTab(4, true);
-				var text = lower.querySelector("textarea"); text.focus(); text.select();
-			});
-		});
-		return teamPanel;
+		window.addEventListener("resize", resizeWorkspace);
+		if (window.ResizeObserver) new window.ResizeObserver(resizeWorkspace).observe(lower);
+		actions.insertBefore(button("Import", function () { drawer.openImport(); lower.querySelector("textarea").focus({preventScroll: true}); }), preferences || null);
 	}
 
 	function makeFilter(view, label, values) {
@@ -692,12 +748,11 @@
 		document.querySelector(".km-calculator-header").appendChild(profileLabel);
 		var changeProfile = document.querySelector(".km-rom-hack-change");
 		if (changeProfile) document.querySelector("header").appendChild(changeProfile);
-		var teamPanel = setupCalculator(wrapper);
+		setupCalculator(wrapper);
 		panels.push(wrapper);
 		panels.push(buildReference("Encounters", "encounters", "Find Pokémon by location, encounter method, and weather."));
 		panels.push(buildReference("Trainers", "trainers", "Plan ahead with trainer teams, moves, and level caps."));
 		panels.push(buildReference("Route Items", "items", "Find pickups, gifts, shops, and berry trees by location."));
-		panels.push(teamPanel);
 		tabs.forEach(function (label, i) {
 			var b = button(label, function () { activateTab(i, false); }, "km-app-tab");
 			b.id = "km-tab-" + i; b.setAttribute("role", "tab"); b.setAttribute("aria-controls", "km-panel-" + i);

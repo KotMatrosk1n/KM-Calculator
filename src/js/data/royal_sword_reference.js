@@ -1,4 +1,4 @@
-/* Reference tables supplied for the Royal Sword profile. Personal run progress is excluded. */
+/* Royal Sword encounters, trainer teams, and route item references. */
 /*global window */
 window.KMCalculatorReferenceData = {
 	"pokemon-royal-sword": {

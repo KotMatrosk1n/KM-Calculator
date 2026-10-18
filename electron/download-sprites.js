@@ -108,7 +108,7 @@ function getCalcSpriteFileNames(extension) {
 			if (spriteId) spriteFiles[spriteId + "." + extension] = true;
 		});
 	});
-	// Reference cards may use workbook labels or forms outside calculator sets.
+	// Reference cards may use display names or forms outside calculator sets.
 	var referenceSource = fs.readFileSync(path.join(__dirname, "..", "src", "js", "data", "royal_sword_reference.js"), "utf8");
 	var referenceAssignment = /^window\.KMCalculatorReferenceData = (\{[\s\S]*?^\});/m.exec(referenceSource);
 	if (!referenceAssignment) throw new Error("Could not read bundled reference sprite data");

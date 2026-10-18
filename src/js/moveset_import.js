@@ -528,8 +528,7 @@ function getTrainerName(entry) {
 }
 
 function getTrainerPackGroup(entry) {
-	var area = getTrainerArea(entry);
-	return entry && entry._kmPack ? entry._kmPack.name + " - " + area : area;
+	return getTrainerArea(entry);
 }
 
 function getTrainerPackCredit(entry) {
@@ -726,8 +725,9 @@ function renderTrainerTeam(trainerId) {
 	clearDoublesSlotSide("opponent");
 	for (var i = 0; i < trainer.length; i++) {
 		var pokemon = trainer[i];
-		var button = $("<button type='button' class='trainer-pokemon'></button>");
+		var button = $("<button type='button' class='trainer-pokemon' draggable='true'></button>");
 		button.append(createPokemonSprite(getTrainerPokemonSpecies(pokemon), "trainer-pokemon-sprite"));
+		button.find("img").prop("draggable", false);
 		button.attr("aria-label", getTrainerPokemonButtonLabel(pokemon));
 		button.attr("title", getTrainerPokemonLabel(pokemon));
 		button.attr("data-trainer-id", trainerId);
@@ -762,6 +762,91 @@ function selectAdjacentTrainer(direction) {
 	selector.val(trainerIds[index]).change();
 }
 
+function initializeTrainerSelector(selector) {
+	selector.off(".kmTrainerSearch").select2({
+		width: "resolve",
+		minimumResultsForSearch: 0,
+		matcher: function (term, text, option) {
+			var area = option.parent("optgroup").attr("label") || "";
+			return (text + " " + area).toLowerCase().indexOf(term.toLowerCase()) !== -1;
+		}
+	});
+	var widget = selector.data("select2");
+	widget.container.addClass("trainer-selector-container");
+	widget.dropdown.addClass("km-trainer-dropdown");
+	// Keep Select2's real search input and keyboard handlers in the name field.
+	widget.container.append(widget.search.parent());
+	widget.search.attr("aria-label", "Search trainers").on("mousedown click touchstart", function (event) { event.stopPropagation(); });
+	var pager = $("<div class='km-trainer-pages'></div>").appendTo(widget.dropdown);
+	var previous = $("<button type='button' aria-label='Previous trainer results'>‹</button>").appendTo(pager);
+	var status = $("<span aria-live='polite'></span>").appendTo(pager);
+	var next = $("<button type='button' aria-label='Next trainer results'>›</button>").appendTo(pager);
+	var page = 0, pageSize = 8, total = 0, lastTerm = "";
+	var queryAll = widget.opts.query;
+	widget.opts.query = function (query) {
+		if (query.term !== lastTerm) { page = 0; lastTerm = query.term; }
+		queryAll($.extend({}, query, {callback: function (data) {
+			total = data.results.reduce(function (count, group) { return count + (group.children ? group.children.length : 1); }, 0);
+			page = Math.min(page, Math.max(0, Math.ceil(total / pageSize) - 1));
+			var start = page * pageSize, offset = 0, results = [];
+			data.results.forEach(function (group) {
+				var children = group.children || [group];
+				var visible = children.slice(Math.max(0, start - offset), Math.max(0, start + pageSize - offset));
+				offset += children.length;
+				if (visible.length) results.push(group.children ? $.extend({}, group, {children: visible}) : group);
+			});
+			pager.prop("hidden", total <= pageSize);
+			previous.prop("disabled", !page); next.prop("disabled", start + pageSize >= total);
+			status.text(total ? (start + 1) + "–" + Math.min(start + pageSize, total) + " of " + total : "No trainers");
+			query.callback({results: results, more: false});
+		}}));
+	};
+	function changePage(direction) {
+		var newPage = Math.max(0, Math.min(page + direction, Math.ceil(total / pageSize) - 1));
+		if (newPage === page) return;
+		page = newPage; widget.updateResults(true); widget.search.focus();
+	}
+	previous.on("click", function () { changePage(-1); });
+	next.on("click", function () { changePage(1); });
+	pager.on("mousedown", function (event) { event.preventDefault(); });
+	widget.search.on("keydown", function (event) {
+		if (event.which === 33 || event.which === 34) { event.preventDefault(); changePage(event.which === 33 ? -1 : 1); }
+	});
+	selector.on("select2-opening.kmTrainerSearch", function () {
+		pageSize = 8; lastTerm = "";
+		page = Math.max(0, Math.floor(selector.find("option").index(selector.find(":selected")) / pageSize));
+		widget.search.attr("placeholder", selector.find(":selected").text() || "Search trainers");
+	});
+	widget.positionDropdown = function () {
+		var scale = Number(window.getComputedStyle(document.body).zoom) || 1;
+		var viewport = window.visualViewport;
+		var margin = 8 * scale, gap = 4 * scale;
+		var leftEdge = (viewport ? viewport.offsetLeft : 0) + margin;
+		var topEdge = (viewport ? viewport.offsetTop : 0) + margin;
+		var width = Math.min(document.documentElement.clientWidth || window.innerWidth, viewport ? viewport.width : window.innerWidth);
+		var height = Math.min(document.documentElement.clientHeight || window.innerHeight, viewport ? viewport.height : window.innerHeight);
+		var rightEdge = leftEdge + width - 2 * margin, bottomEdge = topEdge + height - 2 * margin;
+		var anchor = widget.container[0].getBoundingClientRect();
+		var above = Math.max(0, anchor.top - topEdge - gap), below = Math.max(0, bottomEdge - anchor.bottom - gap);
+		var menuWidth = Math.min(anchor.width, rightEdge - leftEdge);
+		widget.dropdown.css({position: "fixed", width: menuWidth / scale + "px", bottom: "auto"});
+		var menuHeight = widget.dropdown[0].getBoundingClientRect().height;
+		if (menuHeight > Math.max(above, below) && pageSize > 1 && widget.results.find(".select2-result-selectable").length) {
+			var start = page * pageSize;
+			pageSize--; page = Math.floor(start / pageSize);
+			widget.updateResults(true);
+			return;
+		}
+		var openAbove = menuHeight > below && above > below;
+		var top = openAbove ? anchor.top - gap - menuHeight : anchor.bottom + gap;
+		widget.container.toggleClass("select2-drop-above", openAbove);
+		widget.dropdown.toggleClass("select2-drop-above", openAbove).css({
+			left: Math.max(leftEdge, Math.min(anchor.left, rightEdge - menuWidth)) / scale + "px",
+			top: Math.max(topEdge, Math.min(top, bottomEdge - menuHeight)) / scale + "px"
+		});
+	};
+}
+
 function rebuildTrainerSelectorOptions(selector, preferredTrainerId) {
 	var trainerIds = getFilteredTrainerEntryIds();
 	var selectedId = trainerIds.indexOf(String(preferredTrainerId)) !== -1 ? String(preferredTrainerId) : trainerIds[0];
@@ -792,8 +877,7 @@ function rebuildTrainerSelectorOptions(selector, preferredTrainerId) {
 	}
 	selector.val(selectedId);
 	if (hadSelect2) {
-		selector.select2({width: "resolve"});
-		selector.select2("container").addClass("trainer-selector-container");
+		initializeTrainerSelector(selector);
 	}
 	return selectedId;
 }
@@ -861,8 +945,9 @@ function installTrainerControls() {
 	controls.append(trainerRow).append(team).append(attribution);
 	$("#p2 legend").text("Trainer");
 	$("#p2 legend").after(controls);
-	selector.select2({width: "resolve"});
-	selector.select2("container").addClass("trainer-selector-container");
+	initializeTrainerSelector(selector);
+	var trainerNavigation = document.getElementById("km-trainer-navigation");
+	if (trainerNavigation) trainerNavigation.appendChild(trainerRow[0]);
 	hideTrainerSetSelector();
 	updateTrainerControlsForLayout();
 	prevTrainer.click(function () {
@@ -943,14 +1028,6 @@ function ExportPokemon(pokeInfo) {
 	finalText = finalText.trim();
 	$("textarea.import-team-text").val(finalText);
 }
-
-$("#exportL").click(function () {
-	ExportPokemon($("#p1"));
-});
-
-$("#exportR").click(function () {
-	ExportPokemon($("#p2"));
-});
 
 function serialize(array, separator) {
 	var text = "";

@@ -200,7 +200,7 @@ function buildMovePanel(attackerSide, attackerSlot, playerInfo, opponentInfo) {
 }
 
 function renderMoveListWithoutDamage(pokemon, locations, headerSelector, emptyLabel) {
-	$(headerSelector).text(pokemon ? pokemon.name + "'s Moves (select one to show detailed results)" : emptyLabel);
+	$(headerSelector).text(pokemon ? pokemon.name : emptyLabel);
 	for (var i = 0; i < 4; i++) {
 		setResultMoveLabel(locations[i], pokemon && pokemon.moves[i] ? getResultMoveLabel(pokemon.moves[i]) : "Assign Slot 2");
 		setMoveResultDisplay(locations[i], "??? - ???%", "pending");
@@ -212,6 +212,7 @@ function setMainResultText(targets, message, details) {
 	$(targets.firstDmgValues).text(details || "");
 	$(targets.restDmgValues).text("");
 	$(targets.firstDmgValues).css("display", "block");
+	$(targets.damageValues).filter(".km-extra-damage-rolls").prop("hidden", true);
 }
 
 function parseDisplayedStat(rawText) {
@@ -275,6 +276,7 @@ function renderMainResult(result, targets) {
 	}
 	$(targets.firstDmgValues).text("Possible damage amounts: (" + summary + ")");
 	if (rest !== "") $(targets.restDmgValues).text("(" + rest + ")");
+	$(targets.damageValues).filter(".km-extra-damage-rolls").prop("hidden", !rest.trim());
 
 	if (rest.trim() === "") {
 		$(targets.firstDmgValues).css("display", "block");
@@ -290,7 +292,7 @@ function renderMovePanel(panel, locations, headerSelector, emptyLabel, alertStat
 		renderMoveListWithoutDamage(null, locations, headerSelector, emptyLabel);
 		return null;
 	}
-	$(headerSelector).text(panel.attacker.name + "'s Moves (select one to show detailed results)");
+	$(headerSelector).text(panel.attacker.name);
 	if (!panel.defender || !panel.results) {
 		renderMoveListWithoutDamage(panel.attacker, locations, headerSelector, emptyLabel);
 		for (var missingIndex = 0; missingIndex < 4; missingIndex++) {
@@ -363,7 +365,7 @@ function renderDoublesSlot2Results(playerInfo, opponentInfo) {
 		panels,
 		doublesSlot2ResultLocations,
 		["#resultHeaderLSlot2", "#resultHeaderRSlot2"],
-		["Player Slot 2's Moves (select one to show detailed results)", "Trainer Slot 2's Moves (select one to show detailed results)"]
+		["Choose Slot 2 Pokémon", "Choose Slot 2 Pokémon"]
 	);
 	if (!panels[0].results && !panels[1].results) {
 		setMainResultText(mainResultTargets.slot2, "Assign both Slot 2 Pokemon to calculate.", "Possible damage amounts: (assign both Slot 2 Pokemon)");
@@ -395,7 +397,7 @@ function performCalculations() {
 		panels,
 		resultLocations,
 		["#resultHeaderL", "#resultHeaderR"],
-		["Player Slot 1's Moves (select one to show detailed results)", "Trainer Slot 1's Moves (select one to show detailed results)"]
+		["Choose Slot 1 Pokémon", "Choose Slot 1 Pokémon"]
 	);
 	if ($('.locked-move').length) {
 		bestResult = $('.locked-move');
