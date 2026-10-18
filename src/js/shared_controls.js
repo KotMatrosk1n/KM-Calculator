@@ -222,17 +222,19 @@ $(".current-hp").on("input change keyup", function (event) {
 	// Real edits are handled by input/change; retain synthetic keyup callers.
 	// A Tab keyup on the percent box must not round an exact HP value.
 	if (event.type === "keyup" && event.originalEvent) return;
-	var max = $(this).parent().children(".max-hp").text();
+	var poke = $(this).closest(".poke-info");
+	var max = poke.find(".max-hp").text();
 	validate($(this), 0, max);
 	var current = $(this).val();
-	calcPercentHP($(this).parent(), max, current);
+	calcPercentHP(poke, max, current);
 });
 $(".percent-hp").on("input change keyup", function (event) {
 	if (event.type === "keyup" && event.originalEvent) return;
-	var max = $(this).parent().children(".max-hp").text();
+	var poke = $(this).closest(".poke-info");
+	var max = poke.find(".max-hp").text();
 	validate($(this), 0, 100);
 	var percent = $(this).val();
-	calcCurrentHP($(this).parent(), max, percent);
+	calcCurrentHP(poke, max, percent);
 });
 
 $(".ability").bind("keyup change", function () {
@@ -694,6 +696,18 @@ function isRoyalSwordProfileActive() {
 		Number(profile.baseGeneration) === Number(gen || profile.baseGeneration);
 }
 
+function areZMovesEnabled() {
+	return gen > 6 && !isRoyalSwordProfileActive();
+}
+
+function updateProfileZMoveControls() {
+	var enabled = areZMovesEnabled();
+	var controls = $("input.move-z");
+	controls.prop("disabled", !enabled);
+	if (!enabled) controls.prop("checked", false);
+	$(".z-btn").toggle(enabled);
+}
+
 function getActiveProfileContext() {
 	var registry = window.kmRomHackRegistry;
 	return registry && typeof registry.getActiveContext === "function" ? registry.getActiveContext() : null;
@@ -871,6 +885,7 @@ function applyActiveRomHackProfile(context) {
 	if (!profile) {
 		$(".gen").prop("disabled", false);
 		updateProfileEVControls();
+		updateProfileZMoveControls();
 		return;
 	}
 	var generationInput = $("#gen" + profile.baseGeneration);
@@ -3596,7 +3611,7 @@ function checkRivalry(ability) {
 
 function getMoveDetails(moveInfo, opts) {
 	var moveName = moveInfo.find("select.move-selector").val();
-	var isZMove = gen > 6 && moveInfo.find("input.move-z").prop("checked");
+	var isZMove = areZMovesEnabled() && moveInfo.find("input.move-z").prop("checked");
 	var isCrit = moveInfo.find(".move-crit").prop("checked");
 	var isStellarFirstUse = moveInfo.find(".move-stellar").prop("checked");
 	var hits = +moveInfo.find(".move-hits").val();
@@ -3968,6 +3983,7 @@ $(".gen").change(function () {
 	$(".gen-specific.g" + gen).show();
 	$(".gen-specific").not(".g" + gen).hide();
 	updateProfileEVControls();
+	updateProfileZMoveControls();
 	$("input:radio[name='format']").change();
 	var typeOptions = getSelectOptions(Object.keys(typeChart));
 	$("select.type1, select.move-type").find("option").remove().end().append(typeOptions);
@@ -4002,62 +4018,28 @@ $(".notation").change(function () {
 	notation = $(this).val();
 });
 
-function clearField() {
-	$("#singles-format").prop("checked", true);
-	$("#clear").prop("checked", true);
-	$("#gscClear").prop("checked", true);
-	$("#magicroom").prop("checked", false);
-	$("#wonderroom").prop("checked", false);
-	$("#gravity").prop("checked", false);
-	$("#srL").prop("checked", false);
-	$("#srR").prop("checked", false);
-	$("#spikesL0").prop("checked", true);
-	$("#spikesR0").prop("checked", true);
-	$("#gscSpikesL").prop("checked", false);
-	$("#gscSpikesR").prop("checked", false);
-	$("#steelsurgeL").prop("checked", false);
-	$("#steelsurgeR").prop("checked", false);
-	$("#vinelashL").prop("checked", false);
-	$("#vinelashR").prop("checked", false);
-	$("#wildfireL").prop("checked", false);
-	$("#wildfireR").prop("checked", false);
-	$("#cannonadeL").prop("checked", false);
-	$("#cannonadeR").prop("checked", false);
-	$("#volcalithL").prop("checked", false);
-	$("#volcalithR").prop("checked", false);
-	$("#reflectL").prop("checked", false);
-	$("#reflectR").prop("checked", false);
-	$("#lightScreenL").prop("checked", false);
-	$("#lightScreenR").prop("checked", false);
-	$("#protectL").prop("checked", false);
-	$("#protectR").prop("checked", false);
-	$("#leechSeedL").prop("checked", false);
-	$("#leechSeedR").prop("checked", false);
-	$("#flowerGiftL").prop("checked", false);
-	$("#flowerGiftR").prop("checked", false);
-	$("#powerTrickL").prop("checked", false);
-	$("#powerTrickR").prop("checked", false);
-	$("#steelySpiritL").prop("checked", false);
-	$("#steelySpiritR").prop("checked", false);
-	$("#saltCureL").prop("checked", false);
-	$("#saltCureR").prop("checked", false);
-	$("#foresightL").prop("checked", false);
-	$("#foresightR").prop("checked", false);
-	$("#helpingHandL").prop("checked", false);
-	$("#helpingHandR").prop("checked", false);
-	$("#tailwindL").prop("checked", false);
-	$("#tailwindR").prop("checked", false);
-	$("#friendGuardL").prop("checked", false);
-	$("#friendGuardR").prop("checked", false);
-	$("#auroraVeilL").prop("checked", false);
-	$("#auroraVeilR").prop("checked", false);
-	$("#batteryL").prop("checked", false);
-	$("#batteryR").prop("checked", false);
-	$("#powerSpotL").prop("checked", false);
-	$("#powerSpotR").prop("checked", false);
-	$("#switchingL").prop("checked", false);
-	$("#switchingR").prop("checked", false);
-	$("input:checkbox[name='terrain']").prop("checked", false);
+function clearField(preserveFormat) {
+	if (!preserveFormat) $("#singles-format").prop("checked", true);
+	$(".field-info input.calc-trigger").each(function () {
+		if (this.name === "format" || this.name === "defaultLevel") return;
+		this.checked = this.type === "radio" && (this.value === "" || this.value === "0");
+	});
+	lastManualWeather = "";
+	lastAutoWeather = ["", ""];
+	lastManualTerrain = "";
+	lastAutoTerrain = ["", ""];
+	if (stickyWeather) stickyWeather.clearStickyWeather();
+	window.dispatchEvent(new CustomEvent("kmcalculator:fieldchange"));
+}
+
+function resetTrainerBattlefield() {
+	clearField(true);
+	// Reapply the player's current ability before loading the new trainer's lead.
+	autosetWeather($("#p1 .ability").val(), 0);
+	autosetTerrain($("#p1 .ability").val(), 0);
+	getTerrainEffects.call($("#p1 .ability")[0]);
+	if (typeof window.PC_HANDLER === "function") window.PC_HANDLER();
+	window.dispatchEvent(new CustomEvent("kmcalculator:fieldchange"));
 }
 
 function getSetOptions(sets) {

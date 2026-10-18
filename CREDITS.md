@@ -38,6 +38,12 @@ The canonical calculation engine currently tracks the upstream revision document
 
 [Pokémon Showdown](https://github.com/smogon/pokemon-showdown), created by Guangcong Luo and maintained by its contributors, is used for permissively licensed name data and as the source of the Pokémon sprite directories downloaded for desktop packaging. Its source code and applicable data are distributed under the MIT License. Sprite artwork and other media remain subject to their own rights; see the [Pokémon Showdown credits](https://pokemonshowdown.com/credits).
 
+Trainer move effect descriptions and accuracy values are adapted from Pokémon Showdown's move data at revision `f0e61e58ad297885578231746036438e1b42f40a`, including Generation 8 overrides. The original MIT notice is included with the bundled reference text. Move type, category, and base power use the active calculator generation, as does accuracy when supplied by its data provider.
+
+### PokéSprite
+
+The item artwork in `src/img/items/` and move category icons in `src/img/move-categories/` come from [PokéSprite](https://github.com/msikma/pokesprite), maintained by Mike Sikma and its [contributors](https://github.com/msikma/pokesprite/blob/master/contributors.md), at revision `c5aaa610ff2acdf7fd8e2dccd181bca8be9fcb3e`. The app uses the Sword/Shield-style item outlines and Generation 8 move category icons. PokéSprite's code and metadata use the MIT License; the sprite images are © Nintendo / Creatures Inc. / GAME FREAK inc. and are excluded from KM Calculator's MIT License.
+
 ### PokéAPI
 
 [PokéAPI](https://github.com/PokeAPI/pokeapi), by Paul Hallett and PokéAPI contributors, supplies permissively licensed factual game-index and growth-rate data used by the generated save-import lookup bundle. That data is used under the BSD 3-Clause License.
@@ -72,6 +78,10 @@ One pre-existing 127-byte Switch save-container interoperability constant remain
 The package manifests and lockfiles record the installed dependency versions and transitive package graph. See [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) for the generated dependency-license inventory; each distributed dependency remains subject to its own license and notice requirements.
 
 ## Pokémon And Third-Party Assets
+
+Trainer ability and held-item descriptions use the official English Pokémon Sword and Shield game text. Game text and artwork remain the property of their respective rights holders.
+
+The trainer portraits in `src/img/trainers/` are rendered from Pokémon Sword and Shield character models and poses. Model and texture reading uses [KM Editor](https://github.com/KotMatrosk1n/KM-Editor), and the portraits are rendered with [Blender](https://www.blender.org/). These rendered game assets are excluded from KM Calculator's MIT License; their character designs, models, and textures remain the property of their respective rights holders.
 
 Pokémon names, character names, game titles, trademarks, and artwork are owned by their respective rights holders. KM Calculator is an unofficial fan-made tool and is not affiliated with or endorsed by Nintendo, Creatures Inc., GAME FREAK inc., The Pokémon Company, or the creators of third-party supported ROM hacks.
 
