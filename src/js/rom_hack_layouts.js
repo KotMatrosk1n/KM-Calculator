@@ -103,7 +103,7 @@
 
 	function positionTrainerControls(runtime, placement) {
 		var controls = runtime.document.querySelector("#p2 > .trainer-controls");
-		var selector = runtime.document.querySelector("#p2 > .set-selector");
+		var selector = runtime.document.querySelector("#p2 > input.set-selector");
 		var legend = runtime.document.querySelector("#p2 > legend");
 		var jquery = runtime.window.jQuery;
 		var selectorAnchor;

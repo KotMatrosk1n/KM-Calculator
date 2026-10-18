@@ -620,6 +620,7 @@ function getPokemonSpriteUrls(pokemonName, options) {
 	var context = getActiveProfileContext();
 	var suppliedUrls;
 	var spriteId = getPokemonSpriteId(pokemonName);
+	if (options && typeof options.spriteId === "string" && /^[a-z0-9-]+$/.test(options.spriteId)) spriteId = options.spriteId;
 	var desktopSpriteBaseUrl = getDesktopSpriteBaseUrl();
 	if (provider && typeof provider.getPokemonSpriteUrls === "function") {
 		suppliedUrls = provider.getPokemonSpriteUrls(pokemonName, options || {}, calc, context);
@@ -1450,7 +1451,7 @@ function setSetSelectorValue(selector, fullSetName) {
 }
 
 function loadPlayerPokemonIntoEditor(fullSetName, slot) {
-	var selector = $("#p1 .set-selector");
+	var selector = $("#p1 input.set-selector");
 	if (!selector.length) return;
 	var playerSlot = slot || 1;
 	setDoublesActiveSlot("player", playerSlot);
@@ -1460,7 +1461,7 @@ function loadPlayerPokemonIntoEditor(fullSetName, slot) {
 }
 
 function loadOpponentPokemonIntoEditor(fullSetName, slot) {
-	var selector = $("#p2 .set-selector");
+	var selector = $("#p2 input.set-selector");
 	if (!selector.length) return;
 	var opponentSlot = slot || 1;
 	setDoublesActiveSlot("opponent", opponentSlot);
@@ -1484,18 +1485,20 @@ function applyDefaultPlayerPokemonFromTeam() {
 
 function applyDefaultSetSelections() {
 	var firstValidSet = getFirstValidSetOption();
-	$(".set-selector").not("#p1 .set-selector").each(function () {
+	$("input.set-selector").not("#p1 input.set-selector").each(function () {
 		setSetSelectorValue($(this), firstValidSet ? firstValidSet.id : "");
 		$(this).change();
 	});
 	if (getPlayerTeamDefaultSetName()) applyDefaultPlayerPokemonFromTeam();
 	else {
-		setSetSelectorValue($("#p1 .set-selector"), firstValidSet ? firstValidSet.id : "");
-		$("#p1 .set-selector").change();
+		setSetSelectorValue($("#p1 input.set-selector"), firstValidSet ? firstValidSet.id : "");
+		$("#p1 input.set-selector").change();
 	}
 }
 
 function getDefaultSetOptionForSelector(element) {
+	var selected = $(element).val();
+	if (selected && (fullSetExists(selected) || (pokedex && pokedex[selected]))) return {id: selected, text: selected};
 	if ($(element).closest("#p1").length) {
 		var playerSetName = getPlayerTeamDefaultSetName();
 		if (playerSetName) return {id: playerSetName, text: playerSetName};
@@ -1644,7 +1647,7 @@ function refreshSetSelectorsAfterTeamBoxChange(customsets) {
 		getRoyalSwordAppStorage().removeItem(getCustomSetsStorageKey());
 	}
 	loadDefaultLists();
-	if (!fullSetExists($("#p1 .set-selector").val())) {
+	if (!fullSetExists($("#p1 input.set-selector").val())) {
 		applyDefaultPlayerPokemonFromTeam();
 	}
 	if ($("#trainer-selector").length && typeof window.hideTrainerSetSelector === "function" && typeof window.renderTrainerTeam === "function") {
@@ -2468,6 +2471,32 @@ function getFinderExplanationTextCardsMarkup(examples) {
 	return markup.join("");
 }
 
+function prepareExplanationDialog(dialog, close) {
+	var body = dialog.querySelector(".color-code-explanation-body");
+	var sections = Array.prototype.slice.call(body.querySelectorAll(".color-code-section"));
+	var navigation = document.createElement("nav");
+	navigation.className = "km-help-navigation";
+	navigation.setAttribute("aria-label", "Help topics");
+	sections.forEach(function (section, index) {
+		var button = document.createElement("button");
+		button.type = "button";
+		button.textContent = section.querySelector("h3").textContent;
+		section.id = dialog.id + "-topic-" + index;
+		button.setAttribute("aria-controls", section.id);
+		button.setAttribute("aria-pressed", String(index === 0));
+		section.hidden = index !== 0;
+		button.addEventListener("click", function () {
+			sections.forEach(function (item, i) {
+				item.hidden = i !== index;
+				navigation.children[i].setAttribute("aria-pressed", String(i === index));
+			});
+		});
+		navigation.appendChild(button);
+	});
+	body.insertBefore(navigation, sections[0]);
+	dialog.addEventListener("cancel", function (event) { event.preventDefault(); close(); });
+}
+
 function createColorCodeExplanationWindow() {
 	var speedExamples;
 	var damageExamples;
@@ -2493,7 +2522,7 @@ function createColorCodeExplanationWindow() {
 		{className: "mon-dmg-24", title: "Yellow left + red right", text: "You have a possible OHKO, but the Trainer target has a guaranteed OHKO back."}
 	];
 	markup = [
-		"<section id='color-code-explanation-window' class='notes-window color-code-explanation-window' role='dialog' aria-labelledby='color-code-explanation-title' aria-modal='false' hidden>",
+		"<dialog id='color-code-explanation-window' class='notes-window color-code-explanation-window' aria-labelledby='color-code-explanation-title' hidden>",
 		"<header class='notes-window-header color-code-explanation-header'>",
 		"<h2 id='color-code-explanation-title' class='notes-window-title'>Color Code Explanation</h2>",
 		"<div class='notes-window-actions'>",
@@ -2523,15 +2552,17 @@ function createColorCodeExplanationWindow() {
 		"</div>",
 		"</section>",
 		"</div>",
-		"</section>"
+		"</dialog>"
 	].join("");
 	$("body").append(markup);
 	colorCodeExplanationWindow = $("#color-code-explanation-window");
+	prepareExplanationDialog(colorCodeExplanationWindow[0], closeColorCodeExplanation);
 	colorCodeExplanationWindow.find(".color-code-explanation-close").on("click", closeColorCodeExplanation);
 }
 
 function closeColorCodeExplanation() {
 	if (!colorCodeExplanationWindow) return;
+	if (colorCodeExplanationWindow[0].open) colorCodeExplanationWindow[0].close();
 	colorCodeExplanationWindow.prop("hidden", true);
 	$(document).off(".colorCodeExplanation");
 }
@@ -2545,14 +2576,12 @@ function openColorCodeExplanation(event) {
 	}
 	createColorCodeExplanationWindow();
 	colorCodeExplanationWindow.prop("hidden", false);
+	if (!colorCodeExplanationWindow[0].open) colorCodeExplanationWindow[0].showModal();
 	$(document)
 		.off(".colorCodeExplanation")
 		.on("mousedown.colorCodeExplanation", function (dismissEvent) {
 			if ($(dismissEvent.target).closest("#color-code-explanation-window, #info-cc").length) return;
 			closeColorCodeExplanation();
-		})
-		.on("keydown.colorCodeExplanation", function (dismissEvent) {
-			if (dismissEvent.which === 27) closeColorCodeExplanation();
 		});
 	colorCodeExplanationWindow.find(".color-code-explanation-close").focus();
 }
@@ -2575,7 +2604,7 @@ function createFinderExplanationWindow() {
 		{token: "?", title: "Unknown", text: "Shows Pokemon without a current speed comparison."}
 	];
 	markup = [
-		"<section id='finder-explanation-window' class='notes-window color-code-explanation-window finder-explanation-window' role='dialog' aria-labelledby='finder-explanation-title' aria-modal='false' hidden>",
+		"<dialog id='finder-explanation-window' class='notes-window color-code-explanation-window finder-explanation-window' aria-labelledby='finder-explanation-title' hidden>",
 		"<header class='notes-window-header color-code-explanation-header'>",
 		"<h2 id='finder-explanation-title' class='notes-window-title'>Finder Explanation</h2>",
 		"<div class='notes-window-actions'>",
@@ -2616,15 +2645,17 @@ function createFinderExplanationWindow() {
 		"<p class='finder-explanation-note'>Speed categories use the current calculator result against the selected Trainer target, so they update when the calc updates.</p>",
 		"</section>",
 		"</div>",
-		"</section>"
+		"</dialog>"
 	].join("");
 	$("body").append(markup);
 	finderExplanationWindow = $("#finder-explanation-window");
+	prepareExplanationDialog(finderExplanationWindow[0], closeFinderExplanation);
 	finderExplanationWindow.find(".finder-explanation-close").on("click", closeFinderExplanation);
 }
 
 function closeFinderExplanation() {
 	if (!finderExplanationWindow) return;
+	if (finderExplanationWindow[0].open) finderExplanationWindow[0].close();
 	finderExplanationWindow.prop("hidden", true);
 	$(document).off(".finderExplanation");
 }
@@ -2638,14 +2669,12 @@ function openFinderExplanation(event) {
 	}
 	createFinderExplanationWindow();
 	finderExplanationWindow.prop("hidden", false);
+	if (!finderExplanationWindow[0].open) finderExplanationWindow[0].showModal();
 	$(document)
 		.off(".finderExplanation")
 		.on("mousedown.finderExplanation", function (dismissEvent) {
 			if ($(dismissEvent.target).closest("#finder-explanation-window, #info-finder").length) return;
 			closeFinderExplanation();
-		})
-		.on("keydown.finderExplanation", function (dismissEvent) {
-			if (dismissEvent.which === 27) closeFinderExplanation();
 		});
 	finderExplanationWindow.find(".finder-explanation-close").focus();
 }
@@ -2705,7 +2734,7 @@ function installTeamBoxControls() {
 	});
 	$("#cc-auto-refr").change(refreshColorCode);
 	$("#cc-spe-width").bind("input change", widthSpeedBorder);
-	$("#p1 .set-selector, #p2 .set-selector").change(function () {
+	$("#p1 input.set-selector, #p2 input.set-selector").change(function () {
 		var fullSetName = $(this).val();
 		var side = $(this).closest(".poke-info").prop("id") === "p1" ? "player" : "opponent";
 		var activeSlot = isDoublesFormatSelected() ? doublesActiveSlot[side] : 1;
@@ -2722,8 +2751,8 @@ function installTeamBoxControls() {
 	observePlayerTeamMirror();
 	refreshPlayerTeamMirror();
 	applyDefaultPlayerPokemonFromTeam();
-	if ($("#p1 .set-selector").val()) setDoublesSlotSelection("player", 1, getSetSlotSelection($("#p1 .set-selector").val()));
-	if ($("#p2 .set-selector").val()) setDoublesSlotSelection("opponent", 1, getSetSlotSelection($("#p2 .set-selector").val()));
+	if ($("#p1 input.set-selector").val()) setDoublesSlotSelection("player", 1, getSetSlotSelection($("#p1 input.set-selector").val()));
+	if ($("#p2 input.set-selector").val()) setDoublesSlotSelection("opponent", 1, getSetSlotSelection($("#p2 input.set-selector").val()));
 	refreshColorCodeAfterInitialLoad();
 }
 
@@ -2732,7 +2761,7 @@ window.addCustomSetsToDex = addCustomSetsToDex;
 window.removeAllCustomSetsFromDex = removeAllCustomSetsFromDex;
 
 // auto-update set details on select
-$(".set-selector").change(function () {
+$("input.set-selector").change(function () {
 	var fullSetName = $(this).val();
 	var pokemonName = fullSetName.substring(0, fullSetName.indexOf(" ("));
 	var setName = fullSetName.substring(fullSetName.indexOf("(") + 1, fullSetName.lastIndexOf(")"));
@@ -2903,7 +2932,7 @@ $(".set-selector").change(function () {
 			if (is50lvl) pokeObj.find(".level").val(50);
 			//if (isDoubles) field.gameType = 'Doubles'; *TODO*
 		}
-		var formeObj = $(this).siblings().find(".forme").parent();
+		var formeObj = pokeObj.find(".forme").parent();
 		itemObj.prop("disabled", false);
 		var baseForme;
 		if (pokemon.baseSpecies && pokemon.baseSpecies !== pokemon.name) {
@@ -3005,7 +3034,8 @@ function hideFormes(formeObj) {
 }
 
 function isFormeControlHidden(forme) {
-	return forme.closest(".pokemon-forme-control").hasClass("hide") || forme.is(":hidden");
+	var control = forme.closest(".pokemon-forme-control");
+	return control.hasClass("hide") || control.css("display") === "none" || forme.prop("hidden");
 }
 
 function stellarButtonsVisibility(pokeObj, vis) {
@@ -3042,7 +3072,7 @@ $(".teraToggle").change(function () {
 	var forme = pokeObj.find(".forme");
 	var curForme = forme.val();
 	if (isFormeControlHidden(forme)) return;
-	var container = $(this).closest(".info-group").siblings();
+	var container = pokeObj;
 	// Ogerpon and Terapagos mechs
 	if (startsWith(curForme, "Ogerpon")) {
 		if (
@@ -3090,8 +3120,8 @@ $(".teraToggle").change(function () {
 $(".forme").change(function () {
 	var pokeObj = $(this).closest(".poke-info"),
 		altForme = pokedex[$(this).val()],
-		container = $(this).closest(".info-group").siblings(),
-		fullSetName = container.find(".select2-chosen").first().text(),
+		container = pokeObj,
+		fullSetName = pokeObj.find("input.set-selector").val(),
 		pokemonName = fullSetName.substring(0, fullSetName.indexOf(" (")),
 		setName = fullSetName.substring(fullSetName.indexOf("(") + 1, fullSetName.lastIndexOf(")"));
 
@@ -3107,7 +3137,7 @@ $(".forme").change(function () {
 	if (
 		(startsWith($(this).val(), "Ogerpon") && endsWith($(this).val(), "Tera")) || $(this).val() === "Terapagos-Stellar"
 	) {
-		$(this).parent().siblings().find(".teraToggle").prop("checked", true);
+		pokeObj.find(".teraToggle").prop("checked", true);
 	}
 	var isRandoms = $("#randoms").prop("checked");
 	var pokemonSets = isRandoms ? randdex[pokemonName] : setdex[pokemonName];
@@ -4042,7 +4072,7 @@ function getTerrainEffects() {
 }
 
 function loadDefaultLists() {
-	var selectors = getUninitializedSelect2($(".set-selector"));
+	var selectors = getUninitializedSelect2($("input.set-selector"));
 	if (!selectors.length) return;
 	selectors.select2({
 		formatResult: function (object) {
@@ -4078,7 +4108,7 @@ function loadDefaultLists() {
 			callback(getDefaultSetOptionForSelector(element));
 		}
 	});
-	$(".poke-info.trainer-mode .set-selector").each(function () {
+	$(".poke-info.trainer-mode input.set-selector").each(function () {
 		var selector = $(this);
 		selector.addClass("trainer-set-selector-input");
 		if (selector.data("select2")) selector.select2("container").addClass("trainer-set-selector-container");
@@ -4097,7 +4127,7 @@ function allPokemon(selector) {
 }
 
 function loadCustomList(id) {
-	var selector = $("#" + id + " .set-selector");
+	var selector = $("#" + id + " input.set-selector");
 	destroySelect2IfInitialized(selector);
 	selector.select2({
 		formatResult: function (set) {
@@ -4123,7 +4153,8 @@ function loadCustomList(id) {
 			});
 		},
 		initSelection: function (element, callback) {
-			var data = "";
+			var value = element.val();
+			var data = value ? {id: value, text: value} : "";
 			callback(data);
 		}
 	});

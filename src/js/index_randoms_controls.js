@@ -105,7 +105,7 @@ function getDoublesEditorInfo(side) {
 function getLiveDoublesSlotPokemon(side, slot, fullSetName) {
 	if (typeof getDoublesActiveSlot !== "function" || getDoublesActiveSlot(side) !== slot) return null;
 	var editorInfo = getDoublesEditorInfo(side);
-	if (!editorInfo.length || editorInfo.find(".set-selector").val() !== fullSetName) return null;
+	if (!editorInfo.length || editorInfo.find("input.set-selector").val() !== fullSetName) return null;
 	return createPokemon(editorInfo);
 }
 
@@ -433,7 +433,7 @@ function getDamagePercent(result, move, defender, highRoll) {
 }
 
 function createColorCodePokemon(pokeInfo) {
-	if (typeof pokeInfo === "string" && pokeInfo === $("#p1 .set-selector").val()) {
+	if (typeof pokeInfo === "string" && pokeInfo === $("#p1 input.set-selector").val()) {
 		return createPokemon($("#p1"));
 	}
 	return createPokemon(pokeInfo);

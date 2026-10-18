@@ -35,13 +35,15 @@ const calcRuntimeFiles = new Set([
 ]);
 const srcRuntimeFiles = new Set([
 	'index.html',
-	'css/dark-theme.css',
+	'css/themes.css',
 	'css/app-workspace.css',
 	'css/main.css',
 	'css/vendor/bootstrap.css',
 	'img/km-calculator-icon.png',
+	'img/royal-sword.png',
 	'js/app_runtime_index.js',
 	'js/app_workspace.js',
+	'js/encounter_tracker.js',
 	'js/battle_script.js',
 	'js/dark-theme-toggle.js',
 	'js/data/rom_hacks.js',

@@ -305,19 +305,29 @@
 		if (notesTextarea) notesTextarea.attr("wrap", options.wordWrap === false ? "off" : "soft");
 	}
 
+	function getWorkspaceScale() {
+		return parseFloat(window.getComputedStyle(document.body).getPropertyValue("--km-scale")) || 1;
+	}
+	function getWindowPosition() {
+		return {left: parseFloat(notesWindow.css("left")) || 0, top: parseFloat(notesWindow.css("top")) || 0};
+	}
+
 	function getViewportSize() {
+		var scale = getWorkspaceScale();
 		return {
-			width: window.innerWidth || document.documentElement.clientWidth || 1024,
-			height: window.innerHeight || document.documentElement.clientHeight || 768
+			width: (window.innerWidth || document.documentElement.clientWidth || 1024) / scale,
+			height: (window.innerHeight || document.documentElement.clientHeight || 768) / scale
 		};
 	}
 
 	function constrainWindowPosition() {
 		var viewport = getViewportSize();
+		notesWindow.css({maxWidth: (viewport.width - 16) + "px", maxHeight: (viewport.height - 16) + "px"});
 		var width = notesWindow.outerWidth();
 		var height = notesWindow.outerHeight();
-		var left = Math.max(8, Math.min(notesWindow.position().left, viewport.width - width - 8));
-		var top = Math.max(8, Math.min(notesWindow.position().top, viewport.height - height - 8));
+		var position = getWindowPosition();
+		var left = Math.max(8, Math.min(position.left, viewport.width - width - 8));
+		var top = Math.max(8, Math.min(position.top, viewport.height - height - 8));
 		notesWindow.css({
 			left: left + "px",
 			top: top + "px"
@@ -327,8 +337,8 @@
 	function saveWindowState() {
 		if (!notesWindow || notesWindow.prop("hidden")) return;
 		saveJSON(NOTE_WINDOW_KEY, {
-			left: notesWindow.position().left,
-			top: notesWindow.position().top,
+			left: getWindowPosition().left,
+			top: getWindowPosition().top,
 			width: notesWindow.outerWidth(),
 			height: notesWindow.outerHeight()
 		});
@@ -341,13 +351,13 @@
 			notesWindow.css({
 				left: Math.max(8, state.left || 24) + "px",
 				top: Math.max(8, state.top || 120) + "px",
-				width: Math.max(320, state.width || 520) + "px",
-				height: Math.max(230, state.height || 360) + "px"
+				width: Math.max(480, state.width || 780) + "px",
+				height: Math.max(360, state.height || 600) + "px"
 			});
 		} else {
 			notesWindow.css({
-				left: Math.max(8, Math.floor((viewport.width - 520) / 2)) + "px",
-				top: "120px"
+				left: Math.max(8, Math.floor((viewport.width - 780) / 2)) + "px",
+				top: Math.max(8, Math.floor((viewport.height - 600) / 2)) + "px"
 			});
 		}
 		constrainWindowPosition();
@@ -392,8 +402,8 @@
 		dragging = {
 			startX: event.clientX,
 			startY: event.clientY,
-			left: notesWindow.position().left,
-			top: notesWindow.position().top
+			left: getWindowPosition().left,
+			top: getWindowPosition().top
 		};
 		$(document).on("mousemove.playerNotesDrag", dragWindow);
 		$(document).on("mouseup.playerNotesDrag", endDrag);
@@ -401,9 +411,10 @@
 
 	function dragWindow(event) {
 		if (!dragging) return;
+		var scale = getWorkspaceScale();
 		notesWindow.css({
-			left: dragging.left + event.clientX - dragging.startX + "px",
-			top: dragging.top + event.clientY - dragging.startY + "px"
+			left: dragging.left + (event.clientX - dragging.startX) / scale + "px",
+			top: dragging.top + (event.clientY - dragging.startY) / scale + "px"
 		});
 		constrainWindowPosition();
 	}
@@ -432,8 +443,9 @@
 		var height;
 		if (!resizing) return;
 		viewport = getViewportSize();
-		width = Math.max(320, Math.min(resizing.width + event.clientX - resizing.startX, viewport.width - notesWindow.position().left - 8));
-		height = Math.max(230, Math.min(resizing.height + event.clientY - resizing.startY, viewport.height - notesWindow.position().top - 8));
+		var scale = getWorkspaceScale();
+		width = Math.max(480, Math.min(resizing.width + (event.clientX - resizing.startX) / scale, viewport.width - getWindowPosition().left - 8));
+		height = Math.max(360, Math.min(resizing.height + (event.clientY - resizing.startY) / scale, viewport.height - getWindowPosition().top - 8));
 		notesWindow.css({
 			width: width + "px",
 			height: height + "px"
@@ -467,7 +479,7 @@
 			"<pre id='player-notes-lines' class='notes-line-numbers' aria-hidden='true'>1</pre>",
 			"<textarea id='player-notes-text' class='player-notes-text' aria-label='Player notes' spellcheck='false' wrap='soft'></textarea>",
 			"</div>",
-			"<footer class='notes-window-footer'><span id='player-notes-status'>Saved</span><span>Autosaves as you type</span></footer>",
+			"<footer class='notes-window-footer'><span id='player-notes-status'>Saved</span><span>Autosaves as you type</span><button type='button' class='player-notes-clear'>Clear Notes</button></footer>",
 			"<div class='notes-resize-handle' aria-hidden='true'></div>",
 			"</section>"
 		].join("");

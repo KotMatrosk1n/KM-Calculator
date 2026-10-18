@@ -9,7 +9,7 @@
       KmVersion=$(KmVersion);
       KmMsiPath=$(KmMsiPath);
       KmIconPath=$(KmIconPath);
-      KmLogoPath=$(KmLogoPath)
+      KmSetupUiDir=$(KmSetupUiDir)
     </DefineConstants>
   </PropertyGroup>
 
@@ -22,6 +22,6 @@
     <Error Condition="'$(KmVersion)' == ''" Text="KmVersion is required." />
     <Error Condition="!Exists('$(KmMsiPath)')" Text="KmMsiPath does not exist: $(KmMsiPath)" />
     <Error Condition="!Exists('$(KmIconPath)')" Text="KmIconPath does not exist: $(KmIconPath)" />
-    <Error Condition="!Exists('$(KmLogoPath)')" Text="KmLogoPath does not exist: $(KmLogoPath)" />
+    <Error Condition="!Exists('$(KmSetupUiDir)\KMCalculator.Setup.UI.exe')" Text="The published setup UI is missing from KmSetupUiDir: $(KmSetupUiDir)" />
   </Target>
 </Project>

@@ -1456,8 +1456,12 @@ function buildImportedPokemon(slot, importName, resolution, parsedPokemon) {
 	}
 	while (moves.length < 4) moves.push("(No Move)");
 	var ability = resolveImportedAbilityName(parsed.ability, parsed, slot, resolution);
-	if (ability && poke.abilities && poke.abilities.indexOf(ability) === -1) ability = "";
-	if (!ability && parsed.abilityIndex !== null && parsed.abilityIndex !== undefined && poke.abilities) ability = poke.abilities[parsed.abilityIndex] || poke.abilities[0];
+	// Species data can contain only the default ability, not every legal ability.
+	// Keep the resolved save ID; use species slots only when the save has no ID.
+	if (!ability && parsed.abilityIndex !== null && parsed.abilityIndex !== undefined && poke.abilities) {
+		ability = (parsed.abilityIndex === 2 && poke.abilities.H) ||
+			poke.abilities[parsed.abilityIndex] || poke.abilities[0];
+	}
 	var item = resolveImportedItemName(parsed.item, parsed, slot, resolution);
 	poke.name = speciesName;
 	poke.nameProp = importName + " - " + slot.location + " - " + speciesName;

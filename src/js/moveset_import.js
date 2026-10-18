@@ -687,7 +687,7 @@ function loadTrainerSlotIntoEditor(trainerId, index, slot) {
 		return;
 	}
 	setDoublesActiveSlot("opponent", slot || 1);
-	var selector = $("#p2 .set-selector");
+	var selector = $("#p2 input.set-selector");
 	if (selector.data("select2")) {
 		selector.select2("data", {id: fullSetName, text: fullSetName});
 	}
@@ -704,7 +704,7 @@ function selectTrainerPokemon(trainerId, index) {
 }
 
 function hideTrainerSetSelector() {
-	var selector = $("#p2 .set-selector");
+	var selector = $("#p2 input.set-selector");
 	$("#p2").addClass("trainer-mode");
 	selector.addClass("trainer-set-selector-input");
 	if (selector.data("select2")) {
@@ -834,7 +834,7 @@ function updateTrainerControlsForLayout() {
 		return;
 	}
 	var controls = $("#p2 > .trainer-controls");
-	var selector = $("#p2 > .set-selector");
+	var selector = $("#p2 > input.set-selector");
 	var selectorContainer = selector.data("select2") ? selector.select2("container") : $();
 	var selectorAnchor = selectorContainer.length ? selectorContainer : selector;
 	if (!controls.length) return;
@@ -1178,7 +1178,7 @@ function setImportedSetOptionsVisible(visible) {
 window.updateImportedSetOptionsVisibility = setImportedSetOptionsVisible;
 
 function refreshImportedSetFilters() {
-	$(".set-selector").each(function () {
+	$("input.set-selector").each(function () {
 		var selector = $(this);
 		if (selector.data("select2")) selector.select2("destroy");
 	});

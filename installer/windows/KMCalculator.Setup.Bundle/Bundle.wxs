@@ -35,6 +35,13 @@
     <Variable Name="LegacyCefRoyalAtPokemonValidated" Type="numeric" Value="0" />
     <Variable Name="LegacyCefRoyalNestedValidated" Type="numeric" Value="0" />
     <Variable Name="LegacyCefValidated" Type="numeric" Value="0" />
+    <!-- Conditions compare formatted variables, never bracketed path literals. -->
+    <Variable Name="LegacyCefRoyalCanonicalRoot" Type="formatted"
+              Value="[ProgramFiles64Folder]Royal Sword Calculator" />
+    <Variable Name="LegacyCefPokemonCanonicalRoot" Type="formatted"
+              Value="[ProgramFiles64Folder]Pokemon Royal Sword" />
+    <Variable Name="LegacyCefRoyalNestedRoot" Type="formatted"
+              Value="[ProgramFiles64Folder]Pokemon Royal Sword\Royal Sword Calculator" />
     <Variable Name="LegacyCefRoyalCanonicalUninstallCommand"
               Type="formatted"
               Value="&quot;[ProgramFiles64Folder]Royal Sword Calculator\Uninstall Royal Sword Calculator.exe&quot; /allusers" />
@@ -210,25 +217,25 @@
                   Variable="LegacyCefRoyalCanonicalValidated"
                   Value="1"
                   Type="numeric"
-                  Condition="LegacyCefRoyalPayloadValidated = 1 AND LegacyCefInstallLocation ~= &quot;[ProgramFiles64Folder]Royal Sword Calculator&quot; AND LegacyCefUninstallCommand ~= LegacyCefRoyalCanonicalUninstallCommand" />
+                  Condition="LegacyCefRoyalPayloadValidated = 1 AND LegacyCefInstallLocation ~= LegacyCefRoyalCanonicalRoot AND LegacyCefUninstallCommand ~= LegacyCefRoyalCanonicalUninstallCommand" />
     <SetVariable Id="ValidateLegacyCefPokemonCanonical"
                   After="ValidateLegacyCefRoyalCanonical"
                   Variable="LegacyCefPokemonCanonicalValidated"
                   Value="1"
                   Type="numeric"
-                  Condition="LegacyCefPokemonPayloadValidated = 1 AND LegacyCefInstallLocation ~= &quot;[ProgramFiles64Folder]Pokemon Royal Sword&quot; AND LegacyCefUninstallCommand ~= LegacyCefPokemonCanonicalUninstallCommand" />
+                  Condition="LegacyCefPokemonPayloadValidated = 1 AND LegacyCefInstallLocation ~= LegacyCefPokemonCanonicalRoot AND LegacyCefUninstallCommand ~= LegacyCefPokemonCanonicalUninstallCommand" />
     <SetVariable Id="ValidateLegacyCefRoyalAtPokemon"
                   After="ValidateLegacyCefPokemonCanonical"
                   Variable="LegacyCefRoyalAtPokemonValidated"
                   Value="1"
                   Type="numeric"
-                  Condition="LegacyCefRoyalPayloadValidated = 1 AND LegacyCefInstallLocation ~= &quot;[ProgramFiles64Folder]Pokemon Royal Sword&quot; AND LegacyCefUninstallCommand ~= LegacyCefRoyalAtPokemonUninstallCommand" />
+                  Condition="LegacyCefRoyalPayloadValidated = 1 AND LegacyCefInstallLocation ~= LegacyCefPokemonCanonicalRoot AND LegacyCefUninstallCommand ~= LegacyCefRoyalAtPokemonUninstallCommand" />
     <SetVariable Id="ValidateLegacyCefRoyalNested"
                   After="ValidateLegacyCefRoyalAtPokemon"
                   Variable="LegacyCefRoyalNestedValidated"
                   Value="1"
                   Type="numeric"
-                  Condition="LegacyCefRoyalPayloadValidated = 1 AND LegacyCefInstallLocation ~= &quot;[ProgramFiles64Folder]Pokemon Royal Sword\Royal Sword Calculator&quot; AND LegacyCefUninstallCommand ~= LegacyCefRoyalNestedUninstallCommand" />
+                  Condition="LegacyCefRoyalPayloadValidated = 1 AND LegacyCefInstallLocation ~= LegacyCefRoyalNestedRoot AND LegacyCefUninstallCommand ~= LegacyCefRoyalNestedUninstallCommand" />
     <SetVariable Id="ValidateLegacyCefInstall"
                   After="ValidateLegacyCefRoyalNested"
                   Variable="LegacyCefValidated"
@@ -241,15 +248,11 @@
     <bal:Condition Condition="NOT KMRemoveLegacy OR (NOT LegacyCefRoyalCanonicalRootPresent AND NOT LegacyCefPokemonCanonicalRootPresent AND NOT LegacyCefRoyalNestedRootPresent AND NOT LegacyCefProductKeyPresent AND NOT LegacyCefArpKeyPresent) OR (LegacyCefValidated = 1 AND (NOT LegacyCefRoyalCanonicalRootPresent OR LegacyCefRoyalCanonicalValidated = 1) AND (NOT LegacyCefPokemonCanonicalRootPresent OR LegacyCefPokemonCanonicalValidated = 1 OR LegacyCefRoyalAtPokemonValidated = 1 OR LegacyCefRoyalNestedValidated = 1) AND (NOT LegacyCefRoyalNestedRootPresent OR LegacyCefRoyalNestedValidated = 1))"
                    Message="A Royal Sword Calculator installation or leftover program folder was detected but cannot be removed safely. Uninstall Royal Sword Calculator from Windows Settings, or remove its leftover Program Files folder if it is no longer registered, then run KM Calculator Setup again. After KM Calculator installs successfully, setup removes the remaining Royal Sword Calculator data for the current Windows user." />
 
-    <BootstrapperApplication>
-      <bal:WixStandardBootstrapperApplication Theme="hyperlinkLargeLicense"
-                                               ThemeFile="Theme\KMCalculatorTheme.xml"
-                                               LogoFile="$(var.KmLogoPath)"
-                                               LicenseUrl=""
-                                               ShowVersion="yes"
-                                               SuppressOptionsUI="yes"
-                                               SuppressDowngradeFailure="no"
-                                               LaunchTarget="[InstallFolder]KM Calculator.exe" />
+    <BootstrapperApplication SourceFile="$(var.KmSetupUiDir)\KMCalculator.Setup.UI.exe">
+      <Payloads Include="$(var.KmSetupUiDir)\**">
+        <Exclude Files="$(var.KmSetupUiDir)\KMCalculator.Setup.UI.exe" />
+        <Exclude Files="$(var.KmSetupUiDir)\**\*.pdb" />
+      </Payloads>
     </BootstrapperApplication>
 
     <Chain>

@@ -15,6 +15,11 @@
 	var openReleaseButton = document.getElementById("km-settings-open-release");
 	var promptCopy = document.getElementById("km-update-prompt-copy");
 	var releaseNotes = document.getElementById("km-update-release-notes");
+	var notesNavigation = document.getElementById("km-update-notes-pages");
+	var notesPageLabel = document.getElementById("km-update-notes-page");
+	var notesPrevious = document.getElementById("km-update-notes-previous");
+	var notesNext = document.getElementById("km-update-notes-next");
+	var notesPages = [], notesPage = 0, notesLayoutKey = "";
 	var progressPanel = document.getElementById("km-update-progress-panel");
 	var progressTitle = document.getElementById("km-update-progress-title");
 	var progressPercent = document.getElementById("km-update-progress-percent");
@@ -183,12 +188,51 @@
 		progressMessage.textContent = message;
 	}
 
+	function renderReleaseNotes() {
+		releaseNotes.hidden = !updateState.releaseNotes;
+		notesNavigation.hidden = !updateState.releaseNotes;
+		if (!updateState.releaseNotes || overlay.hidden || updateView.hidden) return;
+		var scale = parseFloat(window.getComputedStyle(document.body).getPropertyValue("--km-scale")) || 1;
+		var height = Math.max(100, Math.min(300, window.innerHeight / scale - 500));
+		var key = releaseNotes.clientWidth + ":" + height + ":" + updateState.releaseNotes;
+		if (key !== notesLayoutKey) {
+			var offset = notesPages.slice(0, notesPage).join("").length;
+			var remaining = updateState.releaseNotes;
+			notesPages = [];
+			while (remaining.length) {
+				var low = 1, high = remaining.length;
+				while (low < high) {
+					var mid = Math.ceil((low + high) / 2);
+					releaseNotes.textContent = remaining.slice(0, mid);
+					if (releaseNotes.offsetHeight <= height) low = mid;
+					else high = mid - 1;
+				}
+				if (low < remaining.length) {
+					var boundary = remaining.lastIndexOf("\n", low - 1);
+					if (boundary < low / 2) boundary = remaining.lastIndexOf(" ", low - 1);
+					if (boundary >= low / 2) low = boundary + 1;
+					if (/[\uD800-\uDBFF]/.test(remaining.charAt(low - 1))) low = Math.max(1, low - 1);
+				}
+				notesPages.push(remaining.slice(0, low));
+				remaining = remaining.slice(low);
+			}
+			notesPage = 0;
+			while (notesPage < notesPages.length - 1 && offset >= notesPages[notesPage].length) {
+				offset -= notesPages[notesPage++].length;
+			}
+			notesLayoutKey = key;
+		}
+		releaseNotes.textContent = notesPages[notesPage];
+		notesPageLabel.textContent = "Release notes · Page " + (notesPage + 1) + " of " + notesPages.length;
+		notesPrevious.disabled = notesPage === 0;
+		notesNext.disabled = notesPage === notesPages.length - 1;
+	}
+
 	function renderUpdateView() {
 		var version = getVersionLabel(updateState.version);
 		var applying = isApplyingUpdate();
 		promptCopy.textContent = "KM Calculator " + version + " is available. Install it now?";
-		releaseNotes.textContent = updateState.releaseNotes;
-		releaseNotes.hidden = !updateState.releaseNotes;
+		renderReleaseNotes();
 		updateError.hidden = updateState.status !== "error";
 		updateErrorTitle.textContent = updateState.errorTitle || "Update failed";
 		updateErrorMessage.textContent = updateState.error || updateState.message;
@@ -227,6 +271,7 @@
 		activeView = "update";
 		settingsView.hidden = true;
 		updateView.hidden = false;
+		renderReleaseNotes();
 		dialog.setAttribute("aria-labelledby", "km-update-prompt-heading");
 		installButton.focus();
 	}
@@ -386,6 +431,11 @@
 	}
 
 	settingsButton.addEventListener("click", openSettings);
+	if (notesPrevious && notesNext) {
+		notesPrevious.addEventListener("click", function () { notesPage--; renderReleaseNotes(); });
+		notesNext.addEventListener("click", function () { notesPage++; renderReleaseNotes(); });
+		window.addEventListener("resize", renderReleaseNotes);
+	}
 	closeButton.addEventListener("click", closeSettings);
 	overlay.addEventListener("click", function (event) {
 		if (event.target === overlay) closeSettings();

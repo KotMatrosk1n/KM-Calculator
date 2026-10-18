@@ -11,11 +11,11 @@
         <Shortcut Id="KmCalculatorStartMenuShortcut"
                   Name="KM Calculator"
                   Description="Open KM Calculator"
-                  Target="[#KmCalculatorMainExecutableFile]"
+                  Target="[INSTALLFOLDER]KM Calculator.exe"
                   WorkingDirectory="INSTALLFOLDER"
                   Icon="KmCalculatorProductIcon.ico" />
         <RemoveFolder Id="RemoveKmCalculatorStartMenuFolder" Directory="KmCalculatorStartMenuFolder" On="uninstall" />
-        <RegistryValue Root="HKLM"
+        <RegistryValue Root="HKCU"
                        Key="Software\KM Calculator\Components"
                        Name="StartMenuShortcut"
                        Value="1"
@@ -32,10 +32,10 @@
         <Shortcut Id="KmCalculatorDesktopShortcut"
                   Name="KM Calculator"
                   Description="Open KM Calculator"
-                  Target="[#KmCalculatorMainExecutableFile]"
+                  Target="[INSTALLFOLDER]KM Calculator.exe"
                   WorkingDirectory="INSTALLFOLDER"
                   Icon="KmCalculatorProductIcon.ico" />
-        <RegistryValue Root="HKLM"
+        <RegistryValue Root="HKCU"
                        Key="Software\KM Calculator\Components"
                        Name="DesktopShortcut"
                        Value="1"

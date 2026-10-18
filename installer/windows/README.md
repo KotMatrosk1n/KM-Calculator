@@ -4,6 +4,29 @@ KM Calculator uses an independently authored WiX Toolset v7 Burn bundle and MSI.
 
 The design intentionally does not copy KM Editor's GPL-3.0-only installer source. KM Editor is a behavioral and visual reference only.
 
+## Custom setup interface
+
+`KMCalculator.Setup.UI` is a dedicated WPF bootstrapper application. It owns the
+installer, updater, repair, and uninstaller screens, replacing the former
+WixStdBA XML theme. All modes use the same dark window chrome, Calculator logo,
+inset cards, indigo actions, gold accents, styled checkboxes, and progress bar.
+The baseline window is 760 by 440 device-independent pixels; longer disclosures
+expand vertically, with a work-area limit and per-monitor DPI support.
+
+Progress comes from Burn and Windows Installer. Interactive setup waits for an
+explicit action, including an uninstall confirmation. Updater-driven passive
+mode shows progress and exits on success. Quiet mode creates no visible window.
+Cancellation waits for the engine's terminal result and does not interrupt
+rollback. Restart-required results are preserved, including with `/norestart`.
+The UI evaluates the bundle's authored installation conditions before planning;
+the MSI retains its independent path and legacy-identity checks.
+
+The setup UI is published with its .NET desktop runtime and embedded in Burn,
+so installation and the cached uninstaller do not require a preinstalled .NET
+runtime. The public launcher still owns post-install legacy cleanup and updater
+relaunch. Finish returns control to that launcher; setup does not launch the
+application ahead of cleanup. Uninstall preserves Calculator user data.
+
 ## Build prerequisites
 
 - Windows x64
@@ -25,7 +48,7 @@ npm run electron:pack
 pwsh -NoProfile -File installer/windows/scripts/Build-KmCalculatorWindowsSetup.ps1 -AcceptWixEula
 ```
 
-The driver validates the package version and Electron executable metadata, stages the complete `release/win-unpacked` payload, rejects reparse points, deterministically creates and validates the GitHub `resources/app-update.yml` that `electron-builder --dir` omits, generates stable component IDs and GUIDs, builds the MSI and Burn bundle, embeds and pins the bundle in the launcher, and writes:
+The driver validates the package version and Electron executable metadata, stages the complete `release/win-unpacked` payload, rejects reparse points, deterministically creates and validates the GitHub `resources/app-update.yml` that `electron-builder --dir` omits, generates stable component IDs and GUIDs, builds the MSI, publishes the custom setup UI, builds Burn with that UI and its runtime, embeds and pins the bundle in the launcher, and writes:
 
 - `release/KM-Calculator-Setup-<version>.exe`
 - `release/latest.yml`
@@ -38,7 +61,7 @@ Intermediate payloads and local validation artifacts stay under ignored `install
 
 Unsigned local builds remain available for development. To create a signed local build, provide the PFX path and password through `KM_SIGNING_CERTIFICATE_PATH` and `KM_SIGNING_CERTIFICATE_PASSWORD`, or the matching script parameters. Set `KM_REQUIRE_SIGNING=true` (or pass `-RequireSigning`) whenever an unsigned result must be forbidden. `KM_SIGNTOOL_PATH` can identify an SDK `signtool.exe` when it is not on `PATH`.
 
-Signed builds use SHA-256 Authenticode signatures and an RFC 3161 SHA-256 timestamp for the already stamped `KM Calculator.exe`, the MSI, the inner Burn bundle, and the final public launcher. Each signature is verified against the supplied certificate and must contain a trusted timestamp before the next layer is built. The inner bundle is signed before its SHA-256 digest is embedded in the launcher. The certificate's complete subject distinguished name is added to the staged `resources/app-update.yml` before payload harvesting; this makes `electron-updater` verify the downloaded installer against that exact publisher instead of relying on the asset hash alone.
+Signed builds use SHA-256 Authenticode signatures and an RFC 3161 SHA-256 timestamp for the already stamped `KM Calculator.exe`, the MSI, the custom setup UI executable, the inner Burn bundle, and the final public launcher. Each signature is verified against the supplied certificate and must contain a trusted timestamp before the next layer is built. The inner bundle is signed before its SHA-256 digest is embedded in the launcher. The certificate's complete subject distinguished name is added to the staged `resources/app-update.yml` before payload harvesting; this makes `electron-updater` verify the downloaded installer against that exact publisher instead of relying on the asset hash alone.
 
 The release workflow always sets `KM_REQUIRE_SIGNING=true`. It expects a base64-encoded PFX in the `KM_WINDOWS_SIGNING_CERTIFICATE_BASE64` repository secret and its non-empty password in `KM_WINDOWS_SIGNING_CERTIFICATE_PASSWORD`. The PFX is written only to the runner's temporary directory and removed in an `always()` cleanup step. Missing credentials, an unusable or expired certificate, an unavailable timestamp, a signer mismatch, or an invalid signature stops the workflow before publication.
 
