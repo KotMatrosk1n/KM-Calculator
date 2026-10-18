@@ -108,6 +108,20 @@ function getCalcSpriteFileNames(extension) {
 			if (spriteId) spriteFiles[spriteId + "." + extension] = true;
 		});
 	});
+	// Reference cards may use workbook labels or forms outside calculator sets.
+	var referenceSource = fs.readFileSync(path.join(__dirname, "..", "src", "js", "data", "royal_sword_reference.js"), "utf8");
+	var referenceAssignment = /^window\.KMCalculatorReferenceData = (\{[\s\S]*?^\});/m.exec(referenceSource);
+	if (!referenceAssignment) throw new Error("Could not read bundled reference sprite data");
+	var references = JSON.parse(referenceAssignment[1]);
+	Object.keys(references).forEach(function (profileId) {
+		(references[profileId].trainers || []).forEach(function (trainer) {
+			trainer.team.forEach(function (pokemon) {
+				var species = calc.SPECIES[9][pokemon.pokemon] || calc.SPECIES[8][pokemon.pokemon];
+				var spriteId = pokemon.sprite || getPokemonSpriteId(pokemon.pokemon, species, toID);
+				if (/^[a-z0-9-]+$/.test(spriteId)) spriteFiles[spriteId + "." + extension] = true;
+			});
+		});
+	});
 	return spriteFiles;
 }
 

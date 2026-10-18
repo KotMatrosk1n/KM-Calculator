@@ -29,8 +29,8 @@ var MAIN_WINDOW_STATE_FILE = "main-window-state.json";
 var UPDATER_LOG_FILE = "updater.log";
 var MAIN_WINDOW_DEFAULT_WIDTH = 1480;
 var MAIN_WINDOW_DEFAULT_HEIGHT = 960;
-var MAIN_WINDOW_MIN_WIDTH = 1180;
-var MAIN_WINDOW_MIN_HEIGHT = 720;
+var MAIN_WINDOW_MIN_WIDTH = 900;
+var MAIN_WINDOW_MIN_HEIGHT = 600;
 var LOCAL_SPRITE_ROUTE_PREFIX = "/local-sprites/";
 var UPDATER_CACHE_DIR_NAMES = ["km-calculator-updater"];
 var UPDATE_CHECK_DELAY_MS = 0;
@@ -996,17 +996,19 @@ function getMainWindowSizeBounds() {
 	} catch (error) {
 		void error;
 	}
+	var width = workArea && workArea.width > 0 ? workArea.width : MAIN_WINDOW_DEFAULT_WIDTH;
+	var height = workArea && workArea.height > 0 ? workArea.height : MAIN_WINDOW_DEFAULT_HEIGHT;
 	return {
-		minWidth: MAIN_WINDOW_MIN_WIDTH,
-		minHeight: MAIN_WINDOW_MIN_HEIGHT,
-		maxWidth: Math.max(MAIN_WINDOW_MIN_WIDTH, workArea && workArea.width ? workArea.width : MAIN_WINDOW_DEFAULT_WIDTH),
-		maxHeight: Math.max(MAIN_WINDOW_MIN_HEIGHT, workArea && workArea.height ? workArea.height : MAIN_WINDOW_DEFAULT_HEIGHT)
+		minWidth: Math.min(MAIN_WINDOW_MIN_WIDTH, width),
+		minHeight: Math.min(MAIN_WINDOW_MIN_HEIGHT, height),
+		maxWidth: width,
+		maxHeight: height
 	};
 }
 
 function clampMainWindowSize(value, min, max, fallback) {
 	value = Math.round(Number(value));
-	if (!isFinite(value) || value <= 0) return fallback;
+	if (!isFinite(value) || value <= 0) value = fallback;
 	return Math.max(min, Math.min(max, value));
 }
 
@@ -1079,13 +1081,14 @@ function wireMainWindowStatePersistence(mainWindow) {
 
 function createMainWindow() {
 	var windowState = readMainWindowState();
+	var sizeBounds = getMainWindowSizeBounds();
 	var mainWindow = new BrowserWindow({
 		width: windowState.width,
 		height: windowState.height,
-		minWidth: MAIN_WINDOW_MIN_WIDTH,
-		minHeight: MAIN_WINDOW_MIN_HEIGHT,
+		minWidth: sizeBounds.minWidth,
+		minHeight: sizeBounds.minHeight,
 		title: getMainWindowTitle(),
-		backgroundColor: "#1b1b1b",
+		backgroundColor: "#11151c",
 		icon: APP_ICON_PATH,
 		show: false,
 		webPreferences: {
@@ -1097,16 +1100,26 @@ function createMainWindow() {
 	});
 
 	wireMainWindowStatePersistence(mainWindow);
-	mainWindow.loadURL(APP_SCHEME + "://" + APP_HOST + "/index.html");
 	mainWindow.on("page-title-updated", function (event) {
 		event.preventDefault();
 		mainWindow.setTitle(getMainWindowTitle());
 	});
-	mainWindow.once("ready-to-show", function () {
+	var firstPaintReady = false, pageLoaded = false;
+	function showLoadedWindow() {
+		if (!firstPaintReady || !pageLoaded) return;
 		mainWindow.setTitle(getMainWindowTitle());
 		if (windowState.maximized) mainWindow.maximize();
 		mainWindow.show();
+	}
+	mainWindow.once("ready-to-show", function () {
+		firstPaintReady = true;
+		showLoadedWindow();
 	});
+	mainWindow.webContents.once("did-finish-load", function () {
+		pageLoaded = true;
+		showLoadedWindow();
+	});
+	mainWindow.loadURL(APP_SCHEME + "://" + APP_HOST + "/index.html");
 
 	mainWindow.webContents.setWindowOpenHandler(function (details) {
 		openExternalUrl(details.url);

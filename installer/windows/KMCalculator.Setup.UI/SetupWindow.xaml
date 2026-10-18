@@ -1,0 +1,66 @@
+<!-- SPDX-License-Identifier: MIT -->
+<Window x:Class="KMCalculator.Setup.UI.SetupWindow" x:ClassModifier="internal"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        Title="{Binding WindowTitle}" Width="760" Height="440" MinHeight="440" SizeToContent="Height"
+        WindowStyle="None" ResizeMode="NoResize" WindowStartupLocation="CenterScreen" Closing="ClosingWindow">
+  <Window.Resources><ResourceDictionary><ResourceDictionary.MergedDictionaries><ResourceDictionary Source="SetupTheme.xaml" /></ResourceDictionary.MergedDictionaries></ResourceDictionary></Window.Resources>
+  <shell:WindowChrome.WindowChrome><shell:WindowChrome CaptionHeight="52" CornerRadius="8" GlassFrameThickness="0" ResizeBorderThickness="0" UseAeroCaptionButtons="False" /></shell:WindowChrome.WindowChrome>
+  <Border CornerRadius="8" Background="{StaticResource Background}" BorderBrush="{StaticResource StrongBorder}" BorderThickness="1">
+    <Grid><Grid.RowDefinitions><RowDefinition Height="52" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+      <Border Background="{StaticResource TitleSurface}" BorderBrush="{StaticResource Border}" BorderThickness="0,0,0,1" CornerRadius="8,8,0,0">
+        <Grid Margin="14,0,6,0"><Grid.ColumnDefinitions><ColumnDefinition Width="30" /><ColumnDefinition Width="*" /><ColumnDefinition Width="44" /></Grid.ColumnDefinitions>
+          <Image Source="Assets/calculator.png" Width="30" Height="30" />
+          <TextBlock Grid.Column="1" Text="{Binding WindowTitle}" FontWeight="Bold" Margin="10,0,0,0" VerticalAlignment="Center" />
+          <Button Grid.Column="2" Content="×" Style="{StaticResource CloseButton}" AutomationProperties.Name="Close setup" shell:WindowChrome.IsHitTestVisibleInChrome="True" Click="CloseClicked" IsEnabled="{Binding CanClose}" />
+        </Grid>
+      </Border>
+      <!-- The entire content can reflow on an unusually small work area; ordinary pages have no scroll pane. -->
+      <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Grid Margin="30,24"><Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+          <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="66" /></Grid.ColumnDefinitions>
+            <StackPanel Margin="0,0,24,0">
+              <TextBlock Text="KM CALCULATOR" FontSize="11" FontWeight="Bold" Foreground="{StaticResource Gold}" />
+              <TextBlock Text="{Binding Heading}" Margin="0,7,0,0" FontSize="25" FontWeight="ExtraBold" LineHeight="32" />
+              <TextBlock Text="{Binding Description}" Margin="0,6,0,0" Foreground="{StaticResource SoftText}" LineHeight="21" />
+            </StackPanel>
+            <Border Grid.Column="1" Width="66" Height="66" VerticalAlignment="Center" CornerRadius="14" Padding="9" Background="{StaticResource Surface}" BorderBrush="{StaticResource Border}" BorderThickness="1"><Image Source="Assets/calculator.png" /></Border>
+          </Grid>
+          <Grid Grid.Row="1" Margin="0,20,0,0">
+            <Border Style="{StaticResource Card}" Visibility="{Binding ShowProgress, Converter={StaticResource Visible}}"><StackPanel>
+              <DockPanel><TextBlock Text="{Binding ProgressText}" DockPanel.Dock="Right" Foreground="{StaticResource Gold}" FontWeight="Bold" /><TextBlock Text="CURRENT STEP" Style="{StaticResource Caption}" /></DockPanel>
+              <TextBlock Text="{Binding Detail}" Margin="0,7,0,11" MinHeight="20" Foreground="{StaticResource SoftText}" />
+              <ProgressBar Value="{Binding Progress, Mode=OneWay}" IsIndeterminate="{Binding Indeterminate}" AutomationProperties.Name="Setup progress" />
+            </StackPanel></Border>
+            <Border Style="{StaticResource Card}" Visibility="{Binding ShowOptions, Converter={StaticResource Visible}}"><StackPanel>
+              <CheckBox Content="Create a Start Menu shortcut" IsChecked="{Binding CreateStartMenuShortcut}" />
+              <CheckBox Content="Create a desktop shortcut" IsChecked="{Binding CreateDesktopShortcut}" />
+              <TextBlock Margin="0,10,0,0" FontSize="12" Foreground="{StaticResource MutedText}" Text="Installs to Program Files\KM Calculator for this computer." />
+              <TextBlock Margin="0,12,0,0" FontSize="12" LineHeight="18" Foreground="{StaticResource Warning}" Visibility="{Binding ShowLegacyNotice, Converter={StaticResource Visible}}" Text="This first installation permanently removes Royal Sword Calculator and this Windows user's Royal Sword teams, notes, settings, update caches, shortcuts, and registration." />
+            </StackPanel></Border>
+            <Border Style="{StaticResource Card}" Visibility="{Binding ShowRetention, Converter={StaticResource Visible}}"><StackPanel>
+              <TextBlock Text="YOUR DATA IS KEPT" Style="{StaticResource Caption}" />
+              <TextBlock Margin="0,7,0,0" Foreground="{StaticResource SoftText}" Text="Saved teams, notes, encounter and trainer progress, settings, and update caches remain available if you install KM Calculator again." />
+            </StackPanel></Border>
+            <Border Style="{StaticResource Card}" Background="#2A1519" BorderBrush="#71323A" Visibility="{Binding ShowError, Converter={StaticResource Visible}}"><StackPanel>
+              <TextBlock Text="ERROR DETAILS" Style="{StaticResource Caption}" />
+              <TextBlock Text="{Binding ErrorMessage}" Margin="0,7,0,0" Foreground="{StaticResource Danger}" />
+              <TextBlock Text="{Binding LogPath}" Margin="0,12,0,0" FontSize="12" Foreground="{StaticResource MutedText}" />
+            </StackPanel></Border>
+            <Border Style="{StaticResource Card}" Visibility="{Binding ShowHelp, Converter={StaticResource Visible}}"><TextBlock Foreground="{StaticResource SoftText}" Text="Supported options: /install, /repair, /uninstall, /modify, /passive, /quiet, /norestart, /log &lt;file&gt;, /layout &lt;folder&gt;.&#10;&#10;Uninstall keeps KM Calculator data. First installation through the public setup launcher removes the disclosed Royal Sword Calculator data." /></Border>
+          </Grid>
+          <Grid Grid.Row="2" Margin="0,20,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+            <TextBlock Text="{Binding VersionText}" FontSize="12" Foreground="{StaticResource MutedText}" VerticalAlignment="Center" Margin="0,0,16,0" />
+            <WrapPanel Grid.Column="1" HorizontalAlignment="Right">
+              <Button Content="Open log" Margin="0,0,10,0" Click="LogClicked" Visibility="{Binding ShowLog, Converter={StaticResource Visible}}" />
+              <Button Content="Uninstall" Margin="0,0,10,0" Style="{StaticResource Destructive}" Click="UninstallClicked" Visibility="{Binding ShowUninstall, Converter={StaticResource Visible}}" />
+              <Button Content="{Binding ActionText}" Margin="0,0,10,0" Style="{StaticResource Primary}" Click="PrimaryClicked" Visibility="{Binding ShowPrimary, Converter={StaticResource Visible}}" />
+              <Button Content="{Binding CloseText}" Click="CloseClicked" IsEnabled="{Binding CanClose}" IsCancel="True" />
+              <Button Content="Restart now" Margin="10,0,0,0" Style="{StaticResource Primary}" Click="RestartClicked" Visibility="{Binding ShowRestart, Converter={StaticResource Visible}}" />
+            </WrapPanel>
+          </Grid>
+        </Grid>
+      </ScrollViewer>
+    </Grid>
+  </Border>
+</Window>

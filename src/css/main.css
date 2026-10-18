@@ -2258,52 +2258,67 @@ body[data-calc-layout="royal-sword"] #p2.trainer-mode > .trainer-set-selector-in
     min-width: 0;
 }
 .mon-speed-F {
-    border-color: #7ee1ff;
+    --km-speed-color: #7ee1ff;
+    border-color: var(--km-speed-color);
     border-width: var(--spe-bor-width);
 }
 .mon-speed-T {
-    border-color: #a86dbe;
+    --km-speed-color: #a86dbe;
+    border-color: var(--km-speed-color);
     border-width: var(--spe-bor-width);
 }
 .mon-speed-S {
-    border-color: #e54848;
+    --km-speed-color: #e54848;
+    border-color: var(--km-speed-color);
     border-width: var(--spe-bor-width);
 }
 .mon-speed-none {
+    --km-speed-color: transparent;
     border-color: transparent !important;
 }
 .mon-dmg-none {
+    --km-matchup-fill: transparent;
     background: transparent !important;
 }
 .mon-dmg-W {
-    background: linear-gradient(to right, #0f0bf3 50%, transparent 0%);
+    --km-matchup-fill: linear-gradient(to right, #0f0bf3 50%, transparent 0%);
+    background: var(--km-matchup-fill);
 }
 .mon-dmg-WMO {
-    background: linear-gradient(to right, #1295ec 50%, transparent 0%);
+    --km-matchup-fill: linear-gradient(to right, #1295ec 50%, transparent 0%);
+    background: var(--km-matchup-fill);
 }
 .mon-dmg-4 {
-    background: linear-gradient(to right, transparent 50%, #dd0b0b 0%);
+    --km-matchup-fill: linear-gradient(to right, transparent 50%, #dd0b0b 0%);
+    background: var(--km-matchup-fill);
 }
 .mon-dmg-3 {
-    background: linear-gradient(to right, transparent 50%, #ff7f16 0%);
+    --km-matchup-fill: linear-gradient(to right, transparent 50%, #ff7f16 0%);
+    background: var(--km-matchup-fill);
 }
 .mon-dmg-1 {
-    background: linear-gradient(to right, #20d408 50%, transparent 0%);
+    --km-matchup-fill: linear-gradient(to right, #20d408 50%, transparent 0%);
+    background: var(--km-matchup-fill);
 }
 .mon-dmg-2 {
-    background: linear-gradient(to right, #daff08 50%, transparent 0%);
+    --km-matchup-fill: linear-gradient(to right, #daff08 50%, transparent 0%);
+    background: var(--km-matchup-fill);
 }
 .mon-dmg-14 {
-    background: linear-gradient(to right, #20d408 50%, #dd0b0b 0%);
+    --km-matchup-fill: linear-gradient(to right, #20d408 50%, #dd0b0b 0%);
+    background: var(--km-matchup-fill);
 }
 .mon-dmg-23 {
-    background: linear-gradient(to right, #daff08 50%, #ff7f16 0%);
+    --km-matchup-fill: linear-gradient(to right, #daff08 50%, #ff7f16 0%);
+    background: var(--km-matchup-fill);
 }
 .mon-dmg-13 {
-    background: linear-gradient(to right, #20d408 50%, #ff7f16 0%);
+    --km-matchup-fill: linear-gradient(to right, #20d408 50%, #ff7f16 0%);
+    background: var(--km-matchup-fill);
 }
 .mon-dmg-24 {
-    background: linear-gradient(to right, #daff08 50%, #dd0b0b 0%);
+    --km-matchup-fill: linear-gradient(to right, #daff08 50%, #dd0b0b 0%);
+    background: var(--km-matchup-fill);
 }
 .btn-group {
     display: inline-block;

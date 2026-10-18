@@ -1,37 +1,36 @@
-/*
-* Dark mode toggle
-*
-* In its current state, it will cause a minor FOIT.
-* Basically, the background behind the panels will
-* briefly flash white before turning dark. It's
-* better than before, but not perfect.
-*/
-
-var kmCalculatorStorage = window.getKMCalculatorStorage ? window.getKMCalculatorStorage() :
-	(window.getRoyalSwordStorage ? window.getRoyalSwordStorage() : localStorage);
-var prefersDarkTheme = kmCalculatorStorage.getItem('darkTheme') || '';
-var darkThemeButton = document.getElementById('dark-theme-toggle');
-darkThemeButton.value = prefersDarkTheme;
-updateTheme();
-
-function updateTheme() {
-	var isDark = prefersDarkTheme ? prefersDarkTheme === 'true' : window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-	var darkStyles = document.getElementById('dark-theme-styles');
-	darkStyles.disabled = !isDark;
-	document.documentElement.setAttribute('data-km-theme', isDark ? 'dark' : 'light');
-}
-
-/*
-* Function that toggles light and dark mode
-* Doesn't use jQuery, probably could with some modification
-*/
-function toggleTheme() {
-	prefersDarkTheme = document.getElementById('dark-theme-toggle').value;
-	updateTheme();
-
-	kmCalculatorStorage.setItem('darkTheme', prefersDarkTheme);
-}
-
-darkThemeButton.addEventListener('change', toggleTheme);
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateTheme);
+/* Restore the app theme before the workspace can paint. */
+(function () {
+	"use strict";
+	var key = "km-calculator.visual-theme.v1";
+	var choices = ["classic", "renegade", "royal", "sovereign"];
+	var storage;
+	var theme = "classic";
+	try {
+		storage = window.getKMCalculatorStorage ? window.getKMCalculatorStorage() : window.localStorage;
+		var saved = storage.getItem(key);
+		if (choices.indexOf(saved) !== -1) theme = saved;
+	} catch (error) {
+		// An unavailable preference store must not prevent the app from opening.
+	}
+	function apply(value) {
+		theme = choices.indexOf(value) === -1 ? "classic" : value;
+		document.documentElement.setAttribute("data-km-theme", theme);
+	}
+	apply(theme);
+	function bind() {
+		var select = document.getElementById("dark-theme-toggle");
+		if (!select) return;
+		select.value = theme;
+		select.addEventListener("change", function () {
+			apply(select.value);
+			select.value = theme;
+			try {
+				if (storage) storage.setItem(key, theme);
+			} catch (error) {
+				// Keep the selected theme usable for this session if saving fails.
+			}
+		});
+	}
+	if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind);
+	else bind();
+})();

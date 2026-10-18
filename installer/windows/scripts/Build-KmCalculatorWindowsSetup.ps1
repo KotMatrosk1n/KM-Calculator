@@ -358,6 +358,7 @@ try {
     $packageOutput = Join-Path $buildDirectory "package"
     $bundleOutput = Join-Path $buildDirectory "bundle"
     $launcherOutput = Join-Path $buildDirectory "launcher"
+    $setupUiOutput = Join-Path $buildDirectory "setup-ui"
 
     $packageProject = Join-Path $windowsDirectory "KMCalculator.Setup.Package\KMCalculator.Setup.Package.wixproj"
     Invoke-CheckedProcess -FilePath "dotnet" -Arguments @(
@@ -384,6 +385,34 @@ try {
             -ExpectedCertificate $signingCertificate
     }
 
+    # Publish the same custom UI for installation, passive updates, maintenance,
+    # and the cached bundle's uninstaller. Include its runtime for clean machines.
+    $setupUiProject = Join-Path $windowsDirectory "KMCalculator.Setup.UI\KMCalculator.Setup.UI.csproj"
+    Invoke-CheckedProcess -FilePath "dotnet" -Arguments @(
+        "publish", $setupUiProject,
+        "--configuration", "Release",
+        "--runtime", "win-x64",
+        "--self-contained", "true",
+        "--output", $setupUiOutput,
+        "-p:AcceptEula=wix7",
+        "-p:KmVersion=$Version",
+        "-p:KmIconPath=$iconPath",
+        "-p:KmLogoPath=$logoPath"
+    )
+    $setupUiPath = Join-Path $setupUiOutput "KMCalculator.Setup.UI.exe"
+    if (-not (Test-Path -LiteralPath $setupUiPath -PathType Leaf)) {
+        throw "The setup UI publish did not produce KMCalculator.Setup.UI.exe."
+    }
+    if ($signingEnabled) {
+        Invoke-AuthenticodeSign `
+            -SignToolPath $signToolPath `
+            -CertificatePath $SigningCertificatePath `
+            -Password $SigningCertificatePassword `
+            -Rfc3161TimestampUrl $TimestampUrl `
+            -TargetPath $setupUiPath `
+            -ExpectedCertificate $signingCertificate
+    }
+
     $bundleProject = Join-Path $windowsDirectory "KMCalculator.Setup.Bundle\KMCalculator.Setup.Bundle.wixproj"
     Invoke-CheckedProcess -FilePath "dotnet" -Arguments @(
         "build", $bundleProject,
@@ -393,7 +422,7 @@ try {
         "-p:KmVersion=$Version",
         "-p:KmMsiPath=$msiPath",
         "-p:KmIconPath=$iconPath",
-        "-p:KmLogoPath=$logoPath"
+        "-p:KmSetupUiDir=$setupUiOutput"
     )
     $innerBundlePath = Join-Path $bundleOutput "KM.Calculator.Bundle.exe"
     if (-not (Test-Path -LiteralPath $innerBundlePath -PathType Leaf)) {

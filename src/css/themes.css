@@ -1,0 +1,244 @@
+/* KM Editor's four visual identities, adapted to the calculator's compact workspace. */
+:root {
+    color-scheme: dark;
+    --km-bg: #0b1120;
+    --km-deep: #050814;
+    --km-panel: #121b2d;
+    --km-raised: #18233a;
+    --km-inset: #0f1728;
+    --km-hover: #111a2c;
+    --km-line: #26344d;
+    --km-control-line: #34435f;
+    --km-text: #f4f7fb;
+    --km-muted: #9aa7bd;
+    --km-soft: #c8d3e7;
+    --km-accent: #6d73ff;
+    --km-action: #4f46e5;
+    --km-action-dark: #302e86;
+    --km-gold: #d6a842;
+    --km-focus: #ffd166;
+    --km-success: #58d17c;
+    --km-warning: #e0ac42;
+    --km-danger: #ff6b6b;
+    --km-on-action: #ffffff;
+    --km-overlay: rgb(5 8 16 / 78%);
+    --km-shadow: rgb(0 0 0 / 34%);
+    --km-sheen: rgb(255 255 255 / 6%);
+    --km-highlight: var(--km-accent);
+    --km-selection: color-mix(in srgb, var(--km-action) 28%, var(--km-panel));
+    --km-selection-end: color-mix(in srgb, var(--km-action) 12%, var(--km-panel));
+    --km-selection-line: var(--km-highlight);
+    --km-panel-fill: linear-gradient(155deg, var(--km-panel), color-mix(in srgb, var(--km-deep) 25%, var(--km-panel)));
+    --km-chrome-fill: linear-gradient(110deg, var(--km-raised), var(--km-panel) 65%);
+    --km-selected-fill: linear-gradient(110deg, var(--km-selection), var(--km-selection-end));
+    --km-action-fill: linear-gradient(135deg, var(--km-action-dark), var(--km-action));
+    --km-elevation: 0 8px 24px var(--km-shadow), inset 0 1px 0 var(--km-sheen);
+}
+
+:root[data-km-theme="renegade"] {
+    --km-bg: #0b0c0e;
+    --km-deep: #030405;
+    --km-panel: #141518;
+    --km-raised: #1c1e22;
+    --km-inset: #111316;
+    --km-hover: #1a1c20;
+    --km-line: #2b2e34;
+    --km-control-line: #3c4048;
+    --km-text: #f6f3f4;
+    --km-muted: #aeb1b8;
+    --km-soft: #dadadd;
+    --km-accent: #ff4d63;
+    --km-action: #a4162d;
+    --km-action-dark: #650c1d;
+    --km-gold: #ff5267;
+    --km-focus: #ff7689;
+    --km-success: #68d9a0;
+    --km-warning: #efc76b;
+    --km-danger: #ff9388;
+    --km-overlay: rgb(2 3 4 / 82%);
+    --km-shadow: rgb(0 0 0 / 46%);
+    --km-sheen: rgb(255 255 255 / 5%);
+    --km-panel-fill: linear-gradient(155deg, #1d1f23, #0d0e11);
+}
+
+:root[data-km-theme="royal"] {
+    color-scheme: light;
+    --km-bg: #f4ecdc;
+    --km-deep: #d7c6a5;
+    --km-panel: #fffaf0;
+    --km-raised: #f1e3c8;
+    --km-inset: #fffdf7;
+    --km-hover: #f3e1ba;
+    --km-line: #b89a62;
+    --km-control-line: #9d7b3d;
+    --km-text: #251d12;
+    --km-muted: #665238;
+    --km-soft: #3d2f1e;
+    --km-accent: #985b00;
+    --km-action: #985b00;
+    --km-action-dark: #704000;
+    --km-gold: #8a5500;
+    --km-focus: #704000;
+    --km-success: #21643f;
+    --km-warning: #865000;
+    --km-danger: #a12f3b;
+    --km-overlay: rgb(39 26 8 / 58%);
+    --km-shadow: rgb(70 43 7 / 18%);
+    --km-sheen: rgb(255 255 255 / 72%);
+    --km-selection: #f3e1ba;
+    --km-selection-end: #f8eedb;
+    --km-panel-fill: linear-gradient(155deg, #fffdf7, #f6ecd8);
+    --km-chrome-fill: linear-gradient(180deg, #fffbf3, #ecdec4);
+}
+
+:root[data-km-theme="sovereign"] {
+    --km-bg: #0d0d0c;
+    --km-deep: #070809;
+    --km-panel: #191918;
+    --km-raised: #242320;
+    --km-inset: #151513;
+    --km-hover: #2b2924;
+    --km-line: #414039;
+    --km-control-line: #6d695d;
+    --km-text: #fff6e5;
+    --km-muted: #c0b39a;
+    --km-soft: #e8d8b8;
+    --km-accent: #f5c451;
+    --km-action: #805000;
+    --km-action-dark: #4c3005;
+    --km-gold: #f5c451;
+    --km-focus: #e1d7c0;
+    --km-success: #7cdbac;
+    --km-warning: #ffbd82;
+    --km-danger: #ff9993;
+    --km-overlay: rgb(2 3 4 / 82%);
+    --km-shadow: rgb(0 0 0 / 46%);
+    --km-sheen: rgb(255 255 255 / 5%);
+    --km-highlight: #e1d7c0;
+    --km-selection: #322f28;
+    --km-selection-end: #252320;
+    --km-selection-line: #9d9b8a;
+    --km-panel-fill: linear-gradient(155deg, #242320, #111110);
+    --km-chrome-fill: linear-gradient(110deg, #2b271d, #111110 45%, #2d2c29);
+}
+
+html, body { background: var(--km-bg); color: var(--km-text); }
+body.km-app { background: radial-gradient(ellipse at 75% 0, color-mix(in srgb, var(--km-action) 8%, transparent), transparent 65vh), var(--km-bg); }
+body.km-app ::selection { color: var(--km-text); background: var(--km-selection); }
+body.km-app a, body.km-app a:visited { color: var(--km-accent); }
+body.km-app a:hover { color: var(--km-text); }
+body.km-app > header { background: var(--km-chrome-fill); }
+body.km-app .km-calculator-header-title { color: var(--km-text); text-shadow: none; }
+body.km-app #dark-theme-toggle { width: 116px; flex-shrink: 0; border-color: var(--km-control-line); }
+body.km-app .km-app-tabs { background: var(--km-panel); box-shadow: 0 4px 16px var(--km-shadow); }
+body.km-app button.km-app-tab { background: transparent; }
+body.km-app button.km-app-tab:hover { background: var(--km-hover); color: var(--km-text); }
+body.km-app button.km-app-tab[aria-selected="true"] { background: var(--km-selected-fill); color: var(--km-highlight); border-bottom-color: var(--km-highlight); box-shadow: none; }
+body.km-app :is(.combat-workspace fieldset, .km-results-column, .km-reference-card, .km-location-list, .lower-workspace fieldset) { background: var(--km-panel-fill); box-shadow: inset 0 1px 0 var(--km-sheen); }
+body.km-app :is(.km-dialog, .km-catch-dialog, .notes-window, .km-settings-dialog, .km-rom-hack-dialog) { background: var(--km-panel-fill); box-shadow: var(--km-elevation); border-color: var(--km-line); color: var(--km-text); }
+body.km-app :is(.notes-window-header, .team-box-heading) { background: var(--km-chrome-fill); }
+body.km-app :is(.km-section-heading, .km-results-heading h2, .km-reference-card h3, .km-page-heading h1) { color: var(--km-soft); }
+body.km-app fieldset > legend { color: var(--km-accent); }
+
+/* Selection and focus use separate cues, without changing any control dimensions. */
+body.km-app button, body.km-app .btn { border-color: var(--km-control-line); background: linear-gradient(var(--km-raised), var(--km-panel)); color: var(--km-text); box-shadow: inset 0 1px 0 var(--km-sheen); }
+body.km-app button:hover, body.km-app .btn:hover { background: var(--km-hover); border-color: var(--km-highlight); color: var(--km-text); }
+body.km-app button.button:focus { color: var(--km-text); }
+body.km-app button:active, body.km-app .btn:active { background: var(--km-selection); box-shadow: none; }
+body.km-app :is(button[aria-pressed="true"], .visually-hidden:checked + .btn, .km-encounter-modes [aria-selected="true"]) { background: var(--km-selected-fill); border-color: var(--km-selection-line); color: var(--km-text); box-shadow: inset 0 1px 0 var(--km-sheen); }
+body.km-app button.km-location-button { background: transparent; border-color: transparent; box-shadow: none; }
+body.km-app button.km-location-button:hover { background: var(--km-hover); border-color: var(--km-control-line); }
+body.km-app .km-location-button[aria-current="true"] { background: var(--km-selected-fill); border-color: var(--km-selection-line); box-shadow: inset 3px 0 0 var(--km-highlight); }
+body.km-app .km-location-button[aria-current="true"] span { color: var(--km-text); }
+body.km-app :focus-visible, body.km-app .visually-hidden:focus-visible + .btn { outline: 2px solid var(--km-focus); outline-offset: 2px; }
+body.km-app button:disabled, body.km-app .btn.disabled { color: var(--km-muted); background: var(--km-inset); border-color: var(--km-line); box-shadow: none; }
+body.km-app input:disabled + label.btn { color: var(--km-muted); background: var(--km-inset); }
+body.km-app :is(input[type="checkbox"], input[type="radio"]) { accent-color: var(--km-action); }
+body.km-app input:not([type="checkbox"]):not([type="radio"]), body.km-app select, body.km-app textarea { background-color: var(--km-inset); color: var(--km-text); border-color: var(--km-control-line); caret-color: var(--km-text); box-shadow: inset 0 1px 0 var(--km-sheen); }
+body.km-app :is(input, select, textarea):hover:not(:disabled) { border-color: var(--km-highlight); }
+body.km-app :is(input, select, textarea):disabled { color: var(--km-muted); opacity: .65; }
+body.km-app ::placeholder { color: var(--km-muted); opacity: 1; }
+body.km-app select option, body.km-app select optgroup { color: var(--km-text); background: var(--km-inset); }
+body.km-app .select2-container .select2-choice { background: var(--km-inset); border-color: var(--km-control-line); box-shadow: inset 0 1px 0 var(--km-sheen); }
+body.km-app .select2-container-active .select2-choice { outline: 2px solid var(--km-focus); outline-offset: 2px; }
+body.km-app .select2-drop { background: var(--km-panel); border-color: var(--km-control-line); box-shadow: var(--km-elevation); }
+body.km-app .select2-results .select2-highlighted { background: var(--km-selected-fill); color: var(--km-text); box-shadow: inset 3px 0 0 var(--km-highlight); }
+body.km-app .select2-results .select2-no-results, body.km-app .select2-results .select2-searching { background: var(--km-inset); color: var(--km-muted); }
+body.km-app .select2-container .select2-choice .select2-arrow b { background: none; }
+body.km-app .select2-container .select2-choice .select2-arrow b::after { content: ""; display: block; width: 6px; height: 6px; border-right: 1.5px solid var(--km-muted); border-bottom: 1.5px solid var(--km-muted); transform: rotate(45deg); margin: 9px 4px; }
+body.km-app .select2-search input { background: var(--km-inset); }
+body.km-app :is(.km-settings-primary-button, .km-catch-form button):not(:disabled) { background: var(--km-action-fill); border-color: var(--km-accent); color: var(--km-on-action); }
+body.km-app :is(.km-settings-primary-button, .km-catch-form button):hover:not(:disabled) { background: var(--km-action); border-color: var(--km-focus); color: var(--km-on-action); }
+body.km-app :is(.locked-move, .locked-weather):checked + .btn { box-shadow: inset 3px 0 0 var(--km-accent); }
+
+/* The profile chooser and overlays share the selected identity. */
+body.km-app :is(.km-rom-hack-overlay, .km-settings-overlay) { background: var(--km-overlay); }
+body.km-app dialog::backdrop { background: var(--km-overlay); }
+body.km-app .km-rom-hack-question { color: var(--km-accent); text-shadow: none; }
+body.km-app :is(.km-rom-hack-intro, .km-rom-hack-tile-description) { color: var(--km-soft); }
+body.km-app .km-rom-hack-tile-attribution { color: var(--km-muted); }
+body.km-app .km-rom-hack-tile-name { color: var(--km-text); }
+body.km-app .km-rom-hack-tile-badge { background: var(--km-selection); border-color: var(--km-selection-line); color: var(--km-accent); }
+body.km-app .km-rom-hack-status { color: var(--km-warning); }
+body.km-app .km-rom-hack-tile-icon { box-shadow: none; filter: drop-shadow(0 4px 8px var(--km-shadow)); }
+body.km-app .km-rom-hack-tile:hover { transform: none; box-shadow: inset 3px 0 0 var(--km-highlight); }
+body.km-app .km-rom-hack-tile:focus-visible { outline: 2px solid var(--km-focus); outline-offset: 3px; }
+body.km-app .km-toolbar-disclosure > :not(summary) { box-shadow: var(--km-elevation); }
+body.km-app .doubles-slot-menu { background: var(--km-panel); border-color: var(--km-control-line); box-shadow: var(--km-elevation); }
+body.km-app .doubles-slot-menu button:focus { background: var(--km-selection); }
+body.km-app .doubles-slot-menu .team-box-menu-action-danger { color: var(--km-danger); }
+body.km-app .doubles-slot-menu .team-box-menu-action-danger:is(:hover, :focus) { background: color-mix(in srgb, var(--km-danger) 14%, var(--km-panel)); }
+body.km-app #tooltipText { color: var(--km-text); background: var(--km-panel); border: 1px solid var(--km-control-line); box-shadow: var(--km-elevation); }
+body.km-app #tooltipText::after { border-top-color: var(--km-control-line); }
+
+/* Pokémon state colors remain intact; theme selection uses a separate inset marker. */
+body.km-app .doubles-slot-card,
+body.km-app #player-team .player-team-pokemon,
+body.km-app #trainer-team .trainer-pokemon { background: var(--km-inset); border-color: var(--km-line); box-shadow: none; }
+body.km-app :is(#player-team .player-team-pokemon, #trainer-team .trainer-pokemon):hover { background: var(--km-hover); border-color: var(--km-highlight); }
+body.km-app #trainer-team .selected-trainer-pokemon, body.km-app .doubles-slot-card.active-doubles-slot { background: var(--km-selected-fill); border-color: var(--km-selection-line); box-shadow: inset 3px 0 0 var(--km-highlight); }
+body.km-app .box-pokemon { background: var(--km-inset); box-shadow: none; }
+body.km-app .box-pokemon:hover { background: var(--km-hover); }
+body.km-app .box-pokemon.selected-box-pokemon, body.km-app.doubles-format-selected .doubles-slot-assigned { background: var(--km-selected-fill); box-shadow: inset 0 0 0 2px var(--km-highlight); }
+body.km-app .box-pokemon[class*="mon-dmg-"] { background: var(--km-matchup-fill, transparent); }
+body.km-app .box-pokemon[class*="mon-speed-"] { border-color: var(--km-speed-color, transparent); border-width: var(--spe-bor-width); }
+body.km-app :is(.box-pokemon, #player-team .player-team-pokemon, #trainer-team .trainer-pokemon):focus-visible { outline: 2px solid var(--km-focus); outline-offset: 2px; }
+body.km-app .poke-info .doubles-slot-card-label { background: var(--km-panel); color: var(--km-soft); border-color: var(--km-control-line); }
+body.km-app .doubles-slot-card-empty, body.km-app .box-poke:empty::before { color: var(--km-muted); }
+body.km-app .team-box-info .over { background: var(--km-selection); outline: 1px dashed var(--km-highlight); }
+body.km-app .km-data-table tbody tr:not(.km-encounter-excluded):hover { background: var(--km-hover); }
+body.km-app .km-data-table .km-encounter-caught { background: var(--km-selection); }
+body.km-app .km-encounter-excluded, body.km-app .km-encounter-excluded .km-pokemon-name { color: var(--km-muted); }
+
+/* Secondary surfaces and status indicators never retain a different theme's colors. */
+body.km-app :is(.notes-window-header, .notes-window-footer, .notes-window-options, .color-code-section) { border-color: var(--km-line); }
+body.km-app .notes-resize-handle:after { border-color: var(--km-muted); }
+body.km-app :is(.finder-explanation-order, .color-code-section, .color-code-example-copy) { color: var(--km-text); }
+body.km-app .finder-explanation-order em { color: var(--km-muted); }
+body.km-app :is(.finder-explanation-token, .finder-explanation-order span) { background: var(--km-selection); color: var(--km-text); border-color: var(--km-control-line); text-shadow: none; }
+body.km-app .km-update-progress-track { background: var(--km-inset); border-color: var(--km-control-line); }
+body.km-app .km-update-progress-fill { background: linear-gradient(90deg, var(--km-action), var(--km-accent)); }
+body.km-app .km-settings-update-badge { color: var(--km-on-action); background: var(--km-action-fill); border-color: var(--km-accent); }
+body.km-app .km-update-error, body.km-app .km-settings-update-status[data-kind="error"] { border-color: var(--km-danger); color: var(--km-text); background: color-mix(in srgb, var(--km-danger) 8%, var(--km-panel)); }
+body.km-app .km-settings-update-status[data-kind="available"] { border-left-color: var(--km-accent); }
+body.km-app ::-webkit-scrollbar { width: 10px; height: 10px; }
+body.km-app ::-webkit-scrollbar-track { background: var(--km-inset); }
+body.km-app ::-webkit-scrollbar-thumb { background: var(--km-control-line); border: 2px solid var(--km-inset); border-radius: 6px; }
+body.km-app ::-webkit-scrollbar-thumb:hover { background: var(--km-muted); }
+
+@media (prefers-reduced-motion: reduce) {
+    body.km-app .km-rom-hack-tile { transition: none; }
+}
+@media (forced-colors: active) {
+    :root, :root[data-km-theme] {
+        --km-bg: Canvas; --km-deep: Canvas; --km-panel: Canvas; --km-raised: Canvas;
+        --km-inset: Canvas; --km-hover: Canvas; --km-line: ButtonText; --km-control-line: ButtonText;
+        --km-text: CanvasText; --km-soft: CanvasText; --km-muted: GrayText;
+        --km-accent: LinkText; --km-highlight: Highlight; --km-focus: Highlight;
+        --km-selection: Canvas; --km-selection-end: Canvas; --km-selection-line: Highlight;
+        --km-action: ButtonFace; --km-action-dark: ButtonFace; --km-on-action: ButtonText;
+        --km-panel-fill: none; --km-chrome-fill: none; --km-selected-fill: none; --km-action-fill: none;
+    }
+    body.km-app * { box-shadow: none !important; text-shadow: none !important; }
+    body.km-app .km-location-button[aria-current="true"] { outline: 2px solid Highlight; outline-offset: -3px; }
+}

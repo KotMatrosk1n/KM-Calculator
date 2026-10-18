@@ -2,15 +2,19 @@
 /* The app shell keeps the live calculator mounted while profile reference views change. */
 (function () {
 	"use strict";
-	var tabs = ["Calculator", "Encounters", "Trainers", "Route Items"];
+	var tabs = ["Calculator", "Encounters", "Trainers", "Route Items", "Team & Boxes"];
 	var panels = [];
 	var buttons = [];
 	var views = [];
 	var activeTab = 0;
-	var tabScroll = [0, 0, 0, 0];
+	var tabScroll = [0, 0, 0, 0, 0];
 	var registry;
 	var profileLabel;
 	var sourceData;
+	var encounterTracker;
+	var trainerProgress = {version: 1, beaten: []};
+	var trainerProfileId;
+	var resizeWorkspace = function () {};
 
 	function el(tag, className, text) {
 		var node = document.createElement(tag);
@@ -36,6 +40,7 @@
 		return details;
 	}
 	function activateTab(index, focus) {
+		Array.prototype.forEach.call(document.querySelectorAll(".km-toolbar-disclosure"), function (details) { details.open = false; });
 		tabScroll[activeTab] = window.scrollY;
 		activeTab = index;
 		panels.forEach(function (panel, i) {
@@ -49,73 +54,212 @@
 		});
 		if (focus) buttons[index].focus();
 		window.scrollTo(0, tabScroll[index]);
+		resizeWorkspace();
+		resizeReferences();
+	}
+	function modal(title, className, parent) {
+		var dialog = el("dialog", "km-dialog " + className);
+		var heading = el("div", "km-dialog-heading");
+		var name = el("h2", "", title);
+		name.id = "km-dialog-" + className;
+		dialog.setAttribute("aria-labelledby", name.id);
+		heading.appendChild(name);
+		heading.appendChild(button("Done", function () { dialog.close(); }));
+		dialog.appendChild(heading);
+		parent.appendChild(dialog);
+		return dialog;
+	}
+	function setupField(field, dialog) {
+		var content = el("div", "km-field-content");
+		var globals = el("div", "km-field-global");
+		var sides = el("div", "km-field-sides");
+		var groups = {};
+		function group(key, title, parent, className) {
+			var region = el("section", className);
+			region.appendChild(el("h3", "", title));
+			var controls = el("div", "km-field-options");
+			region.appendChild(controls); parent.appendChild(region); groups[key] = controls;
+		}
+		group("weather", "Weather", globals, "km-global-weather");
+		group("terrain", "Terrain", globals, "km-global-terrain");
+		group("other", "Field effects", globals, "km-global-other");
+		group("L", "Me", sides, "km-field-side");
+		group("R", "Opponent", sides, "km-field-side");
+		Array.prototype.forEach.call(field.querySelectorAll("input"), function (input) {
+			var label = field.querySelector("label[for='" + input.id + "']");
+			if (!label) return;
+			var generation = input.closest(".gen-specific");
+			var classes = generation ? generation.className.split(/\s+/).filter(function (name) { return /^(gen-specific|g\d+|format-specific|doubles|singles)$/.test(name); }).join(" ") : "";
+			if (input.closest(".base-layout-only")) classes += " base-layout-only";
+			var choice = el("div", "km-field-choice " + classes);
+			var side = /([LR])\d*$/.exec(input.id);
+			var target = side ? groups[side[1]] : input.name === "weather" || input.name === "gscWeather" ? groups.weather : input.name === "terrain" ? groups.terrain : groups.other;
+			if (/^spikes[LR]$/.test(input.name)) {
+				var spikes = groups[input.name];
+				if (!spikes) {
+					spikes = el("div", "km-spikes " + choice.className);
+					spikes.appendChild(el("span", "", "Spikes"));
+					groups[input.name] = spikes; target.appendChild(spikes);
+				}
+				label.textContent = input.value; target = spikes;
+			}
+			choice.appendChild(input); choice.appendChild(label); target.appendChild(choice);
+		});
+		function effectKey(choice) { return choice.classList.contains("km-spikes") ? "spikes" : choice.querySelector("input").id.replace(/[LR](?=\d*$)/, ""); }
+		var order = Array.prototype.map.call(groups.L.children, effectKey);
+		Array.prototype.slice.call(groups.R.children).sort(function (a, b) { return order.indexOf(effectKey(a)) - order.indexOf(effectKey(b)); }).forEach(function (choice) { groups.R.appendChild(choice); });
+		if (groups.spikesR) Array.prototype.slice.call(groups.spikesR.querySelectorAll(".km-field-choice")).sort(function (a, b) { return Number(a.querySelector("input").value) - Number(b.querySelector("input").value); }).forEach(function (choice) { groups.spikesR.appendChild(choice); });
+		// Keep original descriptions and the live field anchor, but replace the legacy table.
+		var descriptions = el("div"); descriptions.hidden = true;
+		Array.prototype.forEach.call(field.querySelectorAll("[id]"), function (node) { if (!node.querySelector("input, button")) descriptions.appendChild(node); });
+		field.textContent = "";
+		content.appendChild(globals); content.appendChild(sides); field.appendChild(content); field.appendChild(descriptions);
+		dialog.appendChild(field);
 	}
 	function setupCalculator(wrapper) {
+		var statsViews = [];
+		var boxViews = [];
 		var heading = el("div", "km-page-heading");
-		var copy = el("div");
-		copy.appendChild(el("span", "km-eyebrow", "BATTLE WORKSPACE"));
-		copy.appendChild(el("h1", "", "Calculator"));
-		copy.appendChild(el("p", "km-muted", "Build your matchup, adjust the field, and compare every move."));
-		heading.appendChild(copy);
-		var actions = el("div", "km-heading-actions");
-		function jump(selector) {
-			var target = document.querySelector(selector);
-			var details = target.closest("details");
-			if (details) details.open = true;
-			target.scrollIntoView({block: "start", behavior: "smooth"});
-			target.setAttribute("tabindex", "-1");
-			target.focus({preventScroll: true});
-		}
-		actions.appendChild(button("Team and boxes", function () { jump("#team-box"); }));
-		actions.appendChild(button("Import", function () { jump(".calculator-import-column"); }));
-		heading.appendChild(actions);
+		heading.appendChild(el("h1", "", "Calculator"));
+		var actions = el("div", "km-heading-actions"); heading.appendChild(actions);
 		wrapper.insertBefore(heading, wrapper.firstChild);
-		var title = wrapper.querySelector(".main-title-text");
-		if (title) title.hidden = true;
+		var title = wrapper.querySelector(".main-title-text"); if (title) title.hidden = true;
 		var settings = wrapper.querySelector(".calc-layout-settings");
-		if (settings) disclosure("Calculation preferences", settings, false);
+		if (settings) {
+			var preferences = disclosure("Preferences", settings, false);
+			preferences.classList.add("km-toolbar-disclosure"); actions.appendChild(preferences);
+		}
 		var layout = el("div", "km-calculator-grid");
 		var main = el("div", "km-battle-column");
-		var results = el("aside", "km-results-column");
-		results.setAttribute("aria-label", "Damage results");
-		results.appendChild(el("span", "km-eyebrow", "LIVE COMPARISON"));
-		results.appendChild(el("h2", "", "Damage results"));
-		results.appendChild(el("p", "km-muted", "Select a move for the full calculation."));
-		Array.prototype.forEach.call(wrapper.querySelectorAll(":scope > .move-result-group, :scope > .main-result-group"), function (node) {
-			results.appendChild(node);
+		var results = el("aside", "km-results-column"); results.setAttribute("aria-label", "Damage results");
+		var resultHeading = el("div", "km-results-heading"); resultHeading.appendChild(el("h2", "", "Damage results")); results.appendChild(resultHeading);
+		var resultTabs = el("div", "km-result-slots doubles-result-only"); resultTabs.setAttribute("aria-label", "Damage result slot");
+		function showSlot(slot) {
+			results.classList.toggle("km-show-slot-2", slot === 2);
+			Array.prototype.forEach.call(resultTabs.children, function (b, i) { b.setAttribute("aria-pressed", String(i + 1 === slot)); });
+		}
+		[1, 2].forEach(function (slot) { resultTabs.appendChild(button("Slot " + slot, function () { showSlot(slot); })); });
+		showSlot(1); resultHeading.appendChild(resultTabs);
+		results.addEventListener("click", function (event) {
+			if (event.target.classList.contains("result-move")) showSlot(event.target.name === "resultMoveSlot2" ? 2 : 1);
 		});
-		var combat = wrapper.querySelector(".combat-workspace");
-		wrapper.insertBefore(layout, combat);
-		main.appendChild(combat);
-		layout.appendChild(main);
-		layout.appendChild(results);
-		var fieldPanel = combat.querySelector(".field-info").closest(".panel");
-		fieldPanel.classList.add("km-field-panel");
-		var fieldRegion = fieldPanel.firstElementChild;
-		disclosure("Battlefield and conditions", fieldRegion, false);
-		var format = fieldRegion.querySelector(".field-format-toggle");
-		if (format) actions.insertBefore(format, actions.firstChild);
-		Array.prototype.forEach.call(combat.querySelectorAll(".poke-info"), function (pokemon) {
-			pokemon.querySelector(".percent-hp").setAttribute("aria-label", "Current HP percentage");
-			var stats = pokemon.querySelector(".info-group table");
-			if (stats) disclosure("Stats and stat stages", stats.parentNode, false);
-			var firstMove = pokemon.querySelector(".move1");
-			if (firstMove) pokemon.insertBefore(el("h3", "km-section-heading", "Moves"), firstMove);
-			Array.prototype.forEach.call(pokemon.querySelectorAll(".move-bp"), function (input) {
-				input.setAttribute("aria-label", "Move base power");
-				input.title = "Base power";
+		document.addEventListener("click", function (event) {
+			var slot = event.target.closest(".doubles-slot-card"); if (slot) showSlot(Number(slot.getAttribute("data-slot")));
+		}, true);
+		Array.prototype.forEach.call(wrapper.querySelectorAll(":scope > .move-result-group, :scope > .main-result-group"), function (node) { results.appendChild(node); });
+		Array.prototype.forEach.call(results.querySelectorAll(".move-result-column"), function (column, i) {
+			Array.prototype.forEach.call(column.querySelectorAll(".result-move-header"), function (header, slot) {
+				var side = el("strong", "km-result-side", i ? "Opponent" : "Me");
+				side.appendChild(el("small", "km-result-slot-number doubles-result-only", " · Slot " + (slot + 1)));
+				header.insertBefore(side, header.firstChild);
 			});
 		});
-		var lower = wrapper.querySelector(".lower-workspace");
-		layout.appendChild(lower);
-		lower.id = "km-team-workspace";
-		var box = lower.querySelector("#team-box");
-		var tools = el("div", "km-box-tools");
-		[".team-box-filter-section", ".team-box-sort-section", ".color-coding-controls", ".team-box-control-section"].forEach(function (selector) {
-			tools.appendChild(box.querySelector(selector));
+		Array.prototype.forEach.call(results.querySelectorAll(".small-text details"), function (details) {
+			var old = details.querySelector("summary");
+			var values = el("div", "km-damage-values"); values.id = old.id; values.textContent = old.textContent;
+			old.replaceWith(values); details.insertBefore(el("summary", "", "Damage rolls"), details.firstChild);
 		});
-		disclosure("Search, sorting, and box tools", box.appendChild(tools), false);
+		var combat = wrapper.querySelector(".combat-workspace"); wrapper.insertBefore(layout, combat);
+		main.appendChild(combat); layout.appendChild(main); layout.appendChild(results);
+		var field = combat.querySelector(".field-info"); var fieldPanel = field.closest(".panel"); fieldPanel.hidden = true;
+		var format = field.querySelector(".field-format-toggle"); actions.insertBefore(format, actions.firstChild);
+		format.addEventListener("change", function () { if (document.getElementById("singles-format").checked) showSlot(1); });
+		var fieldDialog = modal("Battlefield", "km-field-dialog", wrapper);
+		actions.insertBefore(button("Battlefield", function () { fieldDialog.showModal(); }), preferences || null);
+		Array.prototype.forEach.call(combat.querySelectorAll(".poke-info"), function (pokemon, index) {
+			if (!index) {
+				var playerControls = pokemon.querySelector(".player-controls-spacer");
+				var setInput = pokemon.querySelector("input.set-selector");
+				var setContainer = pokemon.querySelector(":scope > .select2-container");
+				if (setContainer) pokemon.insertBefore(setContainer, playerControls);
+				pokemon.insertBefore(setInput, playerControls);
+			}
+			var editorActions = el("div", "km-editor-actions"); pokemon.appendChild(editorActions);
+			if (!index) editorActions.appendChild(pokemon.querySelector(".player-notes-controls"));
+			var statsDialog = modal((index ? "Opponent" : "Me") + " · Stats & details", "km-stats-" + index, pokemon);
+			var statsButton = button("Stats & details", function () { statsDialog.showModal(); }); editorActions.appendChild(statsButton);
+			editorActions.appendChild(field.querySelector(index ? "#exportR" : "#exportL"));
+			var health = pokemon.querySelector(".current-hp").parentNode; health.classList.add("km-health-controls");
+			health.querySelector("label").textContent = "HP";
+			var level = pokemon.querySelector(".level").parentNode; level.classList.add("km-level-control"); health.insertBefore(level, health.firstChild);
+			Array.prototype.forEach.call(health.childNodes, function (node) {
+				if (node.nodeType === 3) node.textContent = node.textContent.replace(/Health|[()]/g, "");
+			});
+			pokemon.querySelector(".percent-hp").setAttribute("aria-label", "Current HP percentage");
+			var statsContent = el("div", "km-stats-content");
+			statsContent.appendChild(pokemon.querySelector(".info-group.top"));
+			var statsTable = pokemon.querySelector(".info-group table");
+			var headers = statsTable.querySelectorAll("thead th");
+			headers[5].textContent = "Stat"; headers[6].textContent = "Stage";
+			var modified = el("th", "", "Final"); modified.scope = "col"; headers[0].parentNode.appendChild(modified);
+			statsContent.appendChild(statsTable.parentNode); statsDialog.appendChild(statsContent);
+			var firstMove = pokemon.querySelector(".move1");
+			var inlineStats = el("details", "km-inline-stats"); inlineStats.open = true; inlineStats.hidden = true;
+			inlineStats.appendChild(el("summary", "", "Stats & details")); pokemon.insertBefore(inlineStats, firstMove);
+			statsViews.push({dialog: statsDialog, content: statsContent, inline: inlineStats, button: statsButton});
+			if (firstMove) pokemon.insertBefore(el("h3", "km-section-heading", "Moves"), firstMove);
+			Array.prototype.forEach.call(pokemon.querySelectorAll(".move-bp"), function (input) { input.setAttribute("aria-label", "Move base power"); input.title = "Base power"; });
+		});
+		setupField(field, fieldDialog);
+		var teamPanel = el("section", "km-team-panel");
+		var teamHeading = el("div", "km-page-heading"); teamHeading.appendChild(el("h1", "", "Team & Boxes"));
+		teamHeading.appendChild(button("Back to calculator", function () { activateTab(0, true); })); teamPanel.appendChild(teamHeading);
+		teamPanel.appendChild(el("p", "km-muted km-team-help", "Drag Pokémon between boxes. Right-click a Pokémon to assign a battle slot or manage its set."));
+		var lower = wrapper.querySelector(".lower-workspace"); teamPanel.appendChild(lower);
+		var box = lower.querySelector("#team-box"); var tools = el("div", "km-box-tools");
+		[".team-box-filter-section", ".team-box-sort-section", ".color-coding-controls", ".team-box-control-section"].forEach(function (selector) { tools.appendChild(box.querySelector(selector)); });
+		var boxTools = modal("Search, sorting & box tools", "km-box-tools-dialog", box); boxTools.appendChild(tools);
+		var toolsButton = button("Search, sorting & box tools", function () { boxTools.showModal(); }, "km-box-tools-open");
+		box.insertBefore(toolsButton, box.querySelector(".team-box-layout"));
+		Array.prototype.forEach.call(box.querySelectorAll(".box-poke"), function (zone) {
+			var name = zone.parentNode.querySelector(".team-box-heading").textContent;
+			var pager = el("div", "km-box-pages"); var status = el("span"); status.setAttribute("aria-live", "polite");
+			var view = {zone: zone, page: 0, pager: pager, status: status};
+			view.previous = button("‹", function () { view.page--; resizeWorkspace(); }); view.previous.setAttribute("aria-label", "Previous " + name + " page");
+			view.next = button("›", function () { view.page++; resizeWorkspace(); }); view.next.setAttribute("aria-label", "Next " + name + " page");
+			pager.appendChild(view.previous); pager.appendChild(status); pager.appendChild(view.next); zone.after(pager); boxViews.push(view);
+			new window.MutationObserver(function (records) {
+				if (records.some(function (record) { return record.type === "attributes"; })) view.page = 0;
+				resizeWorkspace();
+			}).observe(zone, {childList: true, subtree: true, attributes: true, attributeFilter: ["class"]});
+		});
+		resizeWorkspace = function () {
+			var scale = Number(window.getComputedStyle(document.body).zoom) || 1;
+			var expanded = window.innerWidth / scale >= 1500 && window.innerHeight / scale >= 960;
+			results.classList.toggle("km-results-expanded", expanded);
+			statsViews.forEach(function (view) {
+				var target = expanded ? view.inline : view.dialog;
+				if (view.content.parentNode !== target) { if (view.dialog.open) view.dialog.close(); target.appendChild(view.content); }
+				view.inline.hidden = !expanded; view.button.hidden = expanded;
+			});
+			boxViews.forEach(function (view) {
+				var rect = view.zone.getBoundingClientRect(); if (!rect.width) return;
+				var columns = Math.max(1, Math.floor((rect.width / scale - 12) / 72));
+				var rows = Math.max(1, Math.min(5, Math.floor(((window.innerHeight - rect.top) / scale - 64) / 72)));
+				var capacity = columns * rows;
+				var matches = Array.prototype.filter.call(view.zone.children, function (node) { return node.classList.contains("box-pokemon") && !node.classList.contains("team-box-filter-hidden"); });
+				var pages = Math.max(1, Math.ceil(matches.length / capacity)); view.page = Math.max(0, Math.min(view.page, pages - 1));
+				Array.prototype.forEach.call(view.zone.children, function (node) {
+					if (!node.classList.contains("box-pokemon")) return;
+					var index = matches.indexOf(node); var hide = index >= 0 && Math.floor(index / capacity) !== view.page;
+					if (node.hidden !== hide) node.hidden = hide;
+					if (!node.querySelector(".km-box-name")) node.appendChild(el("span", "km-box-name", node.getAttribute("data-pokemon")));
+				});
+				view.pager.hidden = pages === 1; view.status.textContent = (view.page + 1) + " / " + pages;
+				view.previous.disabled = view.page === 0; view.next.disabled = view.page === pages - 1;
+			});
+		};
+		window.addEventListener("resize", resizeWorkspace); boxTools.addEventListener("toggle", resizeWorkspace);
+		actions.insertBefore(button("Import", function () { activateTab(4, true); lower.querySelector("textarea").focus(); }), preferences || null);
+		["exportL", "exportR"].forEach(function (id) {
+			document.getElementById(id).addEventListener("click", function () {
+				activateTab(4, true);
+				var text = lower.querySelector("textarea"); text.focus(); text.select();
+			});
+		});
+		return teamPanel;
 	}
+
 	function makeFilter(view, label, values) {
 		var group = el("label", "km-filter");
 		group.appendChild(el("span", "", label));
@@ -135,6 +279,94 @@
 		box.appendChild(el("h2", "", title));
 		box.appendChild(el("p", "km-muted", message));
 		container.appendChild(box);
+	}
+	function referenceDetails(title, content, parent) {
+		var opener = button(title, function () {
+			var dialog = modal(title, "km-reference-dialog", document.body);
+			dialog.appendChild(content.cloneNode(true));
+			dialog.addEventListener("close", function () { dialog.remove(); opener.focus({preventScroll: true}); });
+			dialog.showModal();
+		}, "km-reference-more");
+		parent.appendChild(opener);
+	}
+	function referencePager(parent, grid, label, state) {
+		var encounterTables = grid.classList.contains("km-encounter-groups") ? Array.prototype.map.call(grid.children, function (card) {
+			return {card: card, rows: Array.prototype.slice.call(card.querySelector("tbody").children)};
+		}) : null;
+		var viewport = el("div", "km-page-viewport");
+		grid.parentNode.insertBefore(viewport, grid); viewport.appendChild(grid);
+		var footer = el("nav", "km-pagination"); footer.setAttribute("aria-label", label + " pages");
+		var summary = el("span", "km-pagination-summary"); summary.setAttribute("role", "status");
+		var pages = [];
+		var previous = button("Previous", function () { show(state.page - 1); });
+		var select = el("select"); select.setAttribute("aria-label", label + " page");
+		var next = button("Next", function () { show(state.page + 1); });
+		previous.setAttribute("aria-label", "Previous " + label.toLowerCase() + " page");
+		next.setAttribute("aria-label", "Next " + label.toLowerCase() + " page");
+		select.addEventListener("change", function () { show(Number(select.value)); });
+		[summary, previous, select, next].forEach(function (node) { footer.appendChild(node); });
+		parent.appendChild(footer);
+		function show(index) {
+			state.page = Math.max(0, Math.min(index, pages.length - 1));
+			var page = pages[state.page] || [];
+			Array.prototype.forEach.call(grid.children, function (node) { node.hidden = page.indexOf(node) === -1; });
+			state.anchor = page.length ? page[0].getAttribute("data-page-key") : null;
+			previous.disabled = state.page === 0; next.disabled = state.page >= pages.length - 1;
+			select.value = String(state.page);
+			summary.textContent = page.length ? (Array.prototype.indexOf.call(grid.children, page[0]) + 1) + "–" +
+				(Array.prototype.indexOf.call(grid.children, page[page.length - 1]) + 1) + " of " + grid.children.length : "0 results";
+		}
+		return function () {
+			if (!viewport.getBoundingClientRect().height) return;
+			var available = viewport.getBoundingClientRect().height;
+			// Split long encounter tables at row boundaries; keep the live catch controls.
+			if (encounterTables) {
+				grid.textContent = "";
+				encounterTables.forEach(function (table) {
+					var card = table.card; card.hidden = false;
+					var body = card.querySelector("tbody"); table.rows.forEach(function (row) { body.appendChild(row); });
+					grid.appendChild(card);
+					var overhead = card.getBoundingClientRect().height - body.getBoundingClientRect().height;
+					var rowHeight = Math.max.apply(null, table.rows.map(function (row) { return row.getBoundingClientRect().height; }));
+					var capacity = Math.max(1, Math.floor((available - overhead) / rowHeight));
+					if (table.rows.length <= capacity) { card.setAttribute("data-page-key", table.rows[0].querySelector("input").id); return; }
+					for (var start = 0; start < table.rows.length; start += capacity) {
+						var chunk = card.cloneNode(true); var chunkBody = chunk.querySelector("tbody"); chunkBody.textContent = "";
+						table.rows.slice(start, start + capacity).forEach(function (row) { chunkBody.appendChild(row); });
+						chunk.querySelector("h3").appendChild(el("small", "km-table-range", " · " + (start + 1) + "–" + Math.min(start + capacity, table.rows.length) + " / " + table.rows.length));
+						chunk.setAttribute("data-page-key", table.rows[start].querySelector("input").id); grid.insertBefore(chunk, card);
+					}
+					card.remove();
+				});
+			}
+			var nodes = Array.prototype.slice.call(grid.children);
+			nodes.forEach(function (node) { node.hidden = false; });
+			var style = window.getComputedStyle(grid);
+			var scale = Number(window.getComputedStyle(document.body).zoom) || 1;
+			var columns = style.display === "grid" ? style.gridTemplateColumns.split(" ").length : 1;
+			var gap = (parseFloat(style.rowGap) || 0) * scale;
+			pages = []; var page = []; var height = 0;
+			for (var i = 0; i < nodes.length; i += columns) {
+				var row = nodes.slice(i, i + columns);
+				var rowHeight = Math.max.apply(null, row.map(function (node) { return node.getBoundingClientRect().height; }));
+				if (page.length && height + gap + rowHeight > available + 1) { pages.push(page); page = []; height = 0; }
+				height += (page.length ? gap : 0) + rowHeight; page = page.concat(row);
+			}
+			if (page.length) pages.push(page);
+			select.textContent = "";
+			pages.forEach(function (entries, index) {
+				var option = el("option", "", (index + 1) + " / " + pages.length); option.value = index; select.appendChild(option);
+				if (entries.some(function (node) { return node.getAttribute("data-page-key") === state.anchor || (state.anchor && node.contains(document.getElementById(state.anchor))); })) state.page = index;
+			});
+			show(state.page || 0);
+		};
+	}
+	function resizeReferences() {
+		views.forEach(function (view) {
+			if (view.panel.hidden) return;
+			if (view.resizeList) view.resizeList();
+			if (view.resizeDetail) view.resizeDetail();
+		});
 	}
 	function buildReference(title, kind, subtitle) {
 		var panel = el("section", "km-reference-panel");
@@ -160,13 +392,18 @@
 		status.setAttribute("role", "status");
 		panel.appendChild(status);
 		var browser = el("div", "km-reference-browser");
-		var list = el("nav", "km-location-list");
-		list.setAttribute("aria-label", kind === "trainers" ? "Trainers" : "Locations");
+		var navigation = el("nav", "km-location-list");
+		navigation.setAttribute("aria-label", kind === "trainers" ? "Trainers" : "Locations");
+		var list = el("div", "km-location-options"); navigation.appendChild(list);
 		var detail = el("div", "km-reference-detail");
-		browser.appendChild(list);
+		browser.appendChild(navigation);
 		browser.appendChild(detail);
 		panel.appendChild(browser);
-		var view = {kind: kind, panel: panel, filters: filters, search: search, note: note, status: status, list: list, detail: detail, selected: null};
+		var view = {kind: kind, panel: panel, filters: filters, search: search, note: note, status: status, list: list, detail: detail, selected: null, listPage: {}, detailPage: {}};
+		view.resizeList = referencePager(navigation, list, kind === "trainers" ? "Trainers" : title + " locations", view.listPage);
+		if (kind === "encounters") {
+			encounterTracker = window.KMEncounterTracker.create({panel: panel, heading: heading, note: note, onChange: function () { render(view); }});
+		}
 		search.addEventListener("input", function () { render(view); });
 		view.primary = makeFilter(view, kind === "encounters" ? "Encounter method" : kind === "items" ? "Acquisition" : "Story split", [{value: "", label: "All"}]);
 		if (kind === "trainers") view.secondary = makeFilter(view, "Battle format", [{value: "", label: "All formats"}, "Single", "Double", "Not listed"]);
@@ -193,7 +430,7 @@
 		if (view.kind === "encounters") {
 			return sourceData.areas.map(function (area) {
 				var groups = getGroups(area).filter(function (group) { return !filter || group.method === filter; }).map(function (group) {
-					return {method: group.method, weather: group.weather, entries: group.entries.filter(function (entry) {
+					return {method: group.method, weather: group.weather, totalEntries: group.entries, entries: group.entries.filter(function (entry) {
 						return !query || textMatch(area.name, query) || textMatch(entry.pokemon, query);
 					})};
 				}).filter(function (group) { return group.entries.length; });
@@ -201,7 +438,7 @@
 			}).filter(function (area) { return area.groups.length; });
 		}
 		if (view.kind === "trainers") return sourceData.trainers.filter(function (trainer) {
-			var format = trainer.name.indexOf("[Double]") !== -1 ? "Double" : trainer.name.indexOf("[Single]") !== -1 ? "Single" : "Not listed";
+			var format = trainerBattleType(trainer);
 			return (!filter || trainer.split === filter) && (!view.secondary.value || format === view.secondary.value) &&
 				(!query || textMatch([trainer.name, trainer.location, trainer.split, JSON.stringify(trainer.team)].join(" "), query));
 		});
@@ -219,6 +456,9 @@
 	}
 	function renderEncounters(container, area) {
 		container.appendChild(el("h2", "", area.name));
+		encounterTracker.renderArea(container, area);
+		var grid = el("div", "km-encounter-groups");
+		container.appendChild(grid);
 		area.groups.forEach(function (group) {
 			var card = el("section", "km-reference-card");
 			card.appendChild(el("h3", "", group.method === "Land" ? "Land (normal weather)" : group.method));
@@ -226,36 +466,120 @@
 			var table = el("table", "km-data-table");
 			var head = el("thead");
 			var header = el("tr");
-			["Pokémon", "Level", "Base rate"].forEach(function (text) { var th = el("th", "", text); th.scope = "col"; header.appendChild(th); });
+			["Caught", "Pokémon", "Level", "Base", "Available"].forEach(function (text) { var th = el("th", "", text); th.scope = "col"; header.appendChild(th); });
 			head.appendChild(header); table.appendChild(head);
 			var body = el("tbody");
 			group.entries.forEach(function (entry) {
 				var row = el("tr");
+				encounterTracker.renderEntry(row, area, group, entry);
 				row.appendChild(el("td", "km-pokemon-name", entry.pokemon));
 				row.appendChild(el("td", "", entry.level || "Not listed"));
-				var rate = el("td", "km-rate", entry.rate === null ? "Special encounter" : entry.rate + "%");
+				var rate = el("td", "km-rate", entry.rate === null ? "—" : entry.rate + "%");
 				row.appendChild(rate); body.appendChild(row);
+				row.appendChild(el("td", "km-available-rate", encounterTracker.rate(area, group, entry)));
 			});
-			table.appendChild(body); card.appendChild(table); container.appendChild(card);
+			table.appendChild(body); card.appendChild(table); grid.appendChild(card);
 		});
 	}
+	function trainerBattleType(trainer) {
+		if (trainer.battleType === "Single" || trainer.battleType === "Double") return trainer.battleType;
+		var format = /\[(Single|Double)\]/.exec(trainer.name);
+		return format ? format[1] : "Not listed";
+	}
+	function loadTrainerProgress(profile) {
+		trainerProfileId = profile && profile.id;
+		trainerProgress = {version: 1, beaten: []};
+		if (!sourceData || !trainerProfileId) return;
+		try {
+			var saved = JSON.parse(window.kmCalculatorStorage.getItem("km-calculator.trainers.v1." + trainerProfileId));
+			if (saved && saved.version === 1 && Array.isArray(saved.beaten)) {
+				trainerProgress.beaten = saved.beaten.filter(function (id, index, ids) {
+					return ids.indexOf(id) === index && sourceData.trainers.some(function (trainer) { return trainer.id === id; });
+				});
+			}
+		} catch (error) { /* Missing or unreadable progress leaves trainers unchecked. */ }
+	}
+	function markTrainerBeaten(trainer, checked) {
+		var next = {version: 1, beaten: trainerProgress.beaten.filter(function (id) { return id !== trainer.id; })};
+		if (checked) next.beaten.push(trainer.id);
+		var serialized = JSON.stringify(next), key = "km-calculator.trainers.v1." + trainerProfileId;
+		try {
+			window.kmCalculatorStorage.setItem(key, serialized);
+			if (window.kmCalculatorStorage.getItem(key) !== serialized) throw new Error("Storage unavailable");
+		} catch (error) {
+			window.alert("Trainer progress could not be saved. Please check available storage and try again.");
+			return false;
+		}
+		trainerProgress = next;
+		views.filter(function (view) { return view.kind === "trainers"; }).forEach(function (view) {
+			Array.prototype.forEach.call(view.list.children, function (node) {
+				node.classList.toggle("km-trainer-beaten", trainerProgress.beaten.indexOf(node.getAttribute("data-page-key")) !== -1);
+			});
+		});
+		return true;
+	}
+	function trainerRewards(trainer) {
+		var rewards = trainer.rewards || {};
+		var money = typeof rewards.money === "number" && isFinite(rewards.money) && rewards.money >= 0 ? "₽" + rewards.money.toLocaleString("en-US") : "Not recorded";
+		var validItems = Array.isArray(rewards.items) && rewards.items.every(function (item) {
+			return typeof item === "string" && item.trim() || item && typeof item.name === "string" && item.name.trim() && (item.quantity === undefined || typeof item.quantity === "number" && isFinite(item.quantity) && item.quantity > 0);
+		});
+		var items = validItems ? rewards.items.map(function (item) {
+			return typeof item === "string" ? item : item.name + (item.quantity > 1 ? " ×" + item.quantity : "");
+		}).join(", ") || "None" : "Not recorded";
+		return "Rewards — Money: " + money + " · Items: " + items;
+	}
+	function renderTrainerStats(card, pokemon) {
+		var text = pokemon.stats || "", values = {}, match;
+		var pattern = /\b(HP|Sp\.?\s*Atk|Sp\.?\s*Def|Atk|Def|Speed)\s*:\s*(\d+|\*)/gi;
+		while ((match = pattern.exec(text))) values[match[1].toLowerCase().replace(/[.\s]/g, "")] = match[2];
+		var stats = [["HP", "hp"], ["Atk", "atk"], ["Def", "def"], ["SpA", "spatk"], ["SpD", "spdef"], ["Spe", "speed"]];
+		if (!stats.every(function (stat) { return Object.prototype.hasOwnProperty.call(values, stat[1]); })) {
+			card.appendChild(el("pre", "km-trainer-stats-fallback", text || "Stats not recorded")); return;
+		}
+		var table = el("table", "km-trainer-stats"); table.setAttribute("aria-label", "Recorded stats for " + pokemon.pokemon);
+		var head = el("thead"), labels = el("tr"), body = el("tbody"), numbers = el("tr");
+		stats.forEach(function (stat) {
+			var label = el("th", "", stat[0]); label.scope = "col"; labels.appendChild(label); numbers.appendChild(el("td", "", values[stat[1]]));
+		});
+		head.appendChild(labels); body.appendChild(numbers); table.appendChild(head); table.appendChild(body); card.appendChild(table);
+	}
 	function renderTrainer(container, trainer) {
-		container.appendChild(el("h2", "", trainer.name));
+		var heading = el("div", "km-trainer-heading");
+		var format = trainerBattleType(trainer);
+		var notes = (trainer.name.match(/\[[^\]]+\]/g) || []).filter(function (note) { return !/^\[(Single|Double)\]$/.test(note); });
+		heading.appendChild(el("h2", "", trainer.name.replace(/\s*\[[\s\S]*$/, "")));
+		heading.appendChild(el("span", "km-tag", format === "Not listed" ? "Format not recorded" : format));
+		var beaten = el("label", "km-trainer-beaten-control"), check = el("input"); check.type = "checkbox";
+		check.checked = trainerProgress.beaten.indexOf(trainer.id) !== -1;
+		check.addEventListener("change", function () {
+			if (!markTrainerBeaten(trainer, check.checked)) check.checked = !check.checked;
+		});
+		beaten.appendChild(check); beaten.appendChild(document.createTextNode(" Beaten")); heading.appendChild(beaten); container.appendChild(heading);
 		container.appendChild(el("p", "km-muted", [trainer.split, trainer.location, trainer.levelCap ? "Level cap " + trainer.levelCap : ""].filter(Boolean).join(" · ")));
+		if (notes.length) container.appendChild(el("p", "km-trainer-notes km-muted", notes.map(function (note) { return note.slice(1, -1); }).join(" · ")));
+		container.appendChild(el("p", "km-trainer-rewards km-muted", trainerRewards(trainer)));
 		var grid = el("div", "km-trainer-roster");
 		trainer.team.forEach(function (pokemon) {
-			var card = el("article", "km-reference-card");
-			card.appendChild(el("span", "km-eyebrow", "LEVEL " + pokemon.level));
-			card.appendChild(el("h3", "", pokemon.pokemon));
+			var card = el("article", "km-reference-card km-trainer-card");
+			var top = el("div", "km-card-heading"); top.appendChild(el("h3", "", pokemon.pokemon));
+			top.appendChild(el("span", "km-eyebrow", "LEVEL " + pokemon.level)); card.appendChild(top);
+			var identity = el("div", "km-trainer-pokemon");
+			var portrait = el("div", "km-trainer-portrait");
+			if (typeof window.createPokemonSprite === "function") {
+				var sprite = window.createPokemonSprite(pokemon.pokemon, "km-trainer-sprite", {spriteId: pokemon.sprite});
+				if (sprite && sprite[0]) portrait.appendChild(sprite[0]);
+			}
+			identity.appendChild(portrait);
 			var dl = el("dl", "km-pokemon-facts");
 			[["Ability", pokemon.ability], ["Item", pokemon.item || "None"], ["Nature", pokemon.nature], ["Gender", pokemon.gender]].forEach(function (pair) {
 				dl.appendChild(el("dt", "", pair[0])); dl.appendChild(el("dd", "", pair[1] || "Not listed"));
 			});
-			card.appendChild(dl);
+			identity.appendChild(dl); card.appendChild(identity);
 			var moves = el("ul", "km-move-list");
 			pokemon.moves.forEach(function (move) { moves.appendChild(el("li", "", move)); });
 			card.appendChild(moves);
-			if (pokemon.stats) disclosure("Recorded stats", card.appendChild(el("pre", "km-recorded-stats", pokemon.stats)), false);
+			renderTrainerStats(card, pokemon);
 			grid.appendChild(card);
 		});
 		container.appendChild(grid);
@@ -266,8 +590,9 @@
 		if (notes.length) {
 			var content = el("div");
 			notes.forEach(function (n) { content.appendChild(el("p", "km-muted", n.note)); });
-			disclosure("Location notes and corrections", container.appendChild(content), false);
+			referenceDetails("Location notes and corrections", content, container);
 		}
+		var grid = el("div", "km-item-grid"); container.appendChild(grid);
 		area.items.forEach(function (item) {
 			var card = el("article", "km-reference-card km-item-card");
 			var top = el("div", "km-card-heading");
@@ -285,43 +610,61 @@
 				if (!/^https:\/\/(gamewith\.net|bulbapedia\.bulbagarden\.net)\//.test(pair[1] || "")) return;
 				var link = el("a", "km-source-link", pair[0]); link.href = pair[1]; link.target = "_blank"; link.rel = "noopener noreferrer"; evidence.appendChild(link);
 			});
-			disclosure("Source and placement details", card.appendChild(evidence), false);
-			container.appendChild(card);
+			referenceDetails("Source and placement details", evidence, card);
+			grid.appendChild(card);
 		});
 	}
 	function render(view) {
 		var results = getResults(view);
 		var restoreFocus = view.list.contains(document.activeElement);
-		var scrollTop = view.list.scrollTop;
+		var previousSelection = view.renderedSelection;
 		view.list.textContent = "";
 		view.detail.textContent = "";
 		var selected = results.filter(function (entry) { return entry.id === view.selected; })[0] || results[0];
 		view.selected = selected ? selected.id : null;
-		view.status.textContent = results.length + (view.kind === "trainers" ? " trainers" : " locations") + " found";
+		var resultKey = results.map(function (entry) { return entry.id; }).join("|");
+		if (view.resultKey !== resultKey) { view.listPage.anchor = view.selected; view.listPage.page = 0; view.resultKey = resultKey; }
+		var filterKey = [view.search.value, view.primary.value, view.secondary && view.secondary.value].join("|");
+		if (previousSelection !== view.selected || view.filterKey !== filterKey) { view.detailPage.anchor = null; view.detailPage.page = 0; }
+		view.renderedSelection = view.selected; view.filterKey = filterKey;
+		view.resizeDetail = null;
+		view.status.textContent = results.length + (view.kind === "trainers" ? " trainer" : " location") + (results.length === 1 ? "" : "s") + " found";
 		if (!results.length) {
+			view.resizeList();
 			empty(view.detail, sourceData ? "No matches" : "No reference data for this profile", sourceData ? "Try another search or reset the filters." : "Reference tables are specific to each ROM hack. Switch profiles to browse its available data.");
 			return;
 		}
 		results.forEach(function (entry) {
 			var b = button("", function () { view.selected = entry.id; render(view); }, "km-location-button");
+			b.setAttribute("data-page-key", entry.id);
 			b.appendChild(el("span", "", entry.name));
-			b.appendChild(el("small", "", view.kind === "trainers" ? entry.split + " · " + entry.team.length + " Pokémon" : entry.count + (view.kind === "items" ? " items" : " encounter slots")));
+			b.appendChild(el("small", "", view.kind === "trainers" ? entry.split + " · " + entry.team.length + " Pokémon" : entry.count + (view.kind === "items" ? " item" : " encounter slot") + (entry.count === 1 ? "" : "s")));
+			if (view.kind === "encounters") encounterTracker.decorateLocation(b, entry);
+			if (view.kind === "trainers") b.classList.toggle("km-trainer-beaten", trainerProgress.beaten.indexOf(entry.id) !== -1);
 			b.setAttribute("aria-current", String(entry.id === view.selected));
 			view.list.appendChild(b);
-			if (restoreFocus && entry.id === view.selected) b.focus({preventScroll: true});
 		});
-		view.list.scrollTop = scrollTop;
 		if (view.kind === "encounters") renderEncounters(view.detail, selected);
 		else if (view.kind === "trainers") renderTrainer(view.detail, selected);
 		else renderItems(view.detail, selected);
+		var grid = view.detail.querySelector(".km-encounter-groups, .km-trainer-roster, .km-item-grid");
+		Array.prototype.forEach.call(grid.children, function (node, index) { node.setAttribute("data-page-key", String(index)); });
+		view.resizeDetail = referencePager(view.detail, grid, "Reference details", view.detailPage);
+		resizeReferences();
+		if (restoreFocus) {
+			var current = view.list.querySelector('[aria-current="true"]');
+			if (current && !current.hidden) current.focus({preventScroll: true});
+		}
 	}
 	function refreshProfile() {
 		var profile = registry.getActiveProfile();
 		var data = window.KMCalculatorReferenceData;
 		sourceData = profile && data && Object.prototype.hasOwnProperty.call(data, profile.id) ? data[profile.id] : null;
+		loadTrainerProgress(profile);
+		if (encounterTracker) encounterTracker.setProfile(profile, sourceData);
 		profileLabel.textContent = profile ? profile.shortName + " / Generation " + profile.baseGeneration : "Choose a ROM hack";
 		views.forEach(function (view) {
-			view.selected = null; view.search.value = "";
+			view.selected = null; view.search.value = ""; view.listPage.anchor = null; view.listPage.page = 0; view.detailPage.anchor = null; view.detailPage.page = 0;
 			var options = [];
 			if (sourceData) {
 				if (view.kind === "encounters") sourceData.areas.forEach(function (a) { a.groups.forEach(function (g) { if (options.indexOf(g.method) === -1) options.push(g.method); }); });
@@ -334,7 +677,7 @@
 			var all = el("option", "", "All"); all.value = ""; view.primary.appendChild(all);
 			options.forEach(function (value) { var option = el("option", "", value); option.value = value; view.primary.appendChild(option); });
 			if (view.secondary) view.secondary.value = "";
-			view.note.textContent = !sourceData ? "" : view.kind === "encounters" ? "Base encounter rates. Personal catches and duplicate-family exclusions are not applied. Special encounters have no random rate." : view.kind === "items" ? "Sword/Shield 1.3.2 base-game reference, not confirmed Royal Sword placements. Includes both editions. Some landmarks and item pools remain uncertain; expand an entry for its source and match details." : "Royal Sword trainer reference, organized by story split. Recorded teams and stats are shown as supplied.";
+			if (view.kind !== "encounters") view.note.textContent = !sourceData ? "" : view.kind === "items" ? "Sword/Shield 1.3.2 base-game reference, not confirmed Royal Sword placements. Includes both editions. Some landmarks and item pools remain uncertain; expand an entry for its source and match details." : "Royal Sword trainer reference, organized by story split. Check Beaten to record your progress.";
 			render(view);
 		});
 	}
@@ -349,11 +692,12 @@
 		document.querySelector(".km-calculator-header").appendChild(profileLabel);
 		var changeProfile = document.querySelector(".km-rom-hack-change");
 		if (changeProfile) document.querySelector("header").appendChild(changeProfile);
-		setupCalculator(wrapper);
+		var teamPanel = setupCalculator(wrapper);
 		panels.push(wrapper);
 		panels.push(buildReference("Encounters", "encounters", "Find Pokémon by location, encounter method, and weather."));
 		panels.push(buildReference("Trainers", "trainers", "Plan ahead with trainer teams, moves, and level caps."));
 		panels.push(buildReference("Route Items", "items", "Find pickups, gifts, shops, and berry trees by location."));
+		panels.push(teamPanel);
 		tabs.forEach(function (label, i) {
 			var b = button(label, function () { activateTab(i, false); }, "km-app-tab");
 			b.id = "km-tab-" + i; b.setAttribute("role", "tab"); b.setAttribute("aria-controls", "km-panel-" + i);
@@ -373,11 +717,17 @@
 		var credits = document.querySelector(".credits");
 		if (credits) {
 			var theme = credits.querySelector("#dark-theme-toggle");
-			if (theme) { theme.setAttribute("aria-label", "Appearance"); document.querySelector("header").appendChild(theme); }
-			disclosure("About KM Calculator and credits", credits, false).classList.add("km-about");
+			if (theme) document.querySelector("header").appendChild(theme);
+			var about = disclosure("About", credits, false);
+			about.classList.add("km-about", "km-toolbar-disclosure");
+			document.querySelector("header").appendChild(about);
 		}
 		window.addEventListener("kmcalculator:romhackchange", refreshProfile);
+		window.addEventListener("resize", resizeReferences);
 		refreshProfile(); activateTab(0, false);
+		document.documentElement.removeAttribute("data-km-starting");
+		var startupStatus = document.getElementById("km-startup-status");
+		if (startupStatus) startupStatus.remove();
 	}
 	if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start);
 	else start();

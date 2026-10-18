@@ -46,8 +46,8 @@
 				battleSimulator: "royal-sword-swsh-ai"
 			},
 			tile: {
-				description: "Generation 8 data, trainers, save imports, and Royal Sword mechanics.",
-				icon: "./img/km-calculator-icon.png",
+				description: "Battle calculations, encounter tracking, and team planning.",
+				icon: "./img/royal-sword.png",
 				badge: "Generation 8"
 			},
 			attribution: {

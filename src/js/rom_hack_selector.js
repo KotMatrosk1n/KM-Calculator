@@ -107,7 +107,7 @@
 			documentObject,
 			"p",
 			"km-rom-hack-intro",
-			"Choose a profile to load its generation data, trainer teams, mechanics, and save-import rules."
+			"Choose your game to get started."
 		);
 		intro.id = "km-rom-hack-intro";
 		dialog.appendChild(intro);
@@ -196,7 +196,7 @@
 			documentObject,
 			"span",
 			"km-rom-hack-tile-attribution",
-			"Profile data: " + formatAuthors(profile) + " · " + profile.attribution.license.name
+			"Creator: " + formatAuthors(profile)
 		);
 		copy.appendChild(attribution);
 		button.appendChild(copy);

@@ -51,7 +51,7 @@ internal sealed class EmbeddedBundle : IDisposable
             using var destination = new FileStream(
                 executablePath,
                 FileMode.CreateNew,
-                FileAccess.Write,
+                FileAccess.ReadWrite,
                 FileShare.None,
                 bufferSize: 1024 * 1024,
                 FileOptions.SequentialScan | FileOptions.WriteThrough);
@@ -81,8 +81,9 @@ internal sealed class EmbeddedBundle : IDisposable
                 throw new CryptographicException("The embedded setup bundle failed SHA-256 verification.");
             }
 
-            using var verifyStream = File.OpenRead(executablePath);
-            if (verifyStream.ReadByte() != 'M' || verifyStream.ReadByte() != 'Z')
+            // Verify through the same exclusive handle; reopening would conflict with FileShare.None.
+            destination.Position = 0;
+            if (destination.ReadByte() != 'M' || destination.ReadByte() != 'Z')
             {
                 throw new BadImageFormatException("The embedded setup bundle is not a Windows executable.");
             }

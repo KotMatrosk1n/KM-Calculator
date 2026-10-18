@@ -1,0 +1,32 @@
+<!-- SPDX-License-Identifier: MIT -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>false</PublishSingleFile>
+    <PublishTrimmed>false</PublishTrimmed>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>KMCalculator.Setup.UI</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>$(KmIconPath)</ApplicationIcon>
+    <Version>$(KmVersion)</Version>
+    <Company>Matroskin</Company>
+    <Product>KM Calculator Setup</Product>
+    <Description>KM Calculator installer, updater, and uninstaller</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="WixToolset.BootstrapperApplicationApi" Version="7.0.0" />
+    <Resource Include="$(KmLogoPath)" Link="Assets/calculator.png" />
+  </ItemGroup>
+  <Target Name="ValidateSetupInputs" BeforeTargets="PrepareForBuild">
+    <Error Condition="'$(KmVersion)' == ''" Text="KmVersion is required." />
+    <Error Condition="!Exists('$(KmIconPath)')" Text="KmIconPath is required." />
+    <Error Condition="!Exists('$(KmLogoPath)')" Text="KmLogoPath is required." />
+  </Target>
+</Project>
