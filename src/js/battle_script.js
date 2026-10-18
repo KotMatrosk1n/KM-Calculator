@@ -24,7 +24,7 @@ var BATTLE_SCRIPT_SIDE_LABELS = {
 	opponent: "Trainer"
 };
 var BATTLE_SCRIPT_AI_MODELS = {
-	"swsh": "Royal Sword"
+	"swsh": "Trainer"
 };
 var BATTLE_SCRIPT_DEFAULT_AI_MODEL = "swsh";
 var BATTLE_SCRIPT_PROFILE_CAPABILITY = "royal-sword-swsh-ai";
@@ -247,7 +247,7 @@ var BATTLE_SCRIPT_CRAFT_QUIP_SUBJECTS = [
 ];
 var BATTLE_SCRIPT_CRAFT_QUIP_ENDINGS = [
 	"for the current branch", "before pruning", "against the trainer line",
-	"with bag limits", "under Royal Sword AI", "through the next KO",
+	"with bag limits", "under trainer AI", "through the next KO",
 	"for the active matchup", "without wasting a faint", "after item effects",
 	"inside the sandbox", "against the predicted move", "across the remaining team",
 	"before the endgame", "with current HP", "around field effects",
@@ -4023,7 +4023,7 @@ function runBattleScriptFieldState(state, parsed, lineNumber) {
 		addBattleScriptMessage(state.messages, lineNumber, "error", "Could not apply field state.", "Use Weather Rain 5, Terrain Electric 5, or Field Gravity 5.");
 		return;
 	}
-	addBattleScriptMessage(state.messages, lineNumber, "state", text, "Royal Sword AI and damage calculations now use this cloned field state.");
+	addBattleScriptMessage(state.messages, lineNumber, "state", text, "Trainer AI and damage calculations now use this cloned field state.");
 }
 
 function runBattleScriptSideConditionState(state, parsed, lineNumber) {
@@ -4038,7 +4038,7 @@ function runBattleScriptSideConditionState(state, parsed, lineNumber) {
 		return;
 	}
 	if (conditionState.unknown.length) {
-		addBattleScriptMessage(state.messages, lineNumber, "error", "Unknown side condition: " + conditionState.unknown[0] + ".", "Mapped Royal Sword side conditions include Reflect, Light Screen, Safeguard, Mist, Tailwind, Lucky Chant, Spikes, Toxic Spikes, Stealth Rock, Sticky Web, Aurora Veil, pledge fields, and G-Max side effects.");
+		addBattleScriptMessage(state.messages, lineNumber, "error", "Unknown side condition: " + conditionState.unknown[0] + ".", "Mapped side conditions include Reflect, Light Screen, Safeguard, Mist, Tailwind, Lucky Chant, Spikes, Toxic Spikes, Stealth Rock, Sticky Web, Aurora Veil, pledge fields, and G-Max side effects.");
 		return;
 	}
 	for (var i = 0; i < conditionState.conditions.length; i++) {
@@ -4051,7 +4051,7 @@ function runBattleScriptSideConditionState(state, parsed, lineNumber) {
 		lineNumber,
 		"state",
 		BATTLE_SCRIPT_SIDE_LABELS[side] + " side: " + (applied.length ? applied.join(", ") : "unchanged"),
-		"Royal Sword AI and damage calculations now use these mapped side conditions."
+		"Trainer AI and damage calculations now use these mapped side conditions."
 	);
 }
 
@@ -6702,12 +6702,12 @@ function getBattleScriptCraftOpponentReplacementScore(state, candidate, partyInd
 	speedText = getBattleScriptSpeedRelationText(candidate, tempState.active.player, tempState);
 	speedScore = getBattleScriptSpeed(candidate, tempState) >= getBattleScriptSpeed(tempState.active.player, tempState) ? 0.15 : 0;
 	if (prediction && prediction.switchDecision) {
-		predictionText = "Royal Sword predicts a switch to " + prediction.switchDecision.label;
+		predictionText = "Trainer AI predicts a switch to " + prediction.switchDecision.label;
 	} else if (prediction && prediction.move) {
-		predictionText = "Royal Sword predicts " + prediction.move.name + " for " +
+		predictionText = "Trainer AI predicts " + prediction.move.name + " for " +
 			(prediction.damage ? getBattleScriptDamageText(prediction.damage, tempState.active.player.pokemon) : prediction.scoreText);
 	} else if (prediction && prediction.recharge) {
-		predictionText = "Royal Sword predicts Recharge";
+		predictionText = "Trainer AI predicts Recharge";
 	}
 	score = {
 		partyIndex: partyIndex,

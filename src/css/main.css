@@ -252,7 +252,7 @@ footer a.cur, footer a.cur:hover {
 	font-size: inherit;
 	padding: 3px 8px;
 }
-.btn:hover, .btn:focus, .visually-hidden:focus + .btn {
+.btn:hover {
 	background: #cfcfcf;
 	background: linear-gradient(to bottom,  #f2f2f2,  #b2b2b2);
 	border-color: #606060;
@@ -271,8 +271,7 @@ footer a.cur, footer a.cur:hover {
 .visually-hidden:checked + .btn:hover {
 	border-color: #606060;
 }
-.btn:active,
-.visually-hidden[type=checkbox]:checked + .btn:active {
+.btn:active {
 	background: linear-gradient(to bottom,  #bfbfbf,  #f2f2f2);
 }
 .visually-hidden[type=radio]:checked + .btn,

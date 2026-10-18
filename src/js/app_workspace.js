@@ -40,6 +40,7 @@
 		return details;
 	}
 	function activateTab(index, focus) {
+		if (window.KMTrainerTooltips) window.KMTrainerTooltips.hide();
 		Array.prototype.forEach.call(document.querySelectorAll(".km-toolbar-disclosure"), function (details) { details.open = false; });
 		tabScroll[activeTab] = window.scrollY;
 		activeTab = index;
@@ -69,7 +70,7 @@
 		parent.appendChild(dialog);
 		return dialog;
 	}
-	function setupField(field, dialog) {
+	function setupField(field, parent) {
 		var content = el("div", "km-field-content");
 		var globals = el("div", "km-field-global");
 		var sides = el("div", "km-field-sides");
@@ -83,21 +84,25 @@
 		group("weather", "Weather", globals, "km-global-weather");
 		group("terrain", "Terrain", globals, "km-global-terrain");
 		group("other", "Field effects", globals, "km-global-other");
-		group("L", "Me", sides, "km-field-side");
-		group("R", "Opponent", sides, "km-field-side");
+		group("L", "Player", sides, "km-field-side");
+		group("R", "Trainer", sides, "km-field-side");
 		Array.prototype.forEach.call(field.querySelectorAll("input"), function (input) {
 			var label = field.querySelector("label[for='" + input.id + "']");
 			if (!label) return;
 			var generation = input.closest(".gen-specific");
 			var classes = generation ? generation.className.split(/\s+/).filter(function (name) { return /^(gen-specific|g\d+|format-specific|doubles|singles)$/.test(name); }).join(" ") : "";
+			var format = input.closest(".format-specific");
+			if (format && format !== generation) classes += " " + format.className.split(/\s+/).filter(function (name) { return /^(format-specific|doubles|singles)$/.test(name); }).join(" ");
 			if (input.closest(".base-layout-only")) classes += " base-layout-only";
 			var choice = el("div", "km-field-choice " + classes);
+			if ((generation && generation.style.display === "none") || (format && format.style.display === "none")) choice.style.display = "none";
 			var side = /([LR])\d*$/.exec(input.id);
 			var target = side ? groups[side[1]] : input.name === "weather" || input.name === "gscWeather" ? groups.weather : input.name === "terrain" ? groups.terrain : groups.other;
 			if (/^spikes[LR]$/.test(input.name)) {
 				var spikes = groups[input.name];
 				if (!spikes) {
 					spikes = el("div", "km-spikes " + choice.className);
+					spikes.style.display = choice.style.display;
 					spikes.appendChild(el("span", "", "Spikes"));
 					groups[input.name] = spikes; target.appendChild(spikes);
 				}
@@ -113,29 +118,121 @@
 		var descriptions = el("div"); descriptions.hidden = true;
 		Array.prototype.forEach.call(field.querySelectorAll("[id]"), function (node) { if (!node.querySelector("input, button")) descriptions.appendChild(node); });
 		field.textContent = "";
-		content.appendChild(globals); content.appendChild(sides); field.appendChild(content); field.appendChild(descriptions);
-		dialog.appendChild(field);
+		content.appendChild(sides); content.appendChild(globals); field.appendChild(content); field.appendChild(descriptions);
+		parent.appendChild(field);
 	}
-	function setupTeamDrawer(wrapper) {
+	function setupTeamDrawer(wrapper, field) {
 		var drawer = el("section", "km-team-drawer");
 		var bar = el("div", "km-team-drawer-bar");
 		var content = el("div", "km-team-drawer-content"); content.id = "km-team-drawer-content"; content.hidden = true;
 		var lower = wrapper.querySelector(".lower-workspace");
 		var box = lower.querySelector("#team-box");
-		var open = false;
+		var open = null;
 		var activePanel = null;
 		var tools = [];
-		var toggle = button("Team & Boxes", function () { setOpen(!open); }, "km-team-drawer-toggle");
+		var toggle = button("Team & Boxes", function () { setOpen(open === "team" ? null : "team"); }, "km-team-drawer-toggle");
 		toggle.id = "km-team-drawer-toggle"; toggle.setAttribute("aria-controls", content.id); toggle.setAttribute("aria-expanded", "false");
 		content.setAttribute("role", "region"); content.setAttribute("aria-labelledby", toggle.id);
+		var battlefield = el("div", "km-team-drawer-content km-battlefield-content"); battlefield.id = "km-battlefield-content"; battlefield.hidden = true;
+		var fieldToggle = button("Battlefield", function () { setOpen(open === "field" ? null : "field"); }, "km-team-drawer-toggle");
+		fieldToggle.id = "km-battlefield-toggle"; fieldToggle.setAttribute("aria-controls", battlefield.id); fieldToggle.setAttribute("aria-expanded", "false");
+		battlefield.setAttribute("role", "region"); battlefield.setAttribute("aria-labelledby", fieldToggle.id);
+		var indicator = el("span", "km-field-indicator", "Active"); indicator.hidden = true; fieldToggle.appendChild(indicator);
+		var fieldStatus = el("span", "visually-hidden"); fieldStatus.id = "km-battlefield-status"; fieldStatus.setAttribute("role", "status");
+		fieldToggle.setAttribute("aria-describedby", fieldStatus.id);
+		var fieldTooltip = el("div", "km-field-tooltip"); fieldTooltip.hidden = true;
+		// The full accessible description remains in fieldStatus; this is its visual preview.
+		fieldTooltip.setAttribute("aria-hidden", "true");
+		var tooltipTimer;
+		var fieldEffects = [];
+		function hideFieldTooltip() { window.clearTimeout(tooltipTimer); fieldTooltip.hidden = true; }
+		function positionFieldTooltip() {
+			var scale = Number(window.getComputedStyle(document.body).zoom) || 1;
+			var viewport = window.visualViewport;
+			var width = document.documentElement.clientWidth || window.innerWidth;
+			var height = document.documentElement.clientHeight || window.innerHeight;
+			var inset = 8 * scale;
+			var left = (viewport ? viewport.offsetLeft : 0) + inset;
+			var top = (viewport ? viewport.offsetTop : 0) + inset;
+			var right = left + Math.min(width, viewport ? viewport.width : width) - 2 * inset;
+			var bottom = top + Math.min(height, viewport ? viewport.height : height) - 2 * inset;
+			fieldTooltip.style.width = Math.min(420, (right - left) / scale) + "px";
+			fieldTooltip.style.left = "0px"; fieldTooltip.style.top = "0px"; fieldTooltip.style.visibility = "hidden";
+			fieldTooltip.hidden = false;
+			fieldTooltip.textContent = fieldEffects.length ? "Active battlefield effects: " + fieldEffects.slice(0, 6).join(", ") +
+				(fieldEffects.length > 6 ? ". Plus " + (fieldEffects.length - 6) + " more. Open Battlefield to view all effects." : "") : "No active battlefield effects";
+			var rect = fieldTooltip.getBoundingClientRect();
+			if (rect.height > bottom - top) {
+				fieldTooltip.textContent = fieldEffects.length + " active battlefield effects. Open Battlefield to view them.";
+				rect = fieldTooltip.getBoundingClientRect();
+			}
+			var anchor = fieldToggle.getBoundingClientRect();
+			var y = anchor.top - inset - rect.height;
+			if (y < top && anchor.bottom + inset + rect.height <= bottom) y = anchor.bottom + inset;
+			fieldTooltip.style.left = Math.max(left, Math.min(anchor.left, right - rect.width)) / scale + "px";
+			fieldTooltip.style.top = Math.max(top, Math.min(y, bottom - rect.height)) / scale + "px";
+			fieldTooltip.style.visibility = "visible";
+		}
+		function showFieldTooltip() {
+			window.clearTimeout(tooltipTimer);
+			if (!fieldToggle.closest("[hidden]")) positionFieldTooltip();
+		}
+		fieldToggle.addEventListener("mouseenter", showFieldTooltip);
+		fieldToggle.addEventListener("focus", showFieldTooltip);
+		fieldToggle.addEventListener("mouseleave", function () { tooltipTimer = window.setTimeout(hideFieldTooltip, 150); });
+		fieldToggle.addEventListener("blur", hideFieldTooltip);
+		fieldTooltip.addEventListener("mouseenter", function () { window.clearTimeout(tooltipTimer); });
+		fieldTooltip.addEventListener("mouseleave", hideFieldTooltip);
+		fieldToggle.addEventListener("keydown", function (event) {
+			if (event.key !== "Escape" || fieldTooltip.hidden) return;
+			hideFieldTooltip(); event.preventDefault(); event.stopPropagation();
+		});
+		document.addEventListener("pointerdown", hideFieldTooltip, true);
+		window.addEventListener("resize", hideFieldTooltip);
+		window.addEventListener("scroll", hideFieldTooltip, true);
+		window.addEventListener("blur", hideFieldTooltip);
+		if (window.visualViewport) {
+			window.visualViewport.addEventListener("resize", hideFieldTooltip);
+			window.visualViewport.addEventListener("scroll", hideFieldTooltip);
+		}
+		setupField(field, battlefield);
 		var hint = el("span", "km-muted km-team-drawer-hint", "Drag to rearrange · Right-click to assign"); hint.hidden = true;
 		var actions = el("div", "km-team-drawer-actions"); actions.hidden = true;
 		function setOpen(value) {
-			open = value; content.hidden = !open; actions.hidden = !open; hint.hidden = !open;
-			toggle.setAttribute("aria-expanded", String(open));
-			drawer.classList.toggle("km-team-drawer-open", open);
+			hideFieldTooltip();
+			open = value; content.hidden = open !== "team"; actions.hidden = open !== "team"; hint.hidden = open !== "team";
+			battlefield.hidden = open !== "field";
+			toggle.setAttribute("aria-expanded", String(open === "team"));
+			fieldToggle.setAttribute("aria-expanded", String(open === "field"));
+			drawer.classList.toggle("km-team-drawer-open", !!open);
 			resizeWorkspace();
 		}
+		function updateFieldIndicator() {
+			var generation = Number(window.gen || (document.querySelector(".gen:checked") || {}).value || 8);
+			var effects = [];
+			Array.prototype.forEach.call(field.querySelectorAll("input:checked"), function (input) {
+				if (!input.classList.contains("calc-trigger") || input.name === "defaultLevel" || (input.type === "radio" && (!input.value || input.value === "0"))) return;
+				var specific = input.closest(".gen-specific");
+				if (specific && !specific.classList.contains("g" + generation)) return;
+				var label = field.querySelector("label[for='" + input.id + "']");
+				if (!label) return;
+				var side = /([LR])\d*$/.exec(input.id);
+				var text = /^spikes[LR]$/.test(input.name) ? "Spikes " + input.value : label.textContent.trim();
+				effects.push((side ? side[1] === "L" ? "Player: " : "Trainer: " : "") + text);
+			});
+			indicator.hidden = !effects.length;
+			fieldToggle.classList.toggle("km-field-active", !!effects.length);
+			var description = effects.length ? "Active battlefield effects: " + effects.join(", ") : "No active battlefield effects";
+			fieldEffects = effects;
+			if (fieldStatus.textContent !== description) fieldStatus.textContent = description;
+			if (open === "field") resizeWorkspace();
+			if (!fieldTooltip.hidden) positionFieldTooltip();
+		}
+		if (window.jQuery) {
+			window.jQuery(document).on("change.kmBattlefield keyup.kmBattlefield", ".calc-trigger, .gen, input.set-selector", updateFieldIndicator);
+		}
+		window.addEventListener("kmcalculator:fieldchange", updateFieldIndicator);
+		updateFieldIndicator();
 		function showPanel(name) {
 			activePanel = name;
 			tools.forEach(function (tool) {
@@ -143,7 +240,7 @@
 				tool.button.setAttribute("aria-expanded", String(tool.name === name));
 			});
 			lower.classList.toggle("km-drawer-has-tools", !!name);
-			setOpen(true);
+			setOpen("team");
 		}
 		function addPanel(name, label, panel) {
 			panel.id = "km-drawer-" + name; panel.classList.add("km-drawer-tool-panel"); panel.hidden = true;
@@ -158,21 +255,23 @@
 		addPanel("colors", "Color coding", box.querySelector(".color-coding-controls"));
 		addPanel("manage", "Manage boxes", box.querySelector(".team-box-control-section"));
 		addPanel("import", "Import / Export", lower.querySelector(".calculator-import-column"));
-		bar.appendChild(toggle); bar.appendChild(hint); bar.appendChild(actions);
-		content.appendChild(lower); drawer.appendChild(bar); drawer.appendChild(content); wrapper.appendChild(drawer);
+		bar.appendChild(toggle); bar.appendChild(fieldToggle); bar.appendChild(fieldStatus); bar.appendChild(hint); bar.appendChild(actions);
+		content.appendChild(lower); drawer.appendChild(bar); drawer.appendChild(content); drawer.appendChild(battlefield); drawer.appendChild(fieldTooltip); wrapper.appendChild(drawer);
 		wrapper.classList.add("km-has-team-drawer");
 		drawer.addEventListener("keydown", function (event) {
 			if (event.key !== "Escape" || event.defaultPrevented || event.target.closest("dialog")) return;
 			if (window.jQuery && window.jQuery(".select2-drop-active").length) return;
 			if (!open) return;
-			event.preventDefault(); event.stopPropagation(); setOpen(false); toggle.focus({preventScroll: true});
+			var opener = open === "field" ? fieldToggle : toggle;
+			event.preventDefault(); event.stopPropagation(); setOpen(null); opener.focus({preventScroll: true});
+			hideFieldTooltip();
 		});
 		return {
 			lower: lower,
 			box: box,
-			openImport: function () { showPanel("import"); },
 			resize: function (height) {
 				var size = open ? Math.min(330, Math.max(260, Math.floor(height * 0.31))) : 40;
+				if (open === "field") size = Math.max(300, field.scrollHeight + 60);
 				wrapper.style.setProperty("--km-team-drawer-size", size + "px");
 				return size;
 			}
@@ -183,7 +282,7 @@
 		var heading = el("div", "km-page-heading km-calculator-heading");
 		heading.appendChild(el("h1", "", "Calculator"));
 		var trainerNavigation = el("div", "km-trainer-navigation"); trainerNavigation.id = "km-trainer-navigation";
-		trainerNavigation.setAttribute("role", "group"); trainerNavigation.setAttribute("aria-label", "Trainer navigation");
+		trainerNavigation.setAttribute("role", "group"); trainerNavigation.setAttribute("aria-label", "Battle format and trainer navigation");
 		var trainerRow = wrapper.querySelector(".trainer-selector-row");
 		if (trainerRow) trainerNavigation.appendChild(trainerRow);
 		heading.appendChild(trainerNavigation);
@@ -231,10 +330,8 @@
 		var combat = wrapper.querySelector(".combat-workspace"); wrapper.insertBefore(layout, combat);
 		main.appendChild(combat); layout.appendChild(main); layout.appendChild(results);
 		var field = combat.querySelector(".field-info"); var fieldPanel = field.closest(".panel"); fieldPanel.hidden = true;
-		var format = field.querySelector(".field-format-toggle"); actions.insertBefore(format, actions.firstChild);
+		var format = field.querySelector(".field-format-toggle"); trainerNavigation.insertBefore(format, trainerNavigation.firstChild);
 		format.addEventListener("change", function () { if (document.getElementById("singles-format").checked) showSlot(1); });
-		var fieldDialog = modal("Battlefield", "km-field-dialog", wrapper);
-		actions.insertBefore(button("Battlefield", function () { fieldDialog.showModal(); }), preferences || null);
 		Array.prototype.forEach.call(combat.querySelectorAll(".poke-info"), function (pokemon, index) {
 			if (!index) {
 				var playerControls = pokemon.querySelector(".player-controls-spacer");
@@ -245,13 +342,20 @@
 				var editorActions = el("div", "km-editor-actions"); pokemon.parentNode.appendChild(editorActions);
 				editorActions.appendChild(pokemon.querySelector(".player-notes-controls"));
 			}
-			var health = pokemon.querySelector(".current-hp").parentNode; health.classList.add("km-health-controls");
-			health.querySelector("label").textContent = "HP";
-			var level = pokemon.querySelector(".level").parentNode; level.classList.add("km-level-control"); health.insertBefore(level, health.firstChild);
-			Array.prototype.forEach.call(health.childNodes, function (node) {
-				if (node.nodeType === 3) node.textContent = node.textContent.replace(/Health|[()]/g, "");
+			var currentHP = pokemon.querySelector(".current-hp");
+			var health = currentHP.parentNode; health.classList.add("km-health-controls");
+			var hpLabel = health.querySelector("label"); hpLabel.textContent = "HP";
+			var amount = el("div", "km-control-group km-hp-amount");
+			var total = el("span", "km-hp-total", "/"); total.appendChild(health.querySelector(".max-hp"));
+			amount.appendChild(hpLabel); amount.appendChild(currentHP); amount.appendChild(total);
+			var percentage = el("div", "km-control-group km-hp-percentage");
+			var percentHP = pokemon.querySelector(".percent-hp"); percentHP.setAttribute("aria-label", "Current HP percentage");
+			percentage.appendChild(percentHP); percentage.appendChild(el("span", "km-hp-unit", "%"));
+			Array.prototype.slice.call(health.childNodes).forEach(function (node) {
+				if (node.nodeType === 3 || node.nodeName === "BR") node.remove();
 			});
-			pokemon.querySelector(".percent-hp").setAttribute("aria-label", "Current HP percentage");
+			var level = pokemon.querySelector(".level").parentNode; level.classList.add("km-level-control", "km-control-group");
+			health.prepend(level, amount, percentage);
 			var statsContent = el("div", "km-stats-content");
 			var statsTop = pokemon.querySelector(".info-group.top"); statsContent.appendChild(statsTop);
 			var genderControl = statsTop.querySelector(".gender").parentNode; genderControl.classList.add("km-gender-control");
@@ -269,8 +373,7 @@
 			if (firstMove) pokemon.insertBefore(el("h3", "km-section-heading", "Moves"), firstMove);
 			Array.prototype.forEach.call(pokemon.querySelectorAll(".move-bp"), function (input) { input.setAttribute("aria-label", "Move base power"); input.title = "Base power"; });
 		});
-		setupField(field, fieldDialog);
-		var drawer = setupTeamDrawer(wrapper);
+		var drawer = setupTeamDrawer(wrapper, field);
 		var lower = drawer.lower;
 		var box = drawer.box;
 		Array.prototype.forEach.call(box.querySelectorAll(".box-poke"), function (zone) {
@@ -313,7 +416,7 @@
 		};
 		window.addEventListener("resize", resizeWorkspace);
 		if (window.ResizeObserver) new window.ResizeObserver(resizeWorkspace).observe(lower);
-		actions.insertBefore(button("Import", function () { drawer.openImport(); lower.querySelector("textarea").focus({preventScroll: true}); }), preferences || null);
+		if (window.ResizeObserver) new window.ResizeObserver(resizeWorkspace).observe(field);
 	}
 
 	function makeFilter(view, label, values) {
@@ -475,7 +578,7 @@
 	function getGroups(area) {
 		var land = area.groups.filter(function (g) { return g.method === "Land"; })[0];
 		return area.groups.map(function (g) {
-			var weather = ["Land", "Fishing", "Shaking Trees", "Other"].indexOf(g.method) === -1;
+			var weather = ["Land", "Fishing", "Shaking Trees", "Trade", "Gift", "Starter", "Static", "Other"].indexOf(g.method) === -1;
 			return {method: g.method, weather: weather, entries: weather && land ? land.entries.filter(function (e) { return e.slot <= 7; }).concat(g.entries) : g.entries};
 		});
 	}
@@ -487,7 +590,7 @@
 			return sourceData.areas.map(function (area) {
 				var groups = getGroups(area).filter(function (group) { return !filter || group.method === filter; }).map(function (group) {
 					return {method: group.method, weather: group.weather, totalEntries: group.entries, entries: group.entries.filter(function (entry) {
-						return !query || textMatch(area.name, query) || textMatch(entry.pokemon, query);
+						return !query || textMatch(area.name, query) || textMatch(entry.pokemon, query) || textMatch(entry.requiredPokemon, query);
 					})};
 				}).filter(function (group) { return group.entries.length; });
 				return {id: area.id, name: area.name, groups: groups, count: groups.reduce(function (n, g) { return n + g.entries.length; }, 0)};
@@ -496,7 +599,7 @@
 		if (view.kind === "trainers") return sourceData.trainers.filter(function (trainer) {
 			var format = trainerBattleType(trainer);
 			return (!filter || trainer.split === filter) && (!view.secondary.value || format === view.secondary.value) &&
-				(!query || textMatch([trainer.name, trainer.location, trainer.split, JSON.stringify(trainer.team)].join(" "), query));
+				(!query || textMatch([trainer.name, trainer.location, trainerSplitLabel(trainer.split), JSON.stringify(trainer.team)].join(" "), query));
 		});
 		var rows = sourceData.routeItems.filter(function (item) {
 			return (!filter || item.acquisition === filter) && (!query || textMatch([item.location, item.items, item.directions].join(" "), query));
@@ -517,12 +620,13 @@
 		container.appendChild(grid);
 		area.groups.forEach(function (group) {
 			var card = el("section", "km-reference-card");
+			var trade = group.method === "Trade";
 			card.appendChild(el("h3", "", group.method === "Land" ? "Land (normal weather)" : group.method));
 			if (group.weather) card.appendChild(el("p", "km-muted", "The first seven land slots plus this weather's three replacement slots."));
 			var table = el("table", "km-data-table");
 			var head = el("thead");
 			var header = el("tr");
-			["Caught", "Pokémon", "Level", "Base", "Available"].forEach(function (text) { var th = el("th", "", text); th.scope = "col"; header.appendChild(th); });
+			["Caught", "Pokémon", "Level", trade ? "Required Pokémon" : "Base", "Available"].forEach(function (text) { var th = el("th", "", text); th.scope = "col"; header.appendChild(th); });
 			head.appendChild(header); table.appendChild(head);
 			var body = el("tbody");
 			group.entries.forEach(function (entry) {
@@ -530,12 +634,16 @@
 				encounterTracker.renderEntry(row, area, group, entry);
 				row.appendChild(el("td", "km-pokemon-name", entry.pokemon));
 				row.appendChild(el("td", "", entry.level || "Not listed"));
-				var rate = el("td", "km-rate", entry.rate === null ? "—" : entry.rate + "%");
+				var rate = trade ? el("td", "km-pokemon-name", entry.requiredPokemon || "Not listed") : el("td", "km-rate", entry.rate === null ? "—" : entry.rate + "%");
 				row.appendChild(rate); body.appendChild(row);
 				row.appendChild(el("td", "km-available-rate", encounterTracker.rate(area, group, entry)));
 			});
 			table.appendChild(body); card.appendChild(table); grid.appendChild(card);
 		});
+	}
+	function trainerSplitLabel(split) {
+		var name = String(split || "").trim();
+		return name && !/\bsplit$/i.test(name) ? name + " Split" : name;
 	}
 	function trainerBattleType(trainer) {
 		if (trainer.battleType === "Single" || trainer.battleType === "Double") return trainer.battleType;
@@ -600,7 +708,52 @@
 		});
 		head.appendChild(labels); body.appendChild(numbers); table.appendChild(head); table.appendChild(body); card.appendChild(table);
 	}
+	function renderTrainerModels(container, trainer) {
+		var catalog = sourceData.trainerModels || {};
+		var models = Array.isArray(trainer.models) ? trainer.models.slice(0, 2).filter(function (id) {
+			return typeof id === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id) && Object.prototype.hasOwnProperty.call(catalog, id) && typeof catalog[id] === "string";
+		}) : [];
+		if (!models.length) return;
+		var portraits = el("div", "km-trainer-models");
+		models.forEach(function (id) {
+			var image = el("img", "km-trainer-model");
+			image.src = "./img/trainers/" + id + ".png";
+			image.alt = catalog[id];
+			image.width = 384; image.height = 512;
+			image.decoding = "async"; image.draggable = false;
+			image.addEventListener("error", function () {
+				var fallback = el("span", "km-trainer-model-fallback km-muted", catalog[id] + " image unavailable");
+				if (image.parentNode) image.parentNode.replaceChild(fallback, image);
+			});
+			portraits.appendChild(image);
+		});
+		container.appendChild(portraits);
+	}
+	function trainerPokemonTypes(pokemon) {
+		var generation = typeof window.getActiveCalcGeneration === "function" && window.getActiveCalcGeneration();
+		if (!generation || !generation.species) return [];
+		var names = [pokemon.sprite, pokemon.pokemon];
+		var equivalents = {aegislash: "aegislashshield", dialgaorigin: "dialga", palkiaorigin: "palkia"};
+		for (var index = 0; index < names.length; index++) {
+			var id = String(names[index] || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+			if (!id) continue;
+			var species = generation.species.get(id) || generation.species.get(id.replace(/gmax$/, ""));
+			if (!species && Object.prototype.hasOwnProperty.call(equivalents, id)) species = generation.species.get(equivalents[id]);
+			if (species && Array.isArray(species.types)) return species.types.slice(0, 2);
+		}
+		return [];
+	}
 	function renderTrainer(container, trainer) {
+		if (window.KMTrainerTooltips) window.KMTrainerTooltips.hide();
+		function tooltip(target, kind, name, pokemon) {
+			if (!window.KMTrainerTooltips) return;
+			var label = el("span", "", target.textContent);
+			target.textContent = ""; target.appendChild(label);
+			window.KMTrainerTooltips.bind(label, sourceData.tooltipData, kind, name, pokemon);
+		}
+		var summary = el("div", "km-trainer-summary"), info = el("div", "km-trainer-summary-info");
+		renderTrainerModels(summary, trainer);
+		summary.appendChild(info);
 		var heading = el("div", "km-trainer-heading");
 		var format = trainerBattleType(trainer);
 		var notes = (trainer.name.match(/\[[^\]]+\]/g) || []).filter(function (note) { return !/^\[(Single|Double)\]$/.test(note); });
@@ -611,10 +764,20 @@
 		check.addEventListener("change", function () {
 			if (!markTrainerBeaten(trainer, check.checked)) check.checked = !check.checked;
 		});
-		beaten.appendChild(check); beaten.appendChild(document.createTextNode(" Beaten")); heading.appendChild(beaten); container.appendChild(heading);
-		container.appendChild(el("p", "km-muted", [trainer.split, trainer.location, trainer.levelCap ? "Level cap " + trainer.levelCap : ""].filter(Boolean).join(" · ")));
-		if (notes.length) container.appendChild(el("p", "km-trainer-notes km-muted", notes.map(function (note) { return note.slice(1, -1); }).join(" · ")));
-		container.appendChild(el("p", "km-trainer-rewards km-muted", trainerRewards(trainer)));
+		beaten.appendChild(check); beaten.appendChild(document.createTextNode(" Beaten")); heading.appendChild(beaten); info.appendChild(heading);
+		info.appendChild(el("p", "km-muted", [trainerSplitLabel(trainer.split), trainer.location, trainer.levelCap ? "Level cap " + trainer.levelCap : ""].filter(Boolean).join(" · ")));
+		if (notes.length) info.appendChild(el("p", "km-trainer-notes km-muted", notes.map(function (note) { return note.slice(1, -1); }).join(" · ")));
+		info.appendChild(el("p", "km-trainer-rewards km-muted", trainerRewards(trainer)));
+		var addToCalculator = button("Add to Calculator", function () {
+			if (typeof window.selectCalculatorTrainer !== "function" || !window.selectCalculatorTrainer(sourceData.profileId, trainer.calculatorTrainerId)) {
+				window.alert("This trainer is not available in the calculator for the current profile.");
+				return;
+			}
+			activateTab(0, true);
+		}, "km-action km-trainer-add");
+		addToCalculator.disabled = !trainer.calculatorTrainerId;
+		summary.appendChild(addToCalculator);
+		container.appendChild(summary);
 		var grid = el("div", "km-trainer-roster");
 		trainer.team.forEach(function (pokemon) {
 			var card = el("article", "km-reference-card km-trainer-card");
@@ -629,11 +792,27 @@
 			identity.appendChild(portrait);
 			var dl = el("dl", "km-pokemon-facts");
 			[["Ability", pokemon.ability], ["Item", pokemon.item || "None"], ["Nature", pokemon.nature], ["Gender", pokemon.gender]].forEach(function (pair) {
-				dl.appendChild(el("dt", "", pair[0])); dl.appendChild(el("dd", "", pair[1] || "Not listed"));
+				var value = el("dd", "", pair[1] || "Not listed");
+				if (pair[0] === "Ability") tooltip(value, "abilities", pair[1], pokemon);
+				if (pair[0] === "Item") tooltip(value, "items", pair[1]);
+				dl.appendChild(el("dt", "", pair[0])); dl.appendChild(value);
 			});
-			identity.appendChild(dl); card.appendChild(identity);
+			identity.appendChild(dl);
+			var types = trainerPokemonTypes(pokemon);
+			if (types.length) {
+				var badges = el("div", "km-trainer-types");
+				badges.setAttribute("role", "group"); badges.setAttribute("aria-label", "Pokémon types");
+				types.forEach(function (type) {
+					var badge = el("span", "km-type-badge", type);
+					badge.setAttribute("data-type", type); badges.appendChild(badge);
+				});
+				identity.appendChild(badges);
+			}
+			card.appendChild(identity);
 			var moves = el("ul", "km-move-list");
-			pokemon.moves.forEach(function (move) { moves.appendChild(el("li", "", move)); });
+			pokemon.moves.forEach(function (move) {
+				var entry = el("li", "", move); tooltip(entry, "moves", move); moves.appendChild(entry);
+			});
 			card.appendChild(moves);
 			renderTrainerStats(card, pokemon);
 			grid.appendChild(card);
@@ -694,7 +873,7 @@
 			var b = button("", function () { view.selected = entry.id; render(view); }, "km-location-button");
 			b.setAttribute("data-page-key", entry.id);
 			b.appendChild(el("span", "", entry.name));
-			b.appendChild(el("small", "", view.kind === "trainers" ? entry.split + " · " + entry.team.length + " Pokémon" : entry.count + (view.kind === "items" ? " item" : " encounter slot") + (entry.count === 1 ? "" : "s")));
+			b.appendChild(el("small", "", view.kind === "trainers" ? trainerSplitLabel(entry.split) + " · " + entry.team.length + " Pokémon" : entry.count + (view.kind === "items" ? " item" : " encounter slot") + (entry.count === 1 ? "" : "s")));
 			if (view.kind === "encounters") encounterTracker.decorateLocation(b, entry);
 			if (view.kind === "trainers") b.classList.toggle("km-trainer-beaten", trainerProgress.beaten.indexOf(entry.id) !== -1);
 			b.setAttribute("aria-current", String(entry.id === view.selected));
@@ -731,9 +910,9 @@
 			}
 			view.primary.textContent = "";
 			var all = el("option", "", "All"); all.value = ""; view.primary.appendChild(all);
-			options.forEach(function (value) { var option = el("option", "", value); option.value = value; view.primary.appendChild(option); });
+			options.forEach(function (value) { var option = el("option", "", view.kind === "trainers" ? trainerSplitLabel(value) : value); option.value = value; view.primary.appendChild(option); });
 			if (view.secondary) view.secondary.value = "";
-			if (view.kind !== "encounters") view.note.textContent = !sourceData ? "" : view.kind === "items" ? "Sword/Shield 1.3.2 base-game reference, not confirmed Royal Sword placements. Includes both editions. Some landmarks and item pools remain uncertain; expand an entry for its source and match details." : "Royal Sword trainer reference, organized by story split. Check Beaten to record your progress.";
+			if (view.kind !== "encounters") view.note.textContent = !sourceData ? "" : view.kind === "items" ? "Sword/Shield 1.3.2 base-game reference; item placements in this ROM hack are unverified. Includes both editions. Some landmarks and item pools remain uncertain; expand an entry for its source and match details." : "Trainers are organized by story split. Check Beaten to record your progress.";
 			render(view);
 		});
 	}

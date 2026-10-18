@@ -3,6 +3,7 @@
 var trainerDataRegistry = null;
 var importedTrainerProfileIds = {};
 var builtInTrainerDataInstalled = false;
+var trainerBattlefieldKey = null;
 
 function getMovesetImportStorage() {
 	if (typeof window.getKMCalculatorStorage === "function") return window.getKMCalculatorStorage();
@@ -505,6 +506,23 @@ function getFilteredTrainerEntryIds() {
 window.getTrainerEntries = getTrainerEntries;
 window.getTrainerEntry = getTrainerEntry;
 
+function selectCalculatorTrainer(profileId, trainerId) {
+	var binding = getActiveTrainerBinding();
+	if (binding.profileId !== profileId || !binding.packId || typeof trainerId !== "string" || !trainerId) return false;
+	var id = binding.packId + ":" + trainerId;
+	var entries = getTrainerEntries();
+	var entry = entries.filter(function (candidate) { return candidate._kmId === id; })[0];
+	var selector = $("#trainer-selector");
+	if (!entry || !selector.length) return false;
+	var format = $("#" + getTrainerBattleType(entry) + "s-format");
+	if (!format.length || format.prop("disabled")) return false;
+	if (!format.prop("checked")) format.prop("checked", true).trigger("change", [id]);
+	else selector.val(id).change();
+	return selector.val() === id;
+}
+
+window.selectCalculatorTrainer = selectCalculatorTrainer;
+
 window.addEventListener("kmcalculator:romhackchange", function () {
 	setTimeout(function () {
 		refreshTrainerDataViews();
@@ -552,6 +570,7 @@ function formatTrainerDataError(error) {
 }
 
 function refreshTrainerDataViews(preferredTrainerId) {
+	trainerBattlefieldKey = null;
 	removeTrainerSetsFromDex();
 	rebuildTrainerRuntimeIndex();
 	if (!$("#trainer-selector").length) installTrainerControls();
@@ -711,17 +730,26 @@ function hideTrainerSetSelector() {
 	}
 }
 
+function syncTrainerBattlefield(trainerId) {
+	var binding = getActiveTrainerBinding();
+	var key = [binding.profileId, binding.packId, getTrainerGeneration(), trainerId || ""].join(":");
+	if (key === trainerBattlefieldKey) return;
+	trainerBattlefieldKey = key;
+	if (typeof window.resetTrainerBattlefield === "function") window.resetTrainerBattlefield();
+}
+
 function renderTrainerTeam(trainerId) {
 	var team = $("#trainer-team");
 	team.empty();
 	var entry = getTrainerEntry(trainerId);
 	var trainer = getTrainerPokemon(entry);
 	updateTrainerDataAttribution(entry);
-	if (!entry || !trainer.length) return;
+	if (!entry || !trainer.length) { syncTrainerBattlefield(null); return; }
 	if (getTrainerBattleType(entry) !== getSelectedTrainerBattleType()) {
 		refreshTrainerSelectorForBattleFormat();
 		return;
 	}
+	syncTrainerBattlefield(trainerId);
 	clearDoublesSlotSide("opponent");
 	for (var i = 0; i < trainer.length; i++) {
 		var pokemon = trainer[i];
@@ -747,6 +775,7 @@ function renderTrainerTeam(trainerId) {
 		team.append(button);
 	}
 	selectTrainerPokemon(trainerId, 0);
+	window.dispatchEvent(new CustomEvent("kmcalculator:fieldchange"));
 }
 
 window.loadTrainerSlotIntoEditor = loadTrainerSlotIntoEditor;
@@ -882,14 +911,17 @@ function rebuildTrainerSelectorOptions(selector, preferredTrainerId) {
 	return selectedId;
 }
 
-function refreshTrainerSelectorForBattleFormat(preferredTrainerId) {
+function refreshTrainerSelectorForBattleFormat(preferredTrainerId, notifySelection) {
 	var selector = $("#trainer-selector");
 	if (!selector.length) return;
 	var selectedId = rebuildTrainerSelectorOptions(selector, preferredTrainerId || selector.val());
-	if (selectedId) renderTrainerTeam(selectedId);
-	else {
+	if (selectedId) {
+		if (notifySelection) selector.change();
+		else renderTrainerTeam(selectedId);
+	} else {
 		$("#trainer-team").empty();
 		updateTrainerDataAttribution(null);
+		syncTrainerBattlefield(null);
 	}
 }
 
@@ -959,8 +991,8 @@ function installTrainerControls() {
 	selector.change(function () {
 		renderTrainerTeam($(this).val());
 	});
-	$("input:radio[name='format']").change(function () {
-		refreshTrainerSelectorForBattleFormat();
+	$("input:radio[name='format']").change(function (event, preferredTrainerId) {
+		refreshTrainerSelectorForBattleFormat(preferredTrainerId, !!preferredTrainerId);
 	});
 	$(".gen").change(function () {
 		refreshTrainerSelectorForBattleFormat();

@@ -2023,7 +2023,7 @@
                 <h3>Data Source</h3>
                 <p>Player commands use Pokemon from the visible Player Team. Trainer commands use the selected Trainer roster. The simulator does not guess missing sets or pull from hidden selector state.</p>
                 <p>The cloned simulation data is temporary. Closing the simulator clears those background battle objects, while your script and timeline stay visible until you clear them.</p>
-                <p>Royal Sword AI runs locally inside the app with bundled Sword/Shield battle AI data. The simulator uses that data for Trainer move scoring and switch decisions without requiring external scripts.</p>
+                <p>Trainer AI runs locally inside the app with bundled Sword/Shield battle AI data. The simulator uses that data for move scoring and switch decisions without requiring external scripts.</p>
             </section>
             <section class="color-code-section">
                 <h3>Syntax</h3>
@@ -2055,7 +2055,7 @@
             <section class="color-code-section">
                 <h3>Timeline</h3>
                 <p>Calculate groups the timeline into collapsed Setup and Turn sections. Open only the turns you want to inspect so long scripts stay readable.</p>
-                <p>Move entries show Damage, HP, Risk, modeled effects, recharge requirements, Royal Sword move scores, and AI switch decisions when available.</p>
+                <p>Move entries show Damage, HP, Risk, modeled effects, recharge requirements, AI move scores, and switch decisions when available.</p>
             </section>
             <section class="color-code-section">
                 <h3>Top 3 Best Picks</h3>
@@ -2064,13 +2064,13 @@
             </section>
             <section class="color-code-section">
                 <h3>AI Scores</h3>
-                <p>Royal Sword scores show an expected score plus the possible score range. If the top score overlaps another move's range, the timeline marks the choice as contested instead of treating it as guaranteed.</p>
-                <p>Craft a Line follows the top Royal Sword predicted action and uses exact-state caching while searching for a win.</p>
+                <p>AI scores show an expected score plus the possible score range. If the top score overlaps another move's range, the timeline marks the choice as contested instead of treating it as guaranteed.</p>
+                <p>Craft a Line follows the top predicted trainer action and uses exact-state caching while searching for a win.</p>
             </section>
             <section class="color-code-section">
                 <h3>Field State</h3>
                 <p>Entry abilities such as Drought, Drizzle, Sand Stream, Snow Warning, Desolate Land, Primordial Sea, Delta Stream, Electric Surge, Grassy Surge, Misty Surge, and Psychic Surge update cloned weather or terrain. Remaining turns tick down on each new <code>Turn</code> line.</p>
-                <p>Royal Sword AI reads cloned weather, terrain, Trick Room action order, Gravity, Magic Room, Wonder Room, hazards, screens, Tailwind, Safeguard, Mist, Sticky Web, Toxic Spikes, and bundled Sw/Sh side-condition slots when scoring moves and switches.</p>
+                <p>Trainer AI reads cloned weather, terrain, Trick Room action order, Gravity, Magic Room, Wonder Room, hazards, screens, Tailwind, Safeguard, Mist, Sticky Web, Toxic Spikes, and bundled Sw/Sh side-condition slots when scoring moves and switches.</p>
                 <p>Guaranteed move effects apply to the cloned battle state. Chance effects are shown with their percent chance and contribute to AI evaluation, but they are not applied as guaranteed outcomes.</p>
                 <p>Charge moves such as Sky Attack, Meteor Beam, Solar Beam, Fly, Dig, Dive, Bounce, Phantom Force, Skull Bash, Geomancy, Freeze Shock, Ice Burn, Razor Wind, Shadow Force, Sky Drop, and Solar Blade keep stored charge state. Power Herb resolves the move immediately and is then consumed; Solar Beam and Solar Blade skip charging in Sun or Harsh Sunshine.</p>
                 <p>Recharge moves such as Eternabeam force the user to recharge on its next action, even after a KO.</p>
@@ -2147,6 +2147,8 @@
     <script type="text/javascript" src="./js/trainer_data_registry.js?"></script>
     <script type="text/javascript" src="./js/moveset_import.js?"></script>
     <script type="text/javascript" src="./js/data/royal_sword_reference.js?"></script>
+    <script type="text/javascript" src="./js/data/swsh_reference_details.js?"></script>
+    <script type="text/javascript" src="./js/trainer_tooltips.js?"></script>
     <script type="text/javascript" src="./js/encounter_tracker.js?"></script>
     <script type="text/javascript" src="./js/app_workspace.js?"></script>
 </div>
@@ -2160,6 +2162,7 @@
     <ul class="credit-links"><li><a href="https://github.com/smogon/damage-calc" class="links-lighten" target="_blank">Original calc GitHub repository</a></li>
     <li>Team/Box workflow reference: <a href="https://github.com/ForwardFeed/runbuncalc" class="links-lighten" target="_blank">ForwardFeed/runbuncalc</a></li>
     <li>Save-format reference: <a href="https://github.com/kwsch/PKHeX" class="links-lighten" target="_blank">PKHeX</a></li>
+    <li>Item and move category artwork: <a href="https://github.com/msikma/pokesprite" class="links-lighten" target="_blank">PokéSprite by Mike Sikma and contributors</a>. Sprites © Nintendo / Creatures Inc. / GAME FREAK inc.</li>
     <li><a href="https://github.com/KotMatrosk1n/KM-Calculator/blob/master/CREDITS.md" class="links-lighten" target="_blank">Complete credits and licenses</a></li></ul>
 
     <select id="dark-theme-toggle" aria-label="Theme" title="Theme">

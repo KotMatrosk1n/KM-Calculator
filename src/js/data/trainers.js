@@ -17977,5 +17977,128 @@ var TRAINERDEX = [
 				}
 			}
 		]
+	},
+	{
+		"id": "hop-partner-elevator",
+		"area": "Rose Tower Elevator",
+		"trainer": "Hop Partner Elevator Team",
+		"battleType": "Double",
+		"pokemon": [
+			{
+				"slot": 1,
+				"species": "Snorlax",
+				"gender": "M",
+				"level": 70,
+				"ability": "Thick Fat",
+				"item": "Assault Vest",
+				"nature": "Adamant",
+				"moves": [
+					"Body Slam",
+					"High Horsepower",
+					"Crunch",
+					"Heavy Slam"
+				],
+				"ivs": {
+					"hp": 31,
+					"at": 31,
+					"df": 31,
+					"sa": 31,
+					"sd": 31,
+					"sp": 31
+				}
+			},
+			{
+				"slot": 2,
+				"species": "Corviknight",
+				"gender": "M",
+				"level": 70,
+				"ability": "Mirror Armor",
+				"item": "Sitrus Berry",
+				"nature": "Careful",
+				"moves": [
+					"Brave Bird",
+					"Iron Head",
+					"Tailwind",
+					"Taunt"
+				],
+				"ivs": {
+					"hp": 31,
+					"at": 31,
+					"df": 31,
+					"sa": 31,
+					"sd": 31,
+					"sp": 31
+				}
+			},
+			{
+				"slot": 3,
+				"species": "Inteleon",
+				"gender": "M",
+				"level": 70,
+				"ability": "Sniper",
+				"item": "Scope Lens",
+				"nature": "Timid",
+				"moves": [
+					"Snipe Shot",
+					"Ice Beam",
+					"Dark Pulse",
+					"Air Slash"
+				],
+				"ivs": {
+					"hp": 31,
+					"at": 31,
+					"df": 31,
+					"sa": 31,
+					"sd": 31,
+					"sp": 31
+				}
+			},
+			{
+				"slot": 4,
+				"species": "Rillaboom",
+				"gender": "M",
+				"level": 70,
+				"ability": "Grassy Surge",
+				"item": "Grassy Seed",
+				"nature": "Adamant",
+				"moves": [
+					"Fake Out",
+					"Grassy Glide",
+					"Wood Hammer",
+					"Knock Off"
+				],
+				"ivs": {
+					"hp": 31,
+					"at": 31,
+					"df": 31,
+					"sa": 31,
+					"sd": 31,
+					"sp": 31
+				}
+			},
+			{
+				"slot": 5,
+				"species": "Cinderace",
+				"gender": "M",
+				"level": 70,
+				"ability": "Libero",
+				"item": "Life Orb",
+				"nature": "Jolly",
+				"moves": [
+					"Pyro Ball",
+					"High Jump Kick",
+					"Sucker Punch",
+					"U-turn"
+				],
+				"ivs": {
+					"hp": 31,
+					"at": 31,
+					"df": 31,
+					"sa": 31,
+					"sd": 31,
+					"sp": 31
+				}
+			}
+		]
 	}
 ];

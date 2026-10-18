@@ -112,7 +112,7 @@
 		pokemonInput.setAttribute("list", "km-catch-species"); pokemonInput.required = true; pokemonInput.placeholder = "Search species or evolution"; pokemonInput.autocomplete = "off";
 		var speciesList = el("datalist"); speciesList.id = "km-catch-species"; form.appendChild(speciesList);
 		var sourceInput = field("Obtained by", el("select"));
-		["Gift", "Trade", "Starter", "Wild", "Static / other"].forEach(function (name) { sourceInput.appendChild(el("option", "", name)); });
+		["Gift", "Trade", "Starter", "Wild", "Static", "Other"].forEach(function (name) { sourceInput.appendChild(el("option", "", name)); });
 		var areaInput = field("Location", el("select"));
 		var submit = el("button", "", "Record catch"); submit.type = "submit"; form.appendChild(submit);
 		var feedback = el("p", "km-catch-feedback"); feedback.setAttribute("role", "status");

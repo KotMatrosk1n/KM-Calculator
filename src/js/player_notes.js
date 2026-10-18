@@ -139,11 +139,6 @@
 		return entry && entry._kmId ? entry._kmId : String(index);
 	}
 
-	function getTrainerGroup(entry) {
-		var area = getTrainerArea(entry);
-		return entry && entry._kmPack ? entry._kmPack.name + " - " + area : area;
-	}
-
 	function getCurrentTrainerId() {
 		var selector = $("#trainer-selector");
 		var value = selector.length ? selector.val() : "";
@@ -188,7 +183,7 @@
 		notesTrainerSelect.prop("disabled", false);
 		for (i = 0; i < trainers.length; i++) {
 			entry = trainers[i];
-			area = getTrainerGroup(entry);
+			area = getTrainerArea(entry);
 			if (area !== currentArea) {
 				currentArea = area;
 				optgroup = $("<optgroup></optgroup>").attr("label", area);
