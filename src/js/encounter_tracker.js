@@ -181,7 +181,7 @@
 			rules = createRules(data, family, mode);
 			try {
 				var raw = storage.getItem(storageKey());
-				// Existing workbook-rule runs belong to Royalocke. Never copy them into another mode.
+				// Existing encounter progress belongs to Royalocke. Never copy it into another mode.
 				if (raw === null && mode === "royalocke") raw = storage.getItem("km-calculator.encounters.v1." + profileId);
 				var saved = JSON.parse(raw);
 				if (saved && (saved.version === 1 || saved.version === 2) && Array.isArray(saved.catches) && Array.isArray(saved.usedAreas)) {
@@ -193,7 +193,7 @@
 			} catch (error) { /* A missing or unreadable save starts with an empty view. */ }
 			modeButtons.forEach(function (tab, index) { var active = modes[index].id === mode; tab.setAttribute("aria-selected", String(active)); tab.tabIndex = active ? 0 : -1; });
 			modePanel.setAttribute("aria-labelledby", "km-encounter-mode-" + mode);
-			var description = mode === "normal" ? "Unlimited catches at every location. Records do not exclude species or evolution families. Use the catch log to record additional catches of the same Pokémon." : mode === "nuzlocke" ? "One encounter per location, including gifts and trades. No shared allowances. Caught evolution families are crossed out and unavailable everywhere; missed catches do not exclude a family." : "Workbook rules: shared Wild Area allowances and separate city trades. Caught evolution families are crossed out and unavailable everywhere; missed catches do not exclude a family.";
+			var description = mode === "normal" ? "Unlimited catches at every location. Records do not exclude species or evolution families. Use the catch log to record additional catches of the same Pokémon." : mode === "nuzlocke" ? "One encounter per location, including gifts and trades. No shared allowances. Caught evolution families are crossed out and unavailable everywhere; missed catches do not exclude a family." : "Shared Wild Area catch limits and separate city trades. Caught evolution families are crossed out and unavailable everywhere; missed catches do not exclude a family.";
 			if (options.note) options.note.textContent = description;
 			title.textContent = modeName() + " catch log"; logDescription.textContent = description;
 			areaInput.required = mode === "nuzlocke";

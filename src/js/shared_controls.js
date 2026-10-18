@@ -951,6 +951,7 @@ var TEAM_BOX_DAMAGE_SORT_RANKS = {
 var boxPokemonDragged = null;
 var boxPokemonDragOrigin = null;
 var boxPokemonDragNextSibling = null;
+var doublesSlotDrag = null;
 var doublesSlotMenuContext = null;
 var finderExplanationWindow = null;
 var playerTeamMirrorObserver = null;
@@ -1119,6 +1120,7 @@ function updateDoublesSlotSummaryCard(side, slot) {
 	var label = getDoublesSlotSummaryLabel(selection);
 	card.toggleClass("active-doubles-slot", doublesActiveSlot[side] === slot);
 	card.toggleClass("filled-doubles-slot", !!selection);
+	card.prop("draggable", !!selection);
 	card.attr("aria-pressed", doublesActiveSlot[side] === slot ? "true" : "false");
 	card.attr("title", selection && selection.label ? selection.label : "Slot " + slot);
 	body.empty();
@@ -1129,6 +1131,7 @@ function updateDoublesSlotSummaryCard(side, slot) {
 	body
 		.append(createPokemonSprite(selection.pokemonName, "doubles-slot-card-sprite"))
 		.append($("<span class='doubles-slot-card-name'></span>").text(label));
+	body.find("img").prop("draggable", false);
 }
 
 function updateDoublesSlotSummaries() {
@@ -1138,6 +1141,32 @@ function updateDoublesSlotSummaries() {
 			updateDoublesSlotSummaryCard(side, slot);
 		}
 	}
+	updateSelectedPokemonHighlights();
+}
+
+function updateSelectedPokemonHighlights() {
+	var doubles = isDoublesFormatSelected();
+	var playerSet = $("#p1 input.set-selector").val();
+	if (doubles && !getDoublesSlotSelection("player", getDoublesActiveSlot("player"))) playerSet = "";
+	$(".box-pokemon, #player-team .player-team-pokemon").each(function () {
+		var node = $(this);
+		var selected = !!playerSet && node.attr("data-id") === playerSet;
+		node.toggleClass("selected-box-pokemon", selected && node.hasClass("box-pokemon"));
+		if (node.hasClass("player-team-pokemon")) node.toggleClass("selected-player-pokemon", selected).attr("aria-pressed", String(selected));
+	});
+	var opponentSet = $("#p2 input.set-selector").val();
+	var opponent = getDoublesSlotSelection("opponent", getDoublesActiveSlot("opponent"));
+	if (!doubles && (!opponent || opponent.fullSetName !== opponentSet)) {
+		opponent = [getDoublesSlotSelection("opponent", 1), getDoublesSlotSelection("opponent", 2)].filter(function (selection) {
+			return selection && selection.fullSetName === opponentSet;
+		})[0];
+	}
+	$("#trainer-team .trainer-pokemon").each(function () {
+		var node = $(this);
+		var selected = !!opponent && opponent.fullSetName === opponentSet &&
+			node.attr("data-trainer-id") === String(opponent.trainerId) && node.attr("data-trainer-index") === String(opponent.trainerIndex);
+		node.toggleClass("selected-trainer-pokemon", selected).attr("aria-pressed", String(selected));
+	});
 }
 
 function activateDoublesSlot(side, slot) {
@@ -1169,6 +1198,123 @@ function swapDoublesSlots(side) {
 	}
 	activateDoublesSlot(side, activeSlot);
 	if (typeof window.performCalculations === "function") window.performCalculations();
+}
+
+function getDoublesSlotDragSource(source) {
+	var node = $(source);
+	if (node.hasClass("doubles-slot-card")) {
+		var side = node.attr("data-side");
+		var slot = Number(node.attr("data-slot"));
+		return {side: side, selection: getDoublesSlotSelection(side, slot), sourceSlot: slot};
+	}
+	if (node.is("#player-team .player-team-pokemon, #team-poke-list .box-pokemon")) {
+		return {side: "player", selection: getSetSlotSelection(node.attr("data-id") || "")};
+	}
+	if (node.is("#trainer-team .trainer-pokemon")) {
+		return {side: "opponent", selection: {
+			trainerId: node.attr("data-trainer-id"), trainerIndex: node.attr("data-trainer-index")
+		}};
+	}
+	return null;
+}
+
+function isDoublesSlotDragAvailable(drag) {
+	if (!isDoublesFormatSelected() || !drag || !drag.selection) return false;
+	var selection = drag.selection;
+	var key = getDoublesSelectionKey(selection);
+	if (!key || (drag.sourceSlot && getDoublesSelectionKey(getDoublesSlotSelection(drag.side, drag.sourceSlot)) !== key)) return false;
+	if (drag.side === "player") {
+		return fullSetExists(selection.fullSetName || "") && $("#team-poke-list .box-pokemon").filter(function () {
+			return $(this).attr("data-id") === selection.fullSetName;
+		}).length > 0;
+	}
+	if (drag.side === "opponent") {
+		return $("#trainer-team .trainer-pokemon").filter(function () {
+			return $(this).attr("data-trainer-id") === String(selection.trainerId) &&
+				$(this).attr("data-trainer-index") === String(selection.trainerIndex);
+		}).length > 0;
+	}
+	return false;
+}
+
+function clearDoublesSlotDragState() {
+	doublesSlotDrag = null;
+	$(".doubles-slot-drop-target").removeClass("doubles-slot-drop-target");
+}
+
+function startDoublesSlotDrag(event) {
+	clearDoublesSlotDragState();
+	var drag = getDoublesSlotDragSource(event.currentTarget || event.target);
+	if (!isDoublesSlotDragAvailable(drag)) return false;
+	doublesSlotDrag = drag;
+	hideDoublesSlotMenu();
+	var transfer = (event.originalEvent || event).dataTransfer;
+	if (transfer) {
+		transfer.effectAllowed = "move";
+		transfer.setData("application/x-km-calculator-slot", getDoublesSelectionKey(drag.selection));
+	}
+	return true;
+}
+
+function canDropDoublesSlot(card) {
+	var slot = Number($(card).attr("data-slot"));
+	return (slot === 1 || slot === 2) && isDoublesSlotDragAvailable(doublesSlotDrag) &&
+		doublesSlotDrag.side === $(card).attr("data-side");
+}
+
+function dropDoublesSlotPokemon(event) {
+	event.preventDefault();
+	event.stopPropagation();
+	var card = event.currentTarget;
+	var drag = doublesSlotDrag;
+	var allowed = canDropDoublesSlot(card);
+	clearDoublesSlotDragState();
+	clearBoxPokemonDragState();
+	if (!allowed) return;
+	var side = drag.side;
+	var slot = Number($(card).attr("data-slot"));
+	var otherSlot = slot === 1 ? 2 : 1;
+	var key = getDoublesSelectionKey(drag.selection);
+	if (getDoublesSelectionKey(getDoublesSlotSelection(side, slot)) === key) return;
+	if (getDoublesSelectionKey(getDoublesSlotSelection(side, otherSlot)) === key) {
+		var activeSlot = getDoublesActiveSlot(side);
+		var activeSelection = getDoublesSlotSelection(side, activeSlot);
+		var replaced = doublesSlotState[side][slot];
+		doublesSlotState[side][slot] = doublesSlotState[side][otherSlot];
+		doublesSlotState[side][otherSlot] = replaced;
+		// Keep the live editor attached to its Pokémon, including unsaved HP and stat edits.
+		if (activeSelection) setDoublesActiveSlot(side, activeSlot === 1 ? 2 : 1);
+		else activateDoublesSlot(side, slot);
+		updateDoublesSlotHighlights();
+	} else if (side === "player") {
+		loadPlayerPokemonIntoEditor(drag.selection.fullSetName, slot);
+	} else if (typeof window.loadTrainerSlotIntoEditor === "function") {
+		window.loadTrainerSlotIntoEditor(drag.selection.trainerId, drag.selection.trainerIndex, slot);
+	}
+	if (typeof window.performCalculations === "function") window.performCalculations();
+}
+
+function installDoublesSlotDragControls() {
+	$(document).on("dragstart", "#player-team .player-team-pokemon, #trainer-team .trainer-pokemon, .doubles-slot-card", function (event) {
+		clearBoxPokemonDragState();
+		if (!startDoublesSlotDrag(event)) event.preventDefault();
+	});
+	$(document).on("dragenter dragover", ".doubles-slot-card", function (event) {
+		var allowed = canDropDoublesSlot(this);
+		$(".doubles-slot-drop-target").removeClass("doubles-slot-drop-target");
+		$(this).toggleClass("doubles-slot-drop-target", allowed);
+		var transfer = (event.originalEvent || event).dataTransfer;
+		if (transfer) transfer.dropEffect = allowed ? "move" : "none";
+		if (allowed) event.preventDefault();
+	});
+	$(document).on("dragleave", ".doubles-slot-card", function (event) {
+		if (!$.contains(this, event.relatedTarget)) $(this).removeClass("doubles-slot-drop-target");
+	});
+	$(document).on("drop", ".doubles-slot-card", dropDoublesSlotPokemon);
+	$(document).on("dragend drop", function () {
+		clearDoublesSlotDragState();
+		clearBoxPokemonDragState();
+	});
 }
 
 function ensureDoublesSlotMenu() {
@@ -1206,6 +1352,48 @@ function hideDoublesSlotMenu() {
 	doublesSlotMenuContext = null;
 }
 
+function positionDoublesSlotMenu(menu, event) {
+	var scale = Number(window.getComputedStyle(document.body).zoom) || 1;
+	var viewport = window.visualViewport;
+	var viewportWidth = document.documentElement.clientWidth || window.innerWidth;
+	var viewportHeight = document.documentElement.clientHeight || window.innerHeight;
+	var margin = 8 * scale;
+	var gap = 4 * scale;
+	var leftEdge = (viewport ? viewport.offsetLeft : 0) + margin;
+	var topEdge = (viewport ? viewport.offsetTop : 0) + margin;
+	var rightEdge = leftEdge + Math.min(viewportWidth, viewport ? viewport.width : viewportWidth) - 2 * margin;
+	var bottomEdge = topEdge + Math.min(viewportHeight, viewport ? viewport.height : viewportHeight) - 2 * margin;
+	var x = typeof event.clientX === "number" ? event.clientX : event.pageX - window.scrollX;
+	var y = typeof event.clientY === "number" ? event.clientY : event.pageY - window.scrollY;
+	// Measure at the viewport origin before showing it, without extending the page.
+	menu.css({left: 0, top: 0, visibility: "hidden", gridTemplateRows: "", gridAutoFlow: ""}).removeAttr("hidden");
+	var rect = menu[0].getBoundingClientRect();
+	if (rect.height > bottomEdge - topEdge) {
+		// A short window gets additional columns instead of a scrolling menu.
+		var rowHeight = 0;
+		menu.children("button:not([hidden])").each(function () {
+			rowHeight = Math.max(rowHeight, this.getBoundingClientRect().height);
+		});
+		var style = window.getComputedStyle(menu[0]);
+		var rowGap = (parseFloat(style.rowGap) || parseFloat(style.gap) || 0) * scale;
+		var frameHeight = (parseFloat(style.paddingTop) + parseFloat(style.paddingBottom) +
+			parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth)) * scale;
+		var rows = Math.max(1, Math.floor((bottomEdge - topEdge - frameHeight + rowGap) / (rowHeight + rowGap)));
+		menu.css({gridTemplateRows: "repeat(" + rows + ", max-content)", gridAutoFlow: "column"});
+		rect = menu[0].getBoundingClientRect();
+	}
+	var left = x + gap;
+	var top = y + gap;
+	if (left + rect.width > rightEdge) left = x - rect.width - gap;
+	if (top + rect.height > bottomEdge) top = y - rect.height - gap;
+	// Client coordinates and measured bounds include CSS zoom; fixed offsets do not.
+	menu.css({
+		left: Math.max(leftEdge, Math.min(left, rightEdge - rect.width)) / scale + "px",
+		top: Math.max(topEdge, Math.min(top, bottomEdge - rect.height)) / scale + "px",
+		visibility: "visible"
+	});
+}
+
 function showDoublesSlotMenu(event, assign, options) {
 	options = options || {};
 	if (!isDoublesFormatSelected() && !options.allowSingles) return false;
@@ -1222,9 +1410,7 @@ function showDoublesSlotMenu(event, assign, options) {
 		var action = $(this).attr("data-action");
 		$(this).prop("hidden", typeof doublesSlotMenuContext.actions[action] !== "function");
 	});
-	menu
-		.css({left: nativeEvent.pageX + "px", top: nativeEvent.pageY + "px"})
-		.removeAttr("hidden");
+	positionDoublesSlotMenu(menu, nativeEvent);
 	return false;
 }
 
@@ -1507,8 +1693,9 @@ function getDefaultSetOptionForSelector(element) {
 }
 
 function renderPlayerTeamPokemon(fullSetName, pokemonName) {
-	var button = $("<button type='button' class='player-team-pokemon'></button>");
+	var button = $("<button type='button' class='player-team-pokemon' draggable='true'></button>");
 	button.append(createPokemonSprite(pokemonName, "trainer-pokemon-sprite"));
+	button.find("img").prop("draggable", false);
 	button.attr("data-id", fullSetName);
 	setTeamBoxPokemonLabels(button, fullSetName);
 	button.click(function () {
@@ -1537,6 +1724,7 @@ function refreshPlayerTeamMirror() {
 	$("#team-poke-list .box-pokemon").each(function () {
 		team.append(renderPlayerTeamPokemon($(this).attr("data-id"), $(this).attr("data-pokemon")));
 	});
+	updateSelectedPokemonHighlights();
 }
 
 function observePlayerTeamMirror() {
@@ -2211,8 +2399,12 @@ function getTeamBoxDropZone(target) {
 }
 
 function allowDrop(ev) {
-	ev.preventDefault();
 	var event = ev.originalEvent || ev;
+	if (!boxPokemonDragged) {
+		if (event.dataTransfer) event.dataTransfer.dropEffect = "none";
+		return;
+	}
+	ev.preventDefault();
 	if (event.dataTransfer) event.dataTransfer.dropEffect = "move";
 	updateDropTargetCue(ev.target);
 }
@@ -2226,6 +2418,7 @@ function dragstart_handler(ev) {
 		event.dataTransfer.effectAllowed = "move";
 		event.dataTransfer.setData("text/plain", $(boxPokemonDragged).attr("data-id"));
 	}
+	startDoublesSlotDrag(ev);
 }
 
 function clearDropTargetCue() {
@@ -2234,6 +2427,7 @@ function clearDropTargetCue() {
 
 function clearBoxPokemonDragState() {
 	clearDropTargetCue();
+	$(".dropzone.over").removeClass("over");
 	boxPokemonDragged = null;
 	boxPokemonDragOrigin = null;
 	boxPokemonDragNextSibling = null;
@@ -2299,6 +2493,7 @@ function drop(ev) {
 }
 
 function handleDragEnter(ev) {
+	if (!boxPokemonDragged) return;
 	var dropZone = $(ev.target).closest(".dropzone");
 	dropZone.addClass("over");
 	dropZone.removeAttr("data-placeholder");
@@ -2688,6 +2883,7 @@ function installTeamBoxControls() {
 	if (!teamBox.length || teamBox.data("installed")) return;
 	teamBox.data("installed", true);
 	installDoublesSlotSummaries();
+	installDoublesSlotDragControls();
 	$(document).on("click", ".box-pokemon", function () {
 		if (isDoublesFormatSelected()) return;
 		selectBoxPokemon($(this).attr("data-id"));

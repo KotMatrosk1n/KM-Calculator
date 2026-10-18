@@ -113,10 +113,11 @@ body.km-app .km-calculator-header-icon { width: 28px; height: 28px; }
 body.km-app .km-calculator-header-title { font-size: 16px; font-weight: 650; }
 .km-active-profile { color: var(--km-muted); font-size: 12px; border-left: 1px solid var(--km-line); padding-left: 12px; }
 body.km-app .km-settings-button, body.km-app .km-rom-hack-change { margin: 0; position: static; }
+body.km-app .km-settings-button { min-height: 30px; }
 .km-app-tabs { display: flex; gap: 20px; padding: 0 16px; background: var(--km-panel); border-bottom: 1px solid var(--km-line); }
 body.km-app button.km-app-tab { border: 0; border-bottom: 2px solid transparent; border-radius: 0; padding: 8px 4px; background: transparent; color: var(--km-muted); font-size: 13px; }
 body.km-app button.km-app-tab[aria-selected="true"] { border-bottom-color: var(--km-accent); color: var(--km-accent); }
-body.km-app .wrapper, .km-reference-panel, .km-team-panel { width: 100%; max-width: none; margin: 0; padding: 10px 16px 16px; }
+body.km-app .wrapper, .km-reference-panel { width: 100%; max-width: none; margin: 0; padding: 10px 16px 16px; }
 .km-page-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
 .km-page-heading h1 { margin: 0; font-size: 20px; line-height: 1.2; font-weight: 650; }
 .km-page-heading p { margin: 3px 0 0; }
@@ -148,13 +149,18 @@ body.km-app .genSelection, body.km-app .notationSelection, body.km-app .modeSele
 body.km-app .genSelection { display: flex; flex-wrap: wrap; }
 body.km-app .genSelection .btn { width: auto; min-width: 36px; margin: 0; }
 .km-calculator-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(330px, 29%); gap: 12px; align-items: start; }
+.km-calculator-heading { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(330px, 29%); gap: 12px; }
+.km-calculator-heading .km-heading-actions { justify-content: flex-end; flex-wrap: wrap; }
+.km-trainer-navigation { min-width: 0; }
+.km-trainer-navigation:empty { visibility: hidden; }
 .km-battle-column { min-width: 0; }
 body.km-app .combat-workspace { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; gap: 12px; }
-body.km-app .combat-workspace > .panel { min-width: 0; float: none; overflow: visible; }
-body.km-app .combat-workspace fieldset { position: relative; width: 100%; min-width: 0; height: 100%; margin: 0; padding: 20px 10px 10px; border: 1px solid var(--km-line); border-radius: 8px; background: var(--km-panel); color: var(--km-text); }
+body.km-app .combat-workspace > .panel { position: relative; min-width: 0; float: none; overflow: visible; border: 1px solid var(--km-line); border-radius: 8px; padding: 12px; background: var(--km-panel); }
+body.km-app .combat-workspace fieldset { position: relative; float: none; width: 100%; min-width: 0; height: 100%; margin: 0; padding: 0; border: 0; background: transparent; color: var(--km-text); }
 body.km-app fieldset > legend { font-size: 14px; font-weight: 650; color: var(--km-accent); width: auto; text-align: left; margin: 0; padding: 0 6px; }
+body.km-app .combat-workspace fieldset > legend { padding: 0; margin: 0 0 10px; line-height: 24px; }
 body.km-app #battle-script-open { display: none !important; }
-body.km-app .km-editor-actions { display: flex; align-items: center; gap: 5px; position: absolute; top: -15px; right: 8px; }
+body.km-app .km-editor-actions { display: flex; align-items: center; gap: 5px; position: absolute; top: 12px; right: 12px; }
 body.km-app .km-editor-actions button { height: 24px; line-height: 16px; padding: 3px 6px; font-size: 11px; background: var(--km-panel); }
 body.km-app .player-notes-controls { display: flex; gap: 5px; margin: 0; width: auto; }
 body.km-app .km-editor-actions button { white-space: nowrap; flex-shrink: 0; }
@@ -165,10 +171,21 @@ body.km-app .poke-info #player-team, body.km-app #trainer-team { min-height: 0; 
 body.km-app #player-team .player-team-pokemon, body.km-app #trainer-team .trainer-pokemon { height: 44px; min-height: 0; width: 50px; flex: 0 1 50px; min-width: 0; padding: 0; }
 body.km-app .trainer-pokemon-sprite, body.km-app .trainer-pokemon-sprite.pokemon-sprite-animated { max-height: 42px; max-width: 46px; height: 42px; width: 46px; object-fit: contain; }
 body.km-app .trainer-selector-row { display: flex; width: 100%; gap: 6px; margin: 0; }
-body.km-app .trainer-selector-row > .select2-container { flex: 1; min-width: 0; width: auto !important; }
+body.km-app .trainer-selector-row > .select2-container { flex: 1; min-width: 0; max-width: none; width: auto !important; }
 body.km-app .trainer-selector-row button { flex: 0 0 auto; }
+body.km-app .trainer-selector-container.select2-dropdown-open { z-index: 10000; }
+body.km-app .trainer-selector-container > .select2-search { display: none; position: absolute; inset: 1px 22px 1px 1px; width: auto; min-height: 0; padding: 0; }
+body.km-app .trainer-selector-container.select2-dropdown-open > .select2-search { display: block; }
+body.km-app .trainer-selector-container.select2-dropdown-open .select2-chosen { visibility: hidden; }
+body.km-app .trainer-selector-container .select2-search input.select2-input { width: 100%; min-width: 0; min-height: 0; height: 100%; margin: 0; padding: 0 7px; border: 0; border-radius: 4px; font: inherit; font-size: 12px; outline: none; box-shadow: none; background: transparent !important; }
+body.km-app .km-trainer-dropdown { margin: 0; border: 1px solid var(--km-control-line); border-radius: 6px; }
+body.km-app .km-trainer-dropdown .select2-results { max-height: none; overflow: visible; margin: 0; padding: 4px; }
+body.km-app .km-trainer-dropdown .select2-result-label { white-space: normal; overflow-wrap: anywhere; padding: 5px 8px; font-size: 12px; line-height: 18px; }
+body.km-app .km-trainer-dropdown .select2-result-with-children > .select2-result-label { padding-top: 7px; color: var(--km-muted); font-size: 11px; }
+body.km-app .km-trainer-pages { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 4px; border-top: 1px solid var(--km-line); font-size: 11px; color: var(--km-muted); }
+body.km-app .km-trainer-pages button { min-width: 28px; height: 26px; padding: 3px 6px; }
 body.km-app .trainer-data-attribution { display: none; }
-body.km-app #p1 > .select2-container { display: block !important; margin-bottom: 6px; width: 100% !important; }
+body.km-app #p1 > .select2-container { margin-bottom: 6px; width: 100% !important; }
 body.km-app .poke-info span { width: auto; }
 body.km-app .poke-info label { color: var(--km-muted); font-size: 11px; }
 body.km-app .poke-info .btn { color: var(--km-text); }
@@ -207,23 +224,23 @@ body.km-app .poke-info .doubles-slot-card-name, body.km-app .poke-info .doubles-
 body.km-app .doubles-slot-card.active-doubles-slot { border-color: var(--km-accent); background: var(--km-selection); }
 .km-results-column { border: 1px solid var(--km-line); border-radius: 8px; padding: 12px; background: var(--km-panel); min-width: 0; }
 .km-results-heading { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 10px; }
-.km-results-heading h2 { font-size: 16px; margin: 0; }
+.km-results-heading h2 { font-size: 16px; line-height: 24px; margin: 0; }
 .km-result-slots { display: none; gap: 4px; }
 body.km-app.doubles-format-selected .km-result-slots { display: flex; }
-.km-result-side { color: var(--km-accent); margin: 0; font-size: 12px; }
+.km-result-side { color: var(--km-accent); margin: 0; font-size: 12px; font-weight: 700; flex: 1; min-width: 0; overflow-wrap: anywhere; }
 body.km-app .km-results-column .move-result-group { display: grid; gap: 10px; width: 100%; min-width: 0; margin: 0; }
 body.km-app .km-results-column .move-result-column { display: block; width: 100%; float: none; }
 body.km-app .km-results-column .move-result-subgroup > div:not(.result-move-header) { display: grid; grid-template-columns: minmax(100px, 1fr) minmax(0, 1.1fr); gap: 8px; align-items: center; margin: 3px 0; font-size: 12px; }
 body.km-app .km-results-column .move-result-group .btn { width: 100%; height: auto; min-height: 28px; margin: 0; padding: 4px 7px; text-align: left; white-space: normal; }
 body.km-app .km-results-column .result-move-header { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--km-muted); margin: 0 0 5px; gap: 5px; }
-body.km-app .km-results-column .result-move-header > span { font-size: 0; }
 body.km-app .km-results-column .doubles-target-control { margin: 0; font-size: 11px; }
 body.km-app .km-results-column .doubles-target-control select { height: 26px; }
 body.km-app .km-results-column:not(.km-results-expanded):not(.km-show-slot-2) .move-result-subgroup.doubles-result-only, body.km-app .km-results-column:not(.km-show-slot-2) .main-result-group.doubles-result-only { display: none !important; }
 body.km-app .km-results-column:not(.km-results-expanded).km-show-slot-2 .move-result-subgroup:not(.doubles-result-only), body.km-app .km-results-column.km-show-slot-2 .main-result-group:not(.doubles-result-only) { display: none !important; }
-body.km-app .km-results-column .main-result-group { border-top: 1px solid var(--km-line); padding-top: 10px; margin: 12px 0 0; overflow-wrap: anywhere; }
+body.km-app .km-results-column .main-result-group { border-top: 0; border-bottom: 1px solid var(--km-line); padding: 0 0 10px; margin: 0 0 12px; overflow-wrap: anywhere; }
 body.km-app .km-results-column .big-text { font-size: 12px; font-weight: 600; line-height: 1.5; }
 body.km-app .km-results-column .small-text { font-size: 11px; color: var(--km-muted); }
+body.km-app .km-results-column .km-damage-values { margin-top: 6px; }
 body.km-app .km-results-column .small-text summary { cursor: pointer; padding-top: 6px; }
 body.km-app .km-results-column .move-result-no-effect { color: var(--km-muted); }
 body.km-app .field-format-toggle { display: inline-flex; width: auto; margin: 0; }
@@ -234,7 +251,6 @@ body.km-app .km-dialog { color: var(--km-text); background: var(--km-panel); bor
 .km-dialog-heading h2 { margin: 0; font-size: 18px; }
 body.km-app .km-dialog .top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
 body.km-app .km-dialog .top > div { margin: 0; }
-body.km-app .km-dialog .top .pokemon-type-row { flex-basis: 100%; }
 body.km-app .km-dialog .top label { width: auto; margin-right: 6px; }
 body.km-app .km-dialog table { width: 100%; border-collapse: collapse; }
 body.km-app .km-dialog th, body.km-app .km-dialog td { padding: 4px; text-align: center; font-size: 12px; }
@@ -254,7 +270,6 @@ body.km-app .km-field-choice .btn { display: flex; align-items: center; justify-
 body.km-app .km-field-side .km-field-choice > .btn { width: 100%; font-size: 11px; padding: 4px; }
 .km-spikes { display: flex; align-items: center; gap: 4px; grid-column: 1 / -1; }
 .km-spikes > span { color: var(--km-muted); font-size: 12px; margin-right: 8px; }
-.km-team-help { margin: 0 0 12px; }
 body.km-app .lower-workspace { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 12px; padding: 0; align-items: start; }
 body.km-app .lower-workspace > div { min-width: 0; }
 body.km-app .lower-workspace fieldset { min-width: 0; width: 100%; margin: 0; padding: 10px; background: var(--km-panel); color: var(--km-text); border: 1px solid var(--km-line); border-radius: 8px; }
@@ -263,8 +278,6 @@ body.km-app .team-box-column { display: contents; }
 body.km-app .team-box-section { background: var(--km-inset); border: 1px solid var(--km-line); border-radius: 5px; margin: 0; padding: 0; }
 body.km-app .team-box-heading { background: var(--km-hover); color: var(--km-text); margin: 0; padding: 6px; font-size: 12px; }
 body.km-app .box-poke { min-height: 240px; max-height: none; overflow: visible; padding: 6px; }
-.km-box-tools { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-body.km-app .km-box-tools .team-box-section { border: 0; }
 body.km-app .team-box-actions { display: flex; flex-wrap: wrap; gap: 5px; }
 body.km-app .calculator-import-column { width: 100%; }
 body.km-app .calculator-import-column textarea { width: 100%; height: 240px; }
@@ -275,15 +288,27 @@ body.km-app button.km-rom-hack-tile { height: auto; padding: 16px; font-size: 14
 body.km-app .km-rom-hack-tile-name { font-size: 20px; line-height: 1.3; }
 body.km-app .km-rom-hack-tile-badge { font-size: 11px; }
 body.km-app .km-rom-hack-tile-description, body.km-app .km-rom-hack-tile-attribution { font-size: 13px; line-height: 1.5; }
-body.km-app .km-inline-stats { margin: 8px 0; border-top: 1px solid var(--km-line); border-bottom: 1px solid var(--km-line); padding: 6px 0; }
-.km-inline-stats > summary { cursor: pointer; font-weight: 600; font-size: 12px; }
-body.km-app .km-stats-content .top { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; }
-body.km-app .km-stats-content .top .pokemon-type-row { width: 100%; }
+body.km-app .km-inline-stats { margin: 6px 0; border-top: 1px solid var(--km-line); border-bottom: 1px solid var(--km-line); padding: 6px 0; }
+.km-inline-stats > h3 { margin: 0; font-weight: 600; font-size: 12px; }
+body.km-app .km-stats-content .top { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; margin: 6px 0 8px; }
+body.km-app .km-stats-content .top .pokemon-type-row { flex: 0 1 auto; }
+body.km-app .km-stats-content .pokemon-type-controls { display: inline-flex; flex: 0 1 auto; }
+body.km-app .km-stats-content .top > div:not(.pokemon-type-row) { margin: 0; white-space: nowrap; }
 body.km-app .km-stats-content .top label { width: auto; margin-right: 4px; }
-body.km-app .km-stats-content table { width: 100%; border-collapse: collapse; }
-body.km-app .km-stats-content th, body.km-app .km-stats-content td { padding: 3px; font-size: 11px; text-align: center; }
-body.km-app .km-stats-content th:first-child { text-align: left; }
-body.km-app .poke-info .km-inline-stats td input, body.km-app .poke-info .km-inline-stats td select { height: 26px; }
+body.km-app .km-stats-content .top select { height: 28px; min-width: 0; max-width: 100%; padding: 3px 6px; font-size: 12px; vertical-align: middle; }
+body.km-app .km-stats-content .pokemon-type-controls select { width: 82px; }
+body.km-app .km-stats-content .gender { width: 100px; }
+body.km-app .km-stats-content .pokemon-forme-control { display: inline-flex; flex: 0 1 240px; min-width: 0; margin-left: 0; }
+body.km-app .km-stats-content .pokemon-forme-control.hide { display: none; }
+body.km-app .km-stats-content .pokemon-forme-control select { flex: 1; width: auto; }
+body.km-app .km-stats-content table { width: 100%; table-layout: fixed; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+body.km-app .km-stats-content th, body.km-app .km-stats-content td { padding: 2px 4px; font-size: 12px; text-align: center; vertical-align: middle; }
+body.km-app .km-stats-content thead th { padding-bottom: 5px; color: var(--km-muted); font-size: 11px; font-weight: 600; }
+body.km-app .km-stats-content th:first-child { width: 76px; padding-left: 0; text-align: left; }
+body.km-app .km-stats-content tbody th label { width: auto; font-size: 12px; font-weight: 600; }
+body.km-app .km-stats-content tbody tr + tr { border-top: 1px solid color-mix(in srgb, var(--km-line) 45%, transparent); }
+body.km-app .poke-info .km-stats-content td input, body.km-app .poke-info .km-stats-content td select { box-sizing: border-box; width: 100%; min-width: 0; max-width: none; height: 26px; margin: 0; padding: 3px 5px; font-size: 12px; text-align: center; }
+body.km-app .km-stats-content td .total, body.km-app .km-stats-content td .totalMod { width: auto; font-weight: 600; }
 body.km-app.doubles-format-selected .km-result-slot-number { display: inline; font-size: 11px; }
 body.km-app .km-results-expanded .km-result-slots { display: none; }
 body.km-app.doubles-format-selected .km-results-expanded .move-result-subgroup { display: block !important; margin-bottom: 8px; }
@@ -296,8 +321,45 @@ body.km-app .box-pokemon-sprite { width: 44px; height: 44px; max-height: 44px; o
 .km-box-name { width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10px; }
 .km-box-pages { display: flex; align-items: center; justify-content: space-between; padding: 4px; font-size: 11px; }
 body.km-app .km-box-pages button { height: 26px; min-width: 28px; padding: 3px; }
-body.km-app .km-box-tools-open { width: 100%; text-align: left; margin: 6px 0 10px; }
-body.km-app .km-box-tools-dialog { width: 1000px; }
+/* The team drawer shares the calculator's live controls without covering the matchup. */
+body.km-app .wrapper.km-has-team-drawer { padding-bottom: calc(var(--km-team-drawer-size, 40px) + 16px); }
+.km-team-drawer { position: fixed; inset: auto 0 0; z-index: 100; height: var(--km-team-drawer-size, 40px); background: var(--km-panel-fill); border-top: 1px solid var(--km-line); box-shadow: 0 -6px 20px var(--km-shadow); }
+.km-team-drawer-bar { display: flex; align-items: center; gap: 12px; height: 39px; padding: 4px 16px; background: var(--km-chrome-fill); }
+body.km-app .km-team-drawer-toggle { display: inline-flex; align-items: center; gap: 14px; flex-shrink: 0; height: 30px; font-weight: 650; color: var(--km-accent); }
+.km-team-drawer-toggle::after { content: ""; width: 7px; height: 7px; border-top: 2px solid currentColor; border-left: 2px solid currentColor; transform: rotate(45deg) translateY(2px); }
+.km-team-drawer-toggle[aria-expanded="true"]::after { transform: rotate(225deg) translateY(2px); }
+.km-team-drawer-hint { font-size: 11px; }
+.km-team-drawer-actions { display: flex; gap: 6px; margin-left: auto; }
+body.km-app .km-team-drawer-actions button { font-size: 11px; white-space: nowrap; }
+body.km-app .km-team-drawer-actions button[aria-expanded="true"] { background: var(--km-selected-fill); border-color: var(--km-highlight); color: var(--km-highlight); }
+.km-team-drawer-content { height: calc(100% - 39px); padding: 8px 12px 12px; }
+body.km-app .km-team-drawer .lower-workspace { height: 100%; min-height: 0; grid-template-columns: minmax(0, 1fr); align-items: stretch; gap: 10px; }
+body.km-app .km-team-drawer .lower-workspace.km-drawer-has-tools { grid-template-columns: minmax(0, 1fr) 380px; }
+.km-team-drawer .team-box-workspace-column { display: flex; min-height: 0; }
+body.km-app .km-team-drawer #team-box { display: flex; flex-direction: column; min-height: 0; padding: 6px; }
+.km-team-drawer #team-box > legend { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); }
+body.km-app .km-team-drawer .team-box-layout { flex: 1; min-height: 0; align-items: stretch; }
+body.km-app .km-team-drawer .team-box-layout .team-box-section { display: flex; flex-direction: column; min-height: 0; min-width: 0; }
+.km-team-drawer .team-box-heading { flex-shrink: 0; }
+body.km-app .km-team-drawer .box-poke { flex: 1; min-height: 0; }
+.km-team-drawer .km-box-pages { flex-shrink: 0; }
+body.km-app .km-team-drawer .km-drawer-tool-panel { min-width: 0; min-height: 0; margin: 0; padding: 8px; background: var(--km-inset); border: 1px solid var(--km-line); border-radius: 6px; }
+body.km-app .km-drawer-tool-panel .team-box-section { border: 0; background: transparent; }
+body.km-app .km-drawer-tool-panel .team-box-heading { padding: 0; margin-bottom: 6px; background: transparent; text-align: left; }
+body.km-app .km-drawer-tool-panel .team-box-section + .team-box-section { margin-top: 10px; }
+body.km-app .km-drawer-tool-panel .team-box-filter-controls, body.km-app .km-drawer-tool-panel .team-box-sort-controls { max-width: none; margin: 0; }
+body.km-app .km-drawer-tool-panel .team-box-filter-controls { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; }
+body.km-app .km-drawer-tool-panel .team-box-actions, body.km-app .km-drawer-tool-panel .color-code-options { justify-content: flex-start; }
+body.km-app .km-drawer-tool-panel .color-code-options { gap: 8px 12px; margin-top: 10px; font-size: 12px; }
+body.km-app .km-drawer-tool-panel .speed-border-range input { height: 20px; padding: 0; }
+body.km-app .km-team-drawer .calculator-import-column { padding: 0; }
+body.km-app .km-team-drawer .lower-import { display: flex; flex-direction: column; height: 100%; min-height: 0; padding: 6px 8px 8px; border: 0; }
+body.km-app .km-team-drawer #import-1_wrapper { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+body.km-app .km-team-drawer .import-team { display: flex; flex-direction: column; flex: 1; min-height: 0; margin: 0; }
+body.km-app .km-team-drawer .import-name-text { flex: 0 0 30px; width: 100%; min-width: 0; }
+body.km-app .km-team-drawer .import-team-text { flex: 1; width: 100%; min-width: 0; height: auto; min-height: 40px; margin: 5px 0; resize: none; }
+body.km-app .km-team-drawer .import-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-self: stretch; flex-shrink: 0; gap: 4px; width: 100%; margin: 0; }
+body.km-app .km-team-drawer .import-actions button { font-size: 11px; line-height: 15px; min-height: 26px; padding: 4px; }
 body.km-app .notes-window .player-notes-text { height: 100%; min-height: 100%; font-family: Consolas, "Courier New", monospace; line-height: 1.35; }
 body.km-app .km-reference-panel { display: flex; flex-direction: column; height: calc(100dvh / var(--km-scale) - 75px); min-height: 0; }
 .km-reference-panel > :not(.km-reference-browser) { flex-shrink: 0; }
@@ -368,6 +430,7 @@ body.km-app .km-settings-update-status[data-kind="available"] { border-left-colo
 @media (min-width: 2400px) and (min-height: 1300px) { body.km-app { --km-scale: 1.25; } }
 @media (min-width: 2880px) and (min-height: 1600px) { body.km-app { --km-scale: 1.5; } }
 @media (min-width: 3600px) and (min-height: 2000px) { body.km-app { --km-scale: 2; } }
-@media (max-width: 1350px) { .km-active-profile { display: none; } .km-calculator-grid { grid-template-columns: minmax(0, 1fr) 330px; gap: 8px; } body.km-app .combat-workspace { gap: 8px; } body.km-app .wrapper { padding: 8px; } }
-@media (max-width: 1100px) { .km-calculator-grid { grid-template-columns: minmax(0, 1fr); } body.km-app .km-results-column .move-result-group { grid-template-columns: 1fr 1fr; } body.km-app .lower-workspace { grid-template-columns: minmax(0, 1fr); } .km-field-global { grid-template-columns: 1fr 1fr; } .km-global-other { grid-column: 1 / -1; } }
-@media (max-width: 700px) { body.km-app > header { height: auto; flex-wrap: wrap; } .km-app-tabs { gap: 6px; flex-wrap: wrap; } .km-page-heading { align-items: start; flex-direction: column; } .km-heading-actions { flex-wrap: wrap; } body.km-app .combat-workspace, body.km-app .km-results-column .move-result-group, .km-field-sides { grid-template-columns: minmax(0, 1fr); } body.km-app .team-box-layout { grid-template-columns: 1fr 1fr; } .km-box-tools { grid-template-columns: 1fr; } }
+@media (max-width: 1350px) { .km-active-profile { display: none; } .km-calculator-grid { grid-template-columns: minmax(0, 1fr) 330px; gap: 8px; } .km-calculator-heading { grid-template-columns: repeat(2, minmax(0, 1fr)) 330px; gap: 8px; } body.km-app .combat-workspace { gap: 8px; } body.km-app .wrapper { padding: 8px; } }
+@media (max-width: 1100px) { .km-calculator-grid { grid-template-columns: minmax(0, 1fr); } .km-calculator-heading { grid-template-columns: repeat(2, minmax(0, 1fr)); } .km-calculator-heading .km-heading-actions { grid-column: 1 / -1; } body.km-app .km-results-column .move-result-group { grid-template-columns: 1fr 1fr; } body.km-app .lower-workspace { grid-template-columns: minmax(0, 1fr); } .km-field-global { grid-template-columns: 1fr 1fr; } .km-global-other { grid-column: 1 / -1; } }
+@media (max-width: 1200px) { .km-team-drawer-hint { display: none; } body.km-app .km-team-drawer .lower-workspace.km-drawer-has-tools { grid-template-columns: minmax(0, 1fr) 320px; } }
+@media (max-width: 700px) { body.km-app > header { height: auto; flex-wrap: wrap; } .km-app-tabs { gap: 6px; flex-wrap: wrap; } .km-page-heading { align-items: start; flex-direction: column; } .km-calculator-heading { grid-template-columns: minmax(0, 1fr); } .km-calculator-heading .km-heading-actions { justify-content: flex-start; } .km-heading-actions { flex-wrap: wrap; } body.km-app .combat-workspace, body.km-app .km-results-column .move-result-group, .km-field-sides { grid-template-columns: minmax(0, 1fr); } body.km-app .team-box-layout { grid-template-columns: 1fr 1fr; } .km-team-drawer { position: sticky; height: auto; } .km-team-drawer-bar { height: auto; flex-wrap: wrap; padding: 6px; } .km-team-drawer-actions { flex-wrap: wrap; margin-left: 0; } .km-team-drawer-content { height: auto; } body.km-app .km-team-drawer .lower-workspace.km-drawer-has-tools { grid-template-columns: 1fr; } body.km-app .km-team-drawer .box-poke { min-height: 84px; } body.km-app .wrapper.km-has-team-drawer { padding-bottom: 8px; } }
