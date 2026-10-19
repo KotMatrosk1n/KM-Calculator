@@ -83,7 +83,7 @@ export function computeFinalStats(
       if (stat === 'spe') {
         pokemon.stats.spe = getFinalSpeed(gen, pokemon, field, side);
       } else {
-        pokemon.stats[stat] = getModifiedStat(pokemon.rawStats[stat]!, pokemon.boosts[stat]!, gen);
+        pokemon.stats[stat] = getModifiedStat(pokemon.rawStats[stat], pokemon.boosts[stat], gen);
       }
     }
   }

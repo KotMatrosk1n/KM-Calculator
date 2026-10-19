@@ -134,7 +134,7 @@ export class Move implements State.Move {
         : 'Status');
 
     const stat = this.category === 'Special' ? 'spa' : 'atk';
-    if (data.self?.boosts && data.self.boosts[stat] && data.self.boosts[stat]! < 0) {
+    if (data.self?.boosts?.[stat] && data.self.boosts[stat]! < 0) {
       this.dropsStats = Math.abs(data.self.boosts[stat]!);
     }
     this.timesUsed = options.timesUsed || 1;

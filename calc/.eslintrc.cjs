@@ -1,0 +1,33 @@
+module.exports = {
+  "root": true,
+  "extends": "@pkmn",
+  "plugins": ["@stylistic/ts"],
+  "overrides": [{"files": ["*.ts", "*.tsx"], "parserOptions": {"tsconfigRootDir": __dirname}}],
+  "rules": {
+    "@typescript-eslint/ban-types": "off",
+    "@typescript-eslint/no-empty-object-type": "error",
+    "@typescript-eslint/no-unsafe-function-type": "error",
+    "@typescript-eslint/no-wrapper-object-types": "error",
+    "@typescript-eslint/no-parameter-properties": "off",
+    "@typescript-eslint/parameter-properties": "error",
+    "@typescript-eslint/no-throw-literal": "off",
+    "@typescript-eslint/only-throw-error": "error",
+    "@typescript-eslint/member-delimiter-style": "off",
+    "@stylistic/ts/member-delimiter-style": "error",
+    "@typescript-eslint/quotes": "off",
+    "@stylistic/ts/quotes": ["error", "single", {"avoidEscape": true}],
+    "@typescript-eslint/semi": "off",
+    "@stylistic/ts/semi": ["error", "always"],
+    "@typescript-eslint/type-annotation-spacing": "off",
+    "@stylistic/ts/type-annotation-spacing": "error",
+    "@typescript-eslint/indent": "off",
+    "@stylistic/ts/indent": ["error", 2, {"flatTernaryExpressions": true}],
+    "@typescript-eslint/no-shadow": "off",
+    "@typescript-eslint/no-unused-vars": "off",
+    "@typescript-eslint/prefer-for-of": "off",
+    "@typescript-eslint/prefer-optional-chain": ["error", {"requireNullish": true}],
+    "@typescript-eslint/restrict-template-expressions": "off",
+    "@typescript-eslint/consistent-type-imports": "error",
+    "prefer-object-spread": "off"
+  }
+};

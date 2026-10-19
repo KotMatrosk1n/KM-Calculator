@@ -69,7 +69,7 @@ export class Pokemon implements State.Pokemon {
     this.boostedStat = options.boostedStat;
     this.teraType = options.teraType;
     this.item = options.item;
-    this.nature = options.nature || ('Serious' as I.NatureName);
+    this.nature = options.nature || ('Serious');
     this.ivs = Pokemon.withDefault(gen, options.ivs, 31);
     this.evs = Pokemon.withDefault(gen, options.evs, gen.num >= 3 ? 0 : 252);
     this.boosts = Pokemon.withDefault(gen, options.boosts, 0, false);
@@ -181,8 +181,8 @@ export class Pokemon implements State.Pokemon {
       gen,
       stat,
       this.species.baseStats[stat],
-      this.ivs[stat]!,
-      this.evs[stat]!,
+      this.ivs[stat],
+      this.evs[stat],
       this.level,
       this.nature
     );

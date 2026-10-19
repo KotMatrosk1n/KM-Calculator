@@ -447,7 +447,7 @@ export class Types implements I.Types {
 
   *[Symbol.iterator]() {
     for (const id in TYPES_BY_ID[this.gen]) {
-      yield this.get(id as I.ID)!;
+      yield this.get(id as I.ID);
     }
   }
 }

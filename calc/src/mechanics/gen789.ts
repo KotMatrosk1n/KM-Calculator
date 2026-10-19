@@ -246,18 +246,18 @@ export function calculateSMSSSV(
       : 'Normal';
     desc.weather = field.weather;
     desc.moveType = type;
-  } else if (move.named('Judgment') && attacker.item && attacker.item.includes('Plate')) {
+  } else if (move.named('Judgment') && attacker.item?.includes('Plate')) {
     type = getItemBoostType(attacker.item)!;
   } else if (move.originalName === 'Techno Blast' &&
-    attacker.item && attacker.item.includes('Drive')) {
+    attacker.item?.includes('Drive')) {
     type = getTechnoBlast(attacker.item)!;
     desc.moveType = type;
   } else if (move.originalName === 'Multi-Attack' &&
-    attacker.item && attacker.item.includes('Memory')) {
+    attacker.item?.includes('Memory')) {
     type = getMultiAttack(attacker.item)!;
     desc.moveType = type;
   } else if (move.named('Natural Gift') && attacker.item?.endsWith('Berry')) {
-    const gift = getNaturalGift(gen, attacker.item)!;
+    const gift = getNaturalGift(gen, attacker.item);
     type = gift.t;
     desc.moveType = type;
     desc.attackerItem = attacker.item;
@@ -526,7 +526,7 @@ export function calculateSMSSSV(
 
   if (move.named('Guardian of Alola')) {
     let zLostHP = Math.floor((defender.curHP() * 3) / 4);
-    if (field.defenderSide.isProtected && attacker.item && attacker.item.includes(' Z')) {
+    if (field.defenderSide.isProtected && attacker.item?.includes(' Z')) {
       zLostHP = Math.ceil(zLostHP / 4 - 0.5);
     }
     result.damage = zLostHP;
@@ -544,10 +544,10 @@ export function calculateSMSSSV(
     for (stat in defender.boosts) {
       if (defender.boosts[stat] > 0) {
         attacker.boosts[stat] +=
-          attacker.hasAbility('Contrary') ? -defender.boosts[stat]! : defender.boosts[stat]!;
+          attacker.hasAbility('Contrary') ? -defender.boosts[stat] : defender.boosts[stat];
         if (attacker.boosts[stat] > 6) attacker.boosts[stat] = 6;
         if (attacker.boosts[stat] < -6) attacker.boosts[stat] = -6;
-        attacker.stats[stat] = getModifiedStat(attacker.rawStats[stat]!, attacker.boosts[stat]!);
+        attacker.stats[stat] = getModifiedStat(attacker.rawStats[stat], attacker.boosts[stat]);
         defender.boosts[stat] = 0;
         defender.stats[stat] = defender.rawStats[stat];
       }
@@ -644,7 +644,7 @@ export function calculateSMSSSV(
 
   let protect = false;
   if (field.defenderSide.isProtected &&
-    (attacker.isDynamaxed || (move.isZ && attacker.item && attacker.item.includes(' Z')))) {
+    (attacker.isDynamaxed || (move.isZ && attacker.item?.includes(' Z')))) {
     protect = true;
     desc.isProtected = true;
   }
@@ -899,7 +899,7 @@ export function calculateBasePowerSMSSSV(
     break;
   case 'Natural Gift':
     if (attacker.item?.endsWith('Berry')) {
-      const gift = getNaturalGift(gen, attacker.item)!;
+      const gift = getNaturalGift(gen, attacker.item);
       basePower = gift.p;
       desc.attackerItem = attacker.item;
       desc.moveBP = move.bp;
@@ -1327,7 +1327,7 @@ export function calculateAttackSMSSSV(
     attack = attackSource.rawStats[attackStat];
     desc.defenderAbility = defender.ability;
   } else {
-    attack = getModifiedStat(attackSource.rawStats[attackStat]!, boosts);
+    attack = getModifiedStat(attackSource.rawStats[attackStat], boosts);
     desc.attackBoost = boosts;
   }
 
@@ -1525,7 +1525,7 @@ export function calculateDefenseSMSSSV(
     defense = defender.rawStats[defenseStat];
     desc.attackerAbility = attacker.ability;
   } else {
-    defense = getModifiedStat(defender.rawStats[defenseStat]!, boosts);
+    defense = getModifiedStat(defender.rawStats[defenseStat], boosts);
     desc.defenseBoost = boosts;
   }
 

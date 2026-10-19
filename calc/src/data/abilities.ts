@@ -354,7 +354,7 @@ export class Abilities implements I.Abilities {
 
   *[Symbol.iterator]() {
     for (const id in ABILITIES_BY_ID[this.gen]) {
-      yield this.get(id as I.ID)!;
+      yield this.get(id as I.ID);
     }
   }
 }

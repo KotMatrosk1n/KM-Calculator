@@ -36,7 +36,7 @@ export class Natures implements I.Natures {
 
   *[Symbol.iterator]() {
     for (const id in NATURES_BY_ID) {
-      yield this.get(id as I.ID)!;
+      yield this.get(id as I.ID);
     }
   }
 }
@@ -60,6 +60,6 @@ class Nature implements I.Nature {
 const NATURES_BY_ID: {[id: string]: Nature} = {};
 
 for (const nature in NATURES) {
-  const n = new Nature(nature, NATURES[nature] as [I.StatID, I.StatID]);
+  const n = new Nature(nature, NATURES[nature]);
   NATURES_BY_ID[n.id] = n;
 }

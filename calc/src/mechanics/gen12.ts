@@ -128,14 +128,14 @@ export function calculateRBYGSC(
   const isPhysical = move.category === 'Physical';
   const attackStat = isPhysical ? 'atk' : 'spa';
   const defenseStat = isPhysical ? 'def' : 'spd';
-  let at = attacker.stats[attackStat]!;
-  let df = defender.stats[defenseStat]!;
+  let at = attacker.stats[attackStat];
+  let df = defender.stats[defenseStat];
 
   // Whether we ignore Reflect, Light Screen, stat stages, and burns if attack is a crit differs
   // by gen - in gen 2 we also need to check that the attacker does not have stat stage advantage
   const ignoreMods = move.isCrit &&
     (gen.num === 1 ||
-    (gen.num === 2 && attacker.boosts[attackStat]! <= defender.boosts[defenseStat]!));
+    (gen.num === 2 && attacker.boosts[attackStat] <= defender.boosts[defenseStat]));
 
   let lv = attacker.level;
   if (ignoreMods) {
