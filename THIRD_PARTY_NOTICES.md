@@ -23,15 +23,17 @@ The resolved versions and license evidence come from the checked-in manifests an
 
 | Tree | Manifest role | Direct project | Requested | Resolved | Declared license | Local license evidence |
 | --- | --- | --- | --- | --- | --- | --- |
-| calc | development dependency | [`@pkmn/eslint-config`](https://github.com/pkmn/eslint-config) | `^2.15.0` | `2.15.0` | `MIT` | package metadata; `LICENSE` |
-| calc | development dependency | [`@typescript-eslint/eslint-plugin`](https://github.com/typescript-eslint/typescript-eslint) | `^5.54.0` | `5.54.0` | `MIT` | package metadata; `LICENSE` |
-| calc | development dependency | [`@typescript-eslint/parser`](https://github.com/typescript-eslint/typescript-eslint) | `^5.54.0` | `5.54.0` | `BSD-2-Clause` | package metadata; `LICENSE` |
-| calc | development dependency | [`eslint`](https://github.com/eslint/eslint) | `^8.35.0` | `8.35.0` | `MIT` | package metadata; `LICENSE` |
+| calc | development dependency | [`@pkmn/eslint-config`](https://github.com/pkmn/eslint-config) | `^2.15.0` | `2.16.0` | `MIT` | package metadata; `LICENSE` |
+| calc | development dependency | [`@stylistic/eslint-plugin-ts`](https://github.com/eslint-stylistic/eslint-stylistic) | `^2.13.0` | `2.13.0` | `MIT` | package metadata; `LICENSE` |
+| calc | development dependency | [`@typescript-eslint/eslint-plugin`](https://github.com/typescript-eslint/typescript-eslint) | `^8.72.0` | `8.72.0` | `MIT` | package metadata; `LICENSE` |
+| calc | development dependency | [`@typescript-eslint/parser`](https://github.com/typescript-eslint/typescript-eslint) | `^8.72.0` | `8.72.0` | `MIT` | package metadata; `LICENSE` |
+| calc | development dependency | [`eslint`](https://github.com/eslint/eslint) | `^8.57.1` | `8.57.1` | `MIT` | package metadata; `LICENSE` |
+| calc | development dependency | [`eslint-plugin-jest`](https://github.com/jest-community/eslint-plugin-jest) | `^29.17.0` | `29.17.0` | `MIT` | package metadata; `LICENSE` |
 | calc | development dependency | [`typescript`](https://github.com/Microsoft/TypeScript) | `^4.9.5` | `4.9.5` | `Apache-2.0` | package metadata; `LICENSE.txt` |
 | import | development dependency | [`typescript`](https://github.com/microsoft/TypeScript) | `^5.8.3` | `5.8.3` | `Apache-2.0` | package metadata; `LICENSE.txt` |
 | root | dependency | [`builder-util-runtime`](https://github.com/electron-userland/electron-builder) | `9.7.0` | `9.7.0` | `MIT` | package metadata; `LICENSE` |
 | root | dependency | [`electron-updater`](https://github.com/electron-userland/electron-builder) | `^6.8.9` | `6.8.9` | `MIT` | package metadata; `LICENSE` |
-| root | development dependency | [`electron`](https://github.com/electron/electron) | `^42.5.1` | `42.8.1` | `MIT` | package metadata; `LICENSE` |
+| root | development dependency | [`electron`](https://github.com/electron/electron) | `^42.11.15` | `42.11.15` | `MIT` | package metadata; `LICENSE` |
 | root | development dependency | [`electron-builder`](https://github.com/electron-userland/electron-builder) | `^26.15.0` | `26.15.3` | `MIT` | package metadata; `LICENSE` |
 | root | development dependency | [`electron-winstaller`](https://github.com/electron/windows-installer) | `5.4.0` | `5.4.0` | `MIT` | package metadata; `LICENSE` |
 | root | development dependency | [`eslint`](https://github.com/eslint/eslint) | `^8.57.0` | `8.57.0` | `MIT` | package metadata; `LICENSE` |
@@ -39,21 +41,21 @@ The resolved versions and license evidence come from the checked-in manifests an
 
 ## Locked NPM License Categories
 
-The three npm lockfiles contain 486 dependency locations and 393 distinct package/version identities. The summary and complete inventory below include every resolved lockfile identity, including optional packages retained for other operating systems. Consequently, this is intentionally broader than the set installed on any one machine or copied into any one binary.
+The three npm lockfiles contain 483 dependency locations and 373 distinct package/version identities. The summary and complete inventory below include every resolved lockfile identity, including optional packages retained for other operating systems. Consequently, this is intentionally broader than the set installed on any one machine or copied into any one binary.
 
-License strings are reproduced from installed package metadata when available and from lockfile metadata otherwise. The sole lock-only override is documented in the generator for the macOS-only `fsevents@2.3.2` entry in the older calculator lockfile. Compound expressions are preserved instead of being simplified to one license.
+License strings are reproduced from installed package metadata when available and from lockfile metadata otherwise. Compound expressions are preserved instead of being simplified to one license.
 
 | Package-declared license or expression | Distinct package/version identities |
 | --- | ---: |
-| `(MIT OR CC0-1.0)` | 2 |
+| `(MIT OR CC0-1.0)` | 1 |
 | `(WTFPL OR MIT)` | 1 |
-| `0BSD` | 2 |
+| `0BSD` | 1 |
 | `Apache-2.0` | 15 |
-| `BSD-2-Clause` | 18 |
-| `BSD-3-Clause` | 12 |
+| `BSD-2-Clause` | 13 |
+| `BSD-3-Clause` | 11 |
 | `BlueOak-1.0.0` | 8 |
-| `ISC` | 41 |
-| `MIT` | 291 |
+| `ISC` | 42 |
+| `MIT` | 278 |
 | `Python-2.0` | 1 |
 | `WTFPL` | 1 |
 | `WTFPL OR ISC` | 1 |
@@ -62,31 +64,29 @@ License strings are reproduced from installed package metadata when available an
 
 Tags use `root`, `calc`, or `import` for the dependency tree; `prod` or `dev` reproduces the lockfile classification; and `optional` marks an optional lockfile entry.
 
-### (MIT OR CC0-1.0) (2)
+### (MIT OR CC0-1.0) (1)
 
-- `type-fest@0.13.1` — root:dev:optional
 - `type-fest@0.20.2` — calc:dev, root:dev
 
 ### (WTFPL OR MIT) (1)
 
 - `utf8-byte-length@1.0.5` — root:dev
 
-### 0BSD (2)
+### 0BSD (1)
 
-- `tslib@1.14.1` — calc:dev
 - `tslib@2.8.1` — root:dev
 
 ### Apache-2.0 (15)
 
 - `@humanwhocodes/config-array@0.11.14` — root:dev
-- `@humanwhocodes/config-array@0.11.8` — calc:dev
+- `@humanwhocodes/config-array@0.13.0` — calc:dev
 - `@humanwhocodes/module-importer@1.0.1` — calc:dev, root:dev
 - `@malept/cross-spawn-promise@2.0.0` — root:dev
 - `doctrine@3.0.0` — calc:dev, root:dev
 - `ejs@3.1.10` — root:dev
-- `eslint-visitor-keys@2.1.0` — calc:dev
-- `eslint-visitor-keys@3.3.0` — calc:dev
-- `eslint-visitor-keys@3.4.3` — root:dev
+- `eslint-visitor-keys@3.4.3` — calc:dev, root:dev
+- `eslint-visitor-keys@4.2.1` — calc:dev
+- `eslint-visitor-keys@5.0.1` — calc:dev
 - `exponential-backoff@3.1.3` — root:dev
 - `filelist@1.0.6` — root:dev
 - `jake@10.9.4` — root:dev
@@ -94,73 +94,68 @@ Tags use `root`, `calc`, or `import` for the dependency tree; `prod` or `dev` re
 - `typescript@4.9.5` — calc:dev
 - `typescript@5.8.3` — import:dev
 
-### BSD-2-Clause (18)
+### BSD-2-Clause (13)
 
 - `@electron-internal/extract-zip@1.0.5` — root:dev
 - `@electron/osx-sign@1.3.3` — root:dev
 - `@electron/windows-sign@1.2.2` — root:dev:optional
-- `@typescript-eslint/parser@5.54.0` — calc:dev
-- `@typescript-eslint/typescript-estree@5.54.0` — calc:dev
 - `dotenv@16.6.1` — root:dev
 - `dotenv-expand@11.0.7` — root:dev
-- `eslint-scope@5.1.1` — calc:dev
-- `eslint-scope@7.1.1` — calc:dev
-- `eslint-scope@7.2.2` — root:dev
-- `espree@9.4.1` — calc:dev
-- `espree@9.6.1` — root:dev
+- `eslint-scope@7.2.2` — calc:dev, root:dev
+- `espree@10.4.0` — calc:dev
+- `espree@9.6.1` — calc:dev, root:dev
 - `esrecurse@4.3.0` — calc:dev, root:dev
-- `estraverse@4.3.0` — calc:dev
 - `estraverse@5.3.0` — calc:dev, root:dev
 - `esutils@2.0.3` — calc:dev, root:dev
-- `http-cache-semantics@4.2.0` — root:dev
+- `http-cache-semantics@4.3.0` — root:dev
 - `uri-js@4.4.1` — calc:dev, root:dev
 
-### BSD-3-Clause (12)
+### BSD-3-Clause (11)
 
-- `@humanwhocodes/object-schema@1.2.1` — calc:dev
 - `@humanwhocodes/object-schema@2.0.2` — root:dev
+- `@humanwhocodes/object-schema@2.0.3` — calc:dev
 - `asn1js@3.0.10` — root:dev
 - `bytestreamjs@2.0.1` — root:dev
 - `duplexer2@0.1.4` — root:dev
-- `esquery@1.4.2` — calc:dev, root:dev
-- `fast-uri@3.1.5` — root:dev
-- `global-agent@3.0.0` — root:dev:optional
+- `esquery@1.4.2` — root:dev
+- `esquery@1.7.0` — calc:dev
+- `fast-uri@3.1.8` — root:dev
+- `global-agent@4.1.3` — root:dev:optional
 - `pkijs@3.4.0` — root:dev
-- `roarr@2.15.4` — root:dev:optional
 - `source-map@0.6.1` — root:dev
-- `sprintf-js@1.1.3` — root:dev:optional
 
 ### BlueOak-1.0.0 (8)
 
 - `chownr@3.0.0` — root:dev
 - `isexe@3.1.5` — root:dev
 - `isexe@4.0.0` — root:dev
-- `minimatch@10.2.6` — root:dev
+- `minimatch@10.2.6` — calc:dev, root:dev
 - `minipass@7.1.3` — root:dev
 - `sax@1.6.0` — root:prod
 - `tar@7.5.22` — root:dev
 - `yallist@5.0.0` — root:dev
 
-### ISC (41)
+### ISC (42)
 
 - `@isaacs/fs-minipass@4.0.1` — root:dev
 - `@ungap/structured-clone@1.2.0` — root:dev
+- `@ungap/structured-clone@1.4.0` — calc:dev
 - `abbrev@4.0.0` — root:dev
 - `at-least-node@1.0.0` — root:dev
 - `cliui@8.0.1` — root:dev
-- `fastq@1.15.0` — calc:dev, root:dev
-- `flatted@3.4.2` — calc:dev, root:dev
+- `fastq@1.15.0` — root:dev
+- `fastq@1.20.3` — calc:dev
+- `flatted@3.4.2` — root:dev
+- `flatted@3.4.4` — calc:dev
 - `fs.realpath@1.0.0` — calc:dev, root:dev
 - `get-caller-file@2.0.5` — root:dev
 - `glob@7.2.3` — calc:dev, root:dev
-- `glob-parent@5.1.2` — calc:dev
 - `glob-parent@6.0.2` — calc:dev, root:dev
 - `graceful-fs@4.2.11` — root:prod
 - `hosted-git-info@4.1.0` — root:dev
 - `inflight@1.0.6` — calc:dev, root:dev
 - `inherits@2.0.4` — calc:dev, root:dev
 - `isexe@2.0.0` — calc:dev, root:dev
-- `json-stringify-safe@5.0.1` — root:dev:optional
 - `lru-cache@6.0.0` — root:dev
 - `minimatch@3.1.5` — calc:dev, root:dev
 - `minimatch@5.1.9` — root:dev
@@ -185,7 +180,7 @@ Tags use `root`, `calc`, or `import` for the dependency tree; `prod` or `dev` re
 - `yallist@4.0.0` — root:dev
 - `yargs-parser@21.1.1` — root:dev
 
-### MIT (291)
+### MIT (278)
 
 - `@aashutoshrathi/word-wrap@1.2.6` — root:dev
 - `@electron/asar@3.4.1` — root:dev
@@ -195,12 +190,13 @@ Tags use `root`, `calc`, or `import` for the dependency tree; `prod` or `dev` re
 - `@electron/notarize@2.5.0` — root:dev
 - `@electron/rebuild@4.2.0` — root:dev
 - `@electron/universal@2.0.3` — root:dev
+- `@eslint-community/eslint-utils@4.10.1` — calc:dev
 - `@eslint-community/eslint-utils@4.4.0` — root:dev
 - `@eslint-community/regexpp@4.10.0` — root:dev
-- `@eslint/eslintrc@2.0.0` — calc:dev
-- `@eslint/eslintrc@2.1.4` — root:dev
-- `@eslint/js@8.35.0` — calc:dev
+- `@eslint-community/regexpp@4.12.2` — calc:dev
+- `@eslint/eslintrc@2.1.4` — calc:dev, root:dev
 - `@eslint/js@8.57.0` — root:dev
+- `@eslint/js@8.57.1` — calc:dev
 - `@malept/flatpak-bundler@0.4.0` — root:dev
 - `@noble/hashes@1.4.0` — root:dev
 - `@noble/hashes@2.3.0` — root:dev
@@ -211,28 +207,31 @@ Tags use `root`, `calc`, or `import` for the dependency tree; `prod` or `dev` re
 - `@peculiar/json-schema@1.1.12` — root:dev
 - `@peculiar/utils@2.0.3` — root:dev
 - `@peculiar/webcrypto@1.7.1` — root:dev
-- `@pkmn/eslint-config@2.15.0` — calc:dev
+- `@pkmn/eslint-config@2.16.0` — calc:dev
 - `@sindresorhus/is@4.6.0` — root:dev
+- `@stylistic/eslint-plugin-ts@2.13.0` — calc:dev
 - `@szmarczak/http-timer@4.0.6` — root:dev
 - `@types/cacheable-request@6.0.3` — root:dev
 - `@types/debug@4.1.13` — root:dev
 - `@types/fs-extra@9.0.13` — root:dev
 - `@types/http-cache-semantics@4.2.0` — root:dev
-- `@types/json-schema@7.0.11` — calc:dev
 - `@types/keyv@3.1.4` — root:dev
 - `@types/ms@2.1.0` — root:dev
 - `@types/node@24.13.0` — root:dev
 - `@types/responselike@1.0.3` — root:dev
-- `@types/semver@7.3.13` — calc:dev
-- `@typescript-eslint/eslint-plugin@5.54.0` — calc:dev
-- `@typescript-eslint/scope-manager@5.54.0` — calc:dev
-- `@typescript-eslint/type-utils@5.54.0` — calc:dev
-- `@typescript-eslint/types@5.54.0` — calc:dev
-- `@typescript-eslint/utils@5.54.0` — calc:dev
-- `@typescript-eslint/visitor-keys@5.54.0` — calc:dev
-- `@xmldom/xmldom@0.8.13` — root:dev
+- `@typescript-eslint/eslint-plugin@8.72.0` — calc:dev
+- `@typescript-eslint/parser@8.72.0` — calc:dev
+- `@typescript-eslint/project-service@8.72.0` — calc:dev
+- `@typescript-eslint/scope-manager@8.72.0` — calc:dev
+- `@typescript-eslint/tsconfig-utils@8.72.0` — calc:dev
+- `@typescript-eslint/type-utils@8.72.0` — calc:dev
+- `@typescript-eslint/types@8.72.0` — calc:dev
+- `@typescript-eslint/typescript-estree@8.72.0` — calc:dev
+- `@typescript-eslint/utils@8.72.0` — calc:dev
+- `@typescript-eslint/visitor-keys@8.72.0` — calc:dev
+- `@xmldom/xmldom@0.8.15` — root:dev
 - `acorn@8.17.0` — root:dev
-- `acorn@8.8.2` — calc:dev
+- `acorn@8.19.0` — calc:dev
 - `acorn-jsx@5.3.2` — calc:dev, root:dev
 - `agent-base@7.1.4` — root:dev
 - `ajv@6.15.0` — calc:dev, root:dev
@@ -240,20 +239,17 @@ Tags use `root`, `calc`, or `import` for the dependency tree; `prod` or `dev` re
 - `ansi-regex@5.0.1` — calc:dev, root:dev
 - `ansi-styles@4.3.0` — calc:dev, root:dev
 - `app-builder-lib@26.15.3` — root:dev
-- `array-union@2.1.0` — calc:dev
 - `async@3.2.6` — root:dev
 - `async-exit-hook@2.0.1` — root:dev
 - `asynckit@0.4.0` — root:dev
 - `aws4@1.13.2` — root:dev
 - `balanced-match@1.0.2` — calc:dev, root:dev
-- `balanced-match@4.0.4` — root:dev
+- `balanced-match@4.0.4` — calc:dev, root:dev
 - `base64-js@1.5.1` — root:dev
 - `bluebird@3.7.2` — root:dev
-- `boolean@3.2.0` — root:dev:optional
-- `brace-expansion@1.1.18` — calc:dev, root:dev
-- `brace-expansion@2.1.4` — root:dev
-- `brace-expansion@5.0.9` — root:dev
-- `braces@3.0.3` — calc:dev
+- `brace-expansion@1.1.21` — calc:dev, root:dev
+- `brace-expansion@2.1.7` — root:dev
+- `brace-expansion@5.0.12` — calc:dev, root:dev
 - `buffer-from@1.1.2` — root:dev
 - `builder-util@26.15.3` — root:dev
 - `builder-util-runtime@9.7.0` — root:prod
@@ -276,19 +272,18 @@ Tags use `root`, `calc`, or `import` for the dependency tree; `prod` or `dev` re
 - `core-util-is@1.0.3` — root:dev
 - `cross-dirname@0.1.0` — root:dev:optional
 - `cross-spawn@7.0.6` — calc:dev, root:dev
-- `debug@4.3.4` — calc:dev, root:prod
+- `debug@4.3.4` — root:prod
+- `debug@4.4.3` — calc:dev
 - `decompress-response@6.0.0` — root:dev
 - `deep-is@0.1.4` — calc:dev, root:dev
 - `defer-to-connect@2.0.1` — root:dev
 - `define-data-property@1.1.4` — root:dev:optional
 - `define-properties@1.2.1` — root:dev:optional
 - `delayed-stream@1.0.0` — root:dev
-- `detect-node@2.1.0` — root:dev:optional
 - `dir-compare@4.2.0` — root:dev
-- `dir-glob@3.0.1` — calc:dev
 - `dmg-builder@26.15.3` — root:dev
 - `dunder-proto@1.0.1` — root:dev
-- `electron@42.8.1` — root:dev
+- `electron@42.11.15` — root:dev
 - `electron-builder@26.15.3` — root:dev
 - `electron-builder-squirrel-windows@26.15.3` — root:dev
 - `electron-publish@26.15.3` — root:dev
@@ -303,22 +298,19 @@ Tags use `root`, `calc`, or `import` for the dependency tree; `prod` or `dev` re
 - `es-errors@1.3.0` — root:dev
 - `es-object-atoms@1.1.2` — root:dev
 - `es-set-tostringtag@2.1.0` — root:dev
-- `es6-error@4.1.1` — root:dev:optional
 - `escalade@3.2.0` — root:dev
 - `escape-string-regexp@4.0.0` — calc:dev, root:dev
-- `eslint@8.35.0` — calc:dev
 - `eslint@8.57.0` — root:dev
-- `eslint-plugin-jest@27.2.1` — calc:dev
-- `eslint-utils@3.0.0` — calc:dev
+- `eslint@8.57.1` — calc:dev
+- `eslint-plugin-jest@29.17.0` — calc:dev
 - `fast-deep-equal@3.1.3` — calc:dev, root:dev
-- `fast-glob@3.2.12` — calc:dev
 - `fast-json-stable-stringify@2.1.0` — calc:dev, root:dev
 - `fast-levenshtein@2.0.6` — calc:dev, root:dev
-- `fdir@6.5.0` — root:dev
+- `fdir@6.5.0` — calc:dev, root:dev
 - `file-entry-cache@6.0.1` — calc:dev, root:dev
-- `fill-range@7.1.1` — calc:dev
 - `find-up@5.0.0` — calc:dev, root:dev
-- `flat-cache@3.0.4` — calc:dev, root:dev
+- `flat-cache@3.0.4` — root:dev
+- `flat-cache@3.2.0` — calc:dev
 - `form-data@4.0.6` — root:dev
 - `fs-extra@10.1.0` — root:prod
 - `fs-extra@11.3.1` — root:dev
@@ -332,14 +324,11 @@ Tags use `root`, `calc`, or `import` for the dependency tree; `prod` or `dev` re
 - `get-proto@1.0.1` — root:dev
 - `get-stream@5.2.0` — root:dev
 - `globals@13.19.0` — root:dev
-- `globals@13.20.0` — calc:dev
-- `globals@13.24.0` — root:dev
+- `globals@13.24.0` — calc:dev, root:dev
 - `globalthis@1.0.4` — root:dev:optional
-- `globby@11.1.0` — calc:dev
 - `gopd@1.2.0` — root:dev
 - `got@11.8.6` — root:dev
-- `grapheme-splitter@1.0.4` — calc:dev
-- `graphemer@1.4.0` — root:dev
+- `graphemer@1.4.0` — calc:dev, root:dev
 - `has-flag@4.0.0` — calc:dev, root:dev
 - `has-property-descriptors@1.0.2` — root:dev:optional
 - `has-symbols@1.1.0` — root:dev
@@ -348,29 +337,29 @@ Tags use `root`, `calc`, or `import` for the dependency tree; `prod` or `dev` re
 - `http-proxy-agent@7.0.2` — root:dev
 - `http2-wrapper@1.0.3` — root:dev
 - `https-proxy-agent@7.0.6` — root:dev
-- `ignore@5.2.4` — calc:dev
 - `ignore@5.3.1` — root:dev
-- `import-fresh@3.3.0` — calc:dev, root:dev
+- `ignore@5.3.2` — calc:dev
+- `ignore@7.0.13` — calc:dev
+- `import-fresh@3.3.0` — root:dev
+- `import-fresh@3.3.1` — calc:dev
 - `imurmurhash@0.1.4` — calc:dev, root:dev
 - `is-extglob@2.1.1` — calc:dev, root:dev
 - `is-fullwidth-code-point@3.0.0` — root:dev
 - `is-glob@4.0.3` — calc:dev, root:dev
-- `is-number@7.0.0` — calc:dev
 - `is-path-inside@3.0.3` — calc:dev, root:dev
 - `isarray@1.0.0` — root:dev
 - `isbinaryfile@4.0.10` — root:dev
 - `isbinaryfile@5.0.7` — root:dev
 - `jiti@2.7.0` — root:dev
-- `js-sdsl@4.2.0` — calc:dev
-- `js-yaml@4.3.1` — calc:dev, root:prod
-- `json-buffer@3.0.1` — root:dev
+- `js-yaml@4.3.2` — calc:dev, root:prod
+- `json-buffer@3.0.1` — calc:dev, root:dev
 - `json-schema-traverse@0.4.1` — calc:dev, root:dev
 - `json-schema-traverse@1.0.0` — root:dev
 - `json-stable-stringify-without-jsonify@1.0.1` — calc:dev, root:dev
 - `json5@2.2.3` — root:dev
 - `jsonfile@4.0.0` — root:dev
 - `jsonfile@6.2.1` — root:prod
-- `keyv@4.5.4` — root:dev
+- `keyv@4.5.4` — calc:dev, root:dev
 - `lazy-val@1.0.5` — root:prod
 - `levn@0.4.1` — calc:dev, root:dev
 - `locate-path@6.0.0` — calc:dev, root:dev
@@ -379,10 +368,8 @@ Tags use `root`, `calc`, or `import` for the dependency tree; `prod` or `dev` re
 - `lodash.isequal@4.5.0` — root:prod
 - `lodash.merge@4.6.2` — calc:dev, root:dev
 - `lowercase-keys@2.0.0` — root:dev
-- `matcher@3.0.0` — root:dev:optional
+- `matcher@4.0.0` — root:dev:optional
 - `math-intrinsics@1.1.0` — root:dev
-- `merge2@1.4.1` — calc:dev
-- `micromatch@4.0.8` — calc:dev
 - `mime@2.6.0` — root:dev
 - `mime-db@1.52.0` — root:dev
 - `mime-types@2.1.35` — root:dev
@@ -391,17 +378,17 @@ Tags use `root`, `calc`, or `import` for the dependency tree; `prod` or `dev` re
 - `minimist@1.2.8` — root:dev
 - `minizlib@3.1.0` — root:dev
 - `mkdirp@0.5.6` — root:dev
-- `ms@2.1.2` — calc:dev, root:prod
+- `ms@2.1.2` — root:prod
+- `ms@2.1.3` — calc:dev
 - `natural-compare@1.4.0` — calc:dev, root:dev
-- `natural-compare-lite@1.4.0` — calc:dev
 - `node-abi@4.33.0` — root:dev
 - `node-api-version@0.2.1` — root:dev
 - `node-gyp@12.4.0` — root:dev
 - `node-int64@0.4.0` — root:dev
 - `normalize-url@6.1.0` — root:dev
 - `object-keys@1.1.1` — root:dev:optional
-- `optionator@0.9.1` — calc:dev
 - `optionator@0.9.3` — root:dev
+- `optionator@0.9.4` — calc:dev
 - `p-cancelable@2.1.1` — root:dev
 - `p-limit@3.1.0` — calc:dev, root:dev
 - `p-locate@5.0.0` — calc:dev, root:dev
@@ -409,10 +396,9 @@ Tags use `root`, `calc`, or `import` for the dependency tree; `prod` or `dev` re
 - `path-exists@4.0.0` — calc:dev, root:dev
 - `path-is-absolute@1.0.1` — calc:dev, root:dev
 - `path-key@3.1.1` — calc:dev, root:dev
-- `path-type@4.0.0` — calc:dev
 - `pe-library@0.4.1` — root:dev
-- `picomatch@2.3.2` — calc:dev
 - `picomatch@4.0.5` — root:dev
+- `picomatch@4.0.7` — calc:dev
 - `plist@3.1.0` — root:dev
 - `postject@1.0.0-alpha.6` — root:dev:optional
 - `prelude-ls@1.2.1` — calc:dev, root:dev
@@ -421,15 +407,13 @@ Tags use `root`, `calc`, or `import` for the dependency tree; `prod` or `dev` re
 - `promise-retry@2.0.1` — root:dev
 - `proper-lockfile@4.1.2` — root:dev
 - `pump@3.0.4` — root:dev
-- `punycode@2.3.0` — calc:dev
-- `punycode@2.3.1` — root:dev
+- `punycode@2.3.1` — calc:dev, root:dev
 - `pvtsutils@1.3.6` — root:dev
 - `pvutils@1.2.0` — root:dev
 - `queue-microtask@1.2.3` — calc:dev, root:dev
 - `quick-lru@5.1.1` — root:dev
 - `read-binary-file-arch@1.0.6` — root:dev
 - `readable-stream@2.3.8` — root:dev
-- `regexpp@3.2.0` — calc:dev
 - `require-directory@2.1.1` — root:dev
 - `require-from-string@2.0.2` — root:dev
 - `resedit@1.7.2` — root:dev
@@ -437,15 +421,14 @@ Tags use `root`, `calc`, or `import` for the dependency tree; `prod` or `dev` re
 - `resolve-from@4.0.0` — calc:dev, root:dev
 - `responselike@2.0.1` — root:dev
 - `retry@0.12.0` — root:dev
-- `reusify@1.0.4` — calc:dev, root:dev
+- `reusify@1.0.4` — root:dev
+- `reusify@1.1.0` — calc:dev
 - `run-parallel@1.2.0` — calc:dev, root:dev
 - `safe-buffer@5.1.2` — root:dev
-- `semver-compare@1.0.0` — root:dev:optional
-- `serialize-error@7.0.1` — root:dev:optional
+- `serialize-error@8.1.0` — root:dev:optional
 - `shebang-command@2.0.0` — calc:dev, root:dev
 - `shebang-regex@3.0.0` — calc:dev, root:dev
 - `simple-update-notifier@2.0.0` — root:dev
-- `slash@3.0.0` — calc:dev
 - `source-map-support@0.5.21` — root:dev
 - `stat-mode@1.0.0` — root:dev
 - `string-width@4.2.3` — root:dev
@@ -459,21 +442,20 @@ Tags use `root`, `calc`, or `import` for the dependency tree; `prod` or `dev` re
 - `text-table@0.2.0` — calc:dev, root:dev
 - `tiny-async-pool@1.3.0` — root:dev
 - `tiny-typed-emitter@2.1.0` — root:prod
-- `tinyglobby@0.2.17` — root:dev
+- `tinyglobby@0.2.17` — calc:dev, root:dev
 - `tmp@0.2.7` — root:dev
 - `tmp-promise@3.0.3` — root:dev
-- `to-regex-range@5.0.1` — calc:dev
-- `tsutils@3.21.0` — calc:dev
+- `ts-api-utils@2.5.0` — calc:dev
 - `type-check@0.4.0` — calc:dev, root:dev
-- `undici@6.28.0` — root:dev
-- `undici@7.29.0` — root:dev:optional
+- `undici@6.29.1` — root:dev
+- `undici@7.30.1` — root:dev:optional
 - `undici-types@7.18.2` — root:dev
 - `universalify@0.1.2` — root:dev
 - `universalify@2.0.1` — root:prod
 - `unzipper@0.12.5` — root:dev
 - `util-deprecate@1.0.2` — root:dev
 - `webcrypto-core@1.9.2` — root:dev
-- `word-wrap@1.2.4` — calc:dev
+- `word-wrap@1.2.5` — calc:dev
 - `wrap-ansi@7.0.0` — root:dev
 - `xmlbuilder@15.1.1` — root:dev
 - `yargs@17.7.2` — root:dev

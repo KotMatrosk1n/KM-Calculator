@@ -14,13 +14,6 @@ const scopes = [
   {id: "import", directory: path.join(repositoryRoot, "import")},
 ];
 
-// calc/package-lock.json predates npm's complete license metadata and retains
-// fsevents as a macOS-only optional package on non-macOS installs. Its package
-// metadata declares MIT, but that metadata is not installed on Windows.
-const lockOnlyLicenseOverrides = new Map([
-  ["fsevents@2.3.2", "MIT"],
-]);
-
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
@@ -48,7 +41,6 @@ function declaredLicense(packageMetadata, lockEntry, identity) {
     if (alternatives.length) value = alternatives.join(" OR ");
   }
   if (!value) value = normalizeLicenseValue(lockEntry.license);
-  if (!value) value = lockOnlyLicenseOverrides.get(identity) || "";
   if (!value) {
     throw new Error(`No declared license metadata for locked package ${identity}`);
   }
@@ -299,7 +291,7 @@ ${renderDirectTable(directDependencies)}
 
 The three npm lockfiles contain ${lockEntryCount} dependency locations and ${lockedPackages.length} distinct package/version identities. The summary and complete inventory below include every resolved lockfile identity, including optional packages retained for other operating systems. Consequently, this is intentionally broader than the set installed on any one machine or copied into any one binary.
 
-License strings are reproduced from installed package metadata when available and from lockfile metadata otherwise. The sole lock-only override is documented in the generator for the macOS-only \`fsevents@2.3.2\` entry in the older calculator lockfile. Compound expressions are preserved instead of being simplified to one license.
+License strings are reproduced from installed package metadata when available and from lockfile metadata otherwise. Compound expressions are preserved instead of being simplified to one license.
 
 ${renderLicenseSummary(groups)}
 

@@ -1,4 +1,5 @@
-/* eslint-disable eqeqeq, @typescript-eslint/unbound-method, @typescript-eslint/ban-types */
+/* eslint-disable eqeqeq, @typescript-eslint/unbound-method,
+  @typescript-eslint/no-unsafe-function-type, @typescript-eslint/no-empty-object-type */
 import type {ID} from './data/interface';
 
 export function toID(text: any): ID {

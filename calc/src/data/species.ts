@@ -10077,7 +10077,7 @@ export class Species implements I.Species {
 
   *[Symbol.iterator]() {
     for (const id in SPECIES_BY_ID[this.gen]) {
-      yield this.get(id as I.ID)!;
+      yield this.get(id as I.ID);
     }
   }
 }

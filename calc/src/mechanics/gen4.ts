@@ -99,10 +99,10 @@ export function calculateDPP(
       : 'Normal';
     desc.weather = field.weather;
     desc.moveType = move.type;
-  } else if (move.named('Judgment') && attacker.item && attacker.item.includes('Plate')) {
+  } else if (move.named('Judgment') && attacker.item?.includes('Plate')) {
     move.type = getItemBoostType(attacker.item)!;
   } else if (move.named('Natural Gift') && attacker.item?.endsWith('Berry')) {
-    const gift = getNaturalGift(gen, attacker.item)!;
+    const gift = getNaturalGift(gen, attacker.item);
     move.type = gift.t;
     move.bp = gift.p;
     desc.attackerItem = attacker.item;

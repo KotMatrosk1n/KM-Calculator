@@ -100,9 +100,9 @@ export function multiDamageRange(
   if (typeof damage === 'number') return [damage, damage];
   // Multihit Damage
   if (typeof damage[0] !== 'number') {
-    damage = damage as number[][];
+    const damageLists = damage as number[][];
     const ranges: [number[], number[]] = [[], []];
-    for (const damageList of damage) {
+    for (const damageList of damageLists) {
       ranges[0].push(damageList[0]);
       ranges[1].push(damageList[damageList.length - 1]);
     }

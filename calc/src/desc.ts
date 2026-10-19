@@ -156,7 +156,7 @@ export function getRecovery(
     if (attackerHasBigRoot) maxDrain = Math.trunc(maxDrain * 5324 / 4096);
     for (let i = 0; i < minD.length; i++) {
       const range = [minD[i], maxD[i]];
-      for (const j in recovery) {
+      for (const j of [0, 1]) {
         let drained = Math.max(Math.round(range[j] * percentHealed), 1);
         if (attackerHasBigRoot) drained = Math.trunc(drained * 5324 / 4096);
         recovery[j] += Math.min(drained, maxDrain);

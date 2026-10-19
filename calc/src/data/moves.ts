@@ -4937,7 +4937,7 @@ export class Moves implements I.Moves {
 
   *[Symbol.iterator]() {
     for (const id in MOVES_BY_ID[this.gen]) {
-      yield this.get(id as I.ID)!;
+      yield this.get(id as I.ID);
     }
   }
 }

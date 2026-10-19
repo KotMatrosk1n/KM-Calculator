@@ -131,12 +131,12 @@ export function calculateBWXY(
       : 'Normal';
     desc.weather = field.weather;
     desc.moveType = move.type;
-  } else if (move.named('Judgment') && attacker.item && attacker.item.includes('Plate')) {
+  } else if (move.named('Judgment') && attacker.item?.includes('Plate')) {
     move.type = getItemBoostType(attacker.item)!;
-  } else if (move.named('Techno Blast') && attacker.item && attacker.item.includes('Drive')) {
+  } else if (move.named('Techno Blast') && attacker.item?.includes('Drive')) {
     move.type = getTechnoBlast(attacker.item)!;
   } else if (move.named('Natural Gift') && attacker.item?.endsWith('Berry')) {
-    const gift = getNaturalGift(gen, attacker.item)!;
+    const gift = getNaturalGift(gen, attacker.item);
     move.type = gift.t;
     move.bp = gift.p;
     desc.attackerItem = attacker.item;
@@ -828,7 +828,7 @@ export function calculateAttackBWXY(
     attack = attackSource.rawStats[attackStat];
     desc.defenderAbility = defender.ability;
   } else {
-    attack = getModifiedStat(attackSource.rawStats[attackStat]!, attackSource.boosts[attackStat]!);
+    attack = getModifiedStat(attackSource.rawStats[attackStat], attackSource.boosts[attackStat]);
     desc.attackBoost = attackSource.boosts[attackStat];
   }
 
@@ -953,7 +953,7 @@ export function calculateDefenseBWXY(
     defense = defender.rawStats[defenseStat];
     desc.attackerAbility = attacker.ability;
   } else {
-    defense = getModifiedStat(defender.rawStats[defenseStat]!, boosts);
+    defense = getModifiedStat(defender.rawStats[defenseStat], boosts);
     desc.defenseBoost = boosts;
   }
 
