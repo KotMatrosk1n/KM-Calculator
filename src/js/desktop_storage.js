@@ -128,7 +128,36 @@
 		removeItem: removeItem,
 		key: key,
 		length: length,
-		clearByPrefix: clearByPrefix
+		clearByPrefix: clearByPrefix,
+		snapshot: function () {
+			var keys = [], snapshot = {}, localStorage = getLocalStorage();
+			for (var i = 0; i < length(); i++) keys.push(key(i));
+			if (localStorage) for (var j = 0; j < localStorage.length; j++) if (keys.indexOf(localStorage.key(j)) === -1) keys.push(localStorage.key(j));
+			keys.forEach(function (name) { var value = getItem(name); if (value !== null) snapshot[name] = value; });
+			return snapshot;
+		},
+		restoreRun: async function (backup) {
+			var before = this.snapshot(), next = window.KMRunData.apply(before, backup), localStorage = getLocalStorage();
+			var keys = Object.keys(before).concat(Object.keys(next)).filter(function (name, index, all) { return all.indexOf(name) === index && before[name] !== next[name]; });
+			if (nativeStorage && desktopBridge.runs) {
+				var result = await desktopBridge.runs.restore(backup);
+				if (result.error || !result.snapshot) throw new Error(result.error || "The run could not be restored.");
+				keys.forEach(function (name) {
+					migratedKeys[name] = true;
+					try { if (localStorage) localStorage.removeItem(name); } catch (error) { /* Native storage owns restored values. */ }
+				});
+				return;
+			}
+			if (!localStorage) throw new Error("Storage is unavailable.");
+			localStorage.setItem("km-calculator.run-recovery." + backup.profile.id, JSON.stringify(window.KMRunData.capture(before, backup.profile, "")));
+			try {
+				keys.forEach(function (name) { if (next[name] === undefined) localStorage.removeItem(name); else localStorage.setItem(name, next[name]); });
+			} catch (error) {
+				keys.forEach(function (name) { localStorage.removeItem(name); });
+				keys.forEach(function (name) { if (before[name] === undefined) localStorage.removeItem(name); else localStorage.setItem(name, before[name]); });
+				throw new Error("The run could not be restored. The previous run has been kept.");
+			}
+		}
 	};
 
 	window.getKMCalculatorStorage = function () {

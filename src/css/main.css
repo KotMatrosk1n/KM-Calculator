@@ -2879,9 +2879,11 @@ body.km-rom-hack-chooser-open {
 	box-shadow: 0 0 0 3px #317fee, 0 0 0 6px #f4ce6a;
 	outline: none;
 }
-.km-rom-hack-tile[aria-pressed="true"] {
-	background: linear-gradient(150deg, rgba(25, 84, 165, 0.96), rgba(8, 37, 82, 0.98));
-	border-color: #f4ce6a;
+.km-rom-hack-tile-current {
+	font-size: 0.78em;
+	font-weight: 600;
+	line-height: 1.35;
+	margin-bottom: 8px;
 }
 .km-rom-hack-tile-icon {
 	border: 1px solid rgba(244, 206, 106, 0.8);
@@ -2991,18 +2993,15 @@ body > header {
 	border-color: #f4ce6a;
 }
 .km-settings-button:focus-visible,
-.km-settings-icon-button:focus-visible,
 .km-settings-primary-button:focus-visible,
 .km-settings-secondary-button:focus-visible {
 	box-shadow: 0 0 0 3px #317fee, 0 0 0 6px #f4ce6a;
 	outline: none;
 }
 .km-settings-button svg,
-.km-settings-heading-copy svg,
 .km-update-prompt-heading svg,
 .km-settings-primary-button svg,
-.km-settings-secondary-button svg,
-.km-settings-icon-button svg {
+.km-settings-secondary-button svg {
 	fill: currentColor;
 	flex: 0 0 auto;
 	height: 18px;
@@ -3026,22 +3025,7 @@ body > header {
 .km-settings-update-badge[hidden] {
 	display: none;
 }
-body.km-settings-open {
-	overflow: hidden;
-}
-.km-settings-overlay {
-	align-items: center;
-	background: rgba(2, 8, 20, 0.84);
-	box-sizing: border-box;
-	display: flex;
-	inset: 0;
-	justify-content: center;
-	overflow: auto;
-	padding: 24px;
-	position: fixed;
-	z-index: 10010;
-}
-.km-settings-overlay[hidden],
+.km-settings-page[hidden],
 #km-update-view[hidden],
 #km-settings-view[hidden],
 .km-update-release-notes[hidden],
@@ -3050,68 +3034,25 @@ body.km-settings-open {
 .km-settings-secondary-button[hidden] {
 	display: none;
 }
-.km-settings-dialog {
-	background: linear-gradient(145deg, rgba(16, 40, 76, 0.99), rgba(5, 14, 31, 0.995));
-	border: 1px solid #6d91ca;
-	border-radius: 15px;
-	box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65), inset 0 0 42px rgba(0, 107, 255, 0.12);
-	box-sizing: border-box;
-	color: #f4f7ff;
-	max-width: 620px;
-	padding: 24px;
-	text-align: left;
-	width: min(620px, calc(100vw - 48px));
-}
-.km-settings-dialog:focus {
-	outline: none;
-}
-.km-settings-heading-row,
-.km-settings-heading-copy,
 .km-update-prompt-heading,
 .km-update-progress-header,
 .km-update-actions {
 	align-items: center;
 	display: flex;
 }
-.km-settings-heading-row {
-	border-bottom: 1px solid rgba(136, 167, 216, 0.28);
-	justify-content: space-between;
-	margin-bottom: 20px;
-	padding-bottom: 14px;
-}
-.km-settings-heading-copy,
 .km-update-prompt-heading {
 	gap: 9px;
 }
-.km-settings-heading-copy svg,
 .km-update-prompt-heading svg {
 	color: #f4ce6a;
 	height: 21px;
 	width: 21px;
 }
-.km-settings-heading-copy h2,
 .km-update-prompt-heading h3 {
 	color: #f4ce6a;
 	font-size: 1.45em;
 	line-height: 1.2;
 	margin: 0;
-}
-.km-settings-icon-button {
-	align-items: center;
-	appearance: none;
-	background: transparent;
-	border: 1px solid transparent;
-	border-radius: 7px;
-	color: #c9d6ed;
-	cursor: pointer;
-	display: inline-flex;
-	justify-content: center;
-	padding: 6px;
-}
-.km-settings-icon-button:hover {
-	background: rgba(118, 153, 208, 0.16);
-	border-color: #698ec8;
-	color: #ffffff;
 }
 .km-settings-summary {
 	display: grid;
@@ -3163,8 +3104,7 @@ body.km-settings-open {
 	border-color: #f4ce6a;
 }
 .km-settings-primary-button:disabled,
-.km-settings-secondary-button:disabled,
-.km-settings-icon-button:disabled {
+.km-settings-secondary-button:disabled {
 	cursor: default;
 	opacity: 0.55;
 }

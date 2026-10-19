@@ -1589,6 +1589,13 @@ function getImportedBagItemTotal(items) {
 	return total;
 }
 
+window.reloadImportedPlayerBagItems = function () {
+	var key = getSaveImportWorkspaceStorageKey("bag-items");
+	delete saveImportBagItemsByWorkspace[key];
+	window.royalSwordImportedBagItems = [];
+	return getImportedPlayerBagItems();
+};
+
 function prepareImportedBagItems(items, generation) {
 	if (items === null || items === undefined) return null;
 	if (!$.isArray(items)) throw new Error("The save adapter returned invalid bag item data");

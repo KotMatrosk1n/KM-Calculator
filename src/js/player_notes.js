@@ -27,6 +27,7 @@
 	var activeTrainerId = "";
 	var dragging = null;
 	var resizing = null;
+	var restoringRun = false;
 
 	function getStorage() {
 		return window.getRoyalSwordStorage ? window.getRoyalSwordStorage() : window.localStorage;
@@ -252,7 +253,7 @@
 
 	function saveNotesNow() {
 		var key;
-		if (!notesTextarea) return;
+		if (!notesTextarea || restoringRun) return;
 		if (saveTimer) {
 			window.clearTimeout(saveTimer);
 			saveTimer = null;
@@ -538,11 +539,23 @@
 		$(document).on("click", ".player-notes-open", openNotesWindow);
 		$(document).on("click", ".player-notes-clear", clearAllNotes);
 		$(document).on("kmtrainerdatachange", function () {
+			if (restoringRun) return;
 			saveNotesNow();
 			refreshTrainerOptions(activeTrainerId);
 			loadNotes(activeScope);
 		});
 	}
+	window.KMPlayerNotes = {
+		flush: function () {
+			saveNotesNow();
+			if (notesTextarea && safeGet(activeNoteKey) !== notesTextarea.val()) throw new Error("Notes could not be saved. Try backing up again.");
+		},
+		beginRestore: function () { restoringRun = true; window.clearTimeout(saveTimer); saveTimer = null; pendingSaveKey = ""; },
+		endRestore: function (restored) {
+			restoringRun = false;
+			if (restored) { refreshTrainerOptions(activeTrainerId); loadNotes(activeScope); }
+		}
+	};
 
 	$(installPlayerNotesControls);
 })();

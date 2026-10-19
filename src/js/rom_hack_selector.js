@@ -164,12 +164,13 @@
 		var description;
 		var attribution;
 		var selector = this;
+		var activeProfile = this.registry.getActiveProfile();
+		var isCurrent = activeProfile && activeProfile.id === profile.id;
 
 		listItem.setAttribute("role", "listitem");
 		button.type = "button";
 		button.setAttribute("data-rom-hack-id", profile.id);
-		button.setAttribute("aria-pressed", this.registry.getActiveProfile() &&
-			this.registry.getActiveProfile().id === profile.id ? "true" : "false");
+		if (isCurrent) button.setAttribute("aria-current", "true");
 
 		if (profile.tile.icon) {
 			icon = createElement(documentObject, "img", "km-rom-hack-tile-icon");
@@ -184,6 +185,9 @@
 		if (profile.tile.badge) {
 			badge = createElement(documentObject, "span", "km-rom-hack-tile-badge", profile.tile.badge);
 			copy.appendChild(badge);
+		}
+		if (isCurrent) {
+			copy.appendChild(createElement(documentObject, "span", "km-rom-hack-tile-current", "Currently selected"));
 		}
 		description = createElement(
 			documentObject,

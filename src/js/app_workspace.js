@@ -7,6 +7,7 @@
 	var buttons = [];
 	var views = [];
 	var activeTab = 0;
+	var previousTab = 0;
 	var tabScroll = [0, 0, 0, 0];
 	var registry;
 	var profileLabel;
@@ -14,6 +15,8 @@
 	var encounterTracker;
 	var trainerProgress = {version: 1, beaten: []};
 	var trainerProfileId;
+	var itemProgress = {version: 1, pickedUp: []};
+	var itemProfileId;
 	var resizeWorkspace = function () {};
 
 	function el(tag, className, text) {
@@ -44,17 +47,19 @@
 		Array.prototype.forEach.call(document.querySelectorAll(".km-toolbar-disclosure"), function (details) { details.open = false; });
 		tabScroll[activeTab] = window.scrollY;
 		activeTab = index;
+		document.getElementById("km-settings-page").hidden = index !== -1;
+		document.getElementById("km-settings-button").setAttribute("aria-pressed", String(index === -1));
 		panels.forEach(function (panel, i) {
 			panel.hidden = i !== index;
 			buttons[i].setAttribute("aria-selected", String(i === index));
-			buttons[i].tabIndex = i === index ? 0 : -1;
+			buttons[i].tabIndex = i === (index === -1 ? previousTab : index) ? 0 : -1;
 		});
 		// Close any detached Select2 popup before its owning panel is hidden.
 		if (window.jQuery) window.jQuery(".select2-offscreen").each(function () {
 			if (window.jQuery(this).data("select2")) window.jQuery(this).select2("close");
 		});
 		if (focus) buttons[index].focus();
-		window.scrollTo(0, tabScroll[index]);
+		window.scrollTo(0, tabScroll[index] || 0);
 		resizeWorkspace();
 		resizeReferences();
 	}
@@ -196,12 +201,18 @@
 			window.visualViewport.addEventListener("scroll", hideFieldTooltip);
 		}
 		setupField(field, battlefield);
+		var resetField = button("Reset Battlefield", function () {
+			if (typeof window.resetCurrentBattlefield === "function") window.resetCurrentBattlefield();
+		}, "km-field-reset");
+		resetField.id = "km-battlefield-reset"; resetField.hidden = true;
+		resetField.setAttribute("aria-label", "Reset Battlefield to the current matchup's starting conditions");
 		var hint = el("span", "km-muted km-team-drawer-hint", "Drag to rearrange · Right-click to assign"); hint.hidden = true;
 		var actions = el("div", "km-team-drawer-actions"); actions.hidden = true;
 		function setOpen(value) {
 			hideFieldTooltip();
 			open = value; content.hidden = open !== "team"; actions.hidden = open !== "team"; hint.hidden = open !== "team";
 			battlefield.hidden = open !== "field";
+			resetField.hidden = open !== "field";
 			toggle.setAttribute("aria-expanded", String(open === "team"));
 			fieldToggle.setAttribute("aria-expanded", String(open === "field"));
 			drawer.classList.toggle("km-team-drawer-open", !!open);
@@ -255,7 +266,7 @@
 		addPanel("colors", "Color coding", box.querySelector(".color-coding-controls"));
 		addPanel("manage", "Manage boxes", box.querySelector(".team-box-control-section"));
 		addPanel("import", "Import / Export", lower.querySelector(".calculator-import-column"));
-		bar.appendChild(toggle); bar.appendChild(fieldToggle); bar.appendChild(fieldStatus); bar.appendChild(hint); bar.appendChild(actions);
+		bar.appendChild(toggle); bar.appendChild(fieldToggle); bar.appendChild(fieldStatus); bar.appendChild(hint); bar.appendChild(actions); bar.appendChild(resetField);
 		content.appendChild(lower); drawer.appendChild(bar); drawer.appendChild(content); drawer.appendChild(battlefield); drawer.appendChild(fieldTooltip); wrapper.appendChild(drawer);
 		wrapper.classList.add("km-has-team-drawer");
 		drawer.addEventListener("keydown", function (event) {
@@ -611,6 +622,19 @@
 			group.items.push(item);
 			group.count++;
 		});
+		var encounterNames = sourceData.areas.map(function (area) { return area.name; });
+		var locationOrder = Object.create(null);
+		encounterNames.forEach(function (name, index) { locationOrder[name] = index * 3 + 1; });
+		(sourceData.itemLocations || []).forEach(function (location) {
+			var anchor = location.encounterLocation || location.beforeEncounter || location.afterEncounter;
+			var index = encounterNames.indexOf(anchor);
+			if (index !== -1) locationOrder[location.name] = index * 3 + (location.beforeEncounter ? 0 : location.afterEncounter ? 2 : 1);
+		});
+		var fallback = encounterNames.length * 3;
+		locations.sort(function (a, b) {
+			var aOrder = locationOrder[a.name], bOrder = locationOrder[b.name];
+			return (aOrder === undefined ? fallback : aOrder) - (bOrder === undefined ? fallback : bOrder);
+		});
 		return locations;
 	}
 	function renderEncounters(container, area) {
@@ -819,6 +843,33 @@
 		});
 		container.appendChild(grid);
 	}
+	function loadItemProgress(profile) {
+		itemProfileId = profile && profile.id;
+		itemProgress = {version: 1, pickedUp: []};
+		if (!sourceData || !itemProfileId) return;
+		try {
+			var saved = JSON.parse(window.kmCalculatorStorage.getItem("km-calculator.route-items.v1." + itemProfileId));
+			if (saved && saved.version === 1 && Array.isArray(saved.pickedUp)) {
+				itemProgress.pickedUp = saved.pickedUp.filter(function (id, index, ids) {
+					return typeof id === "string" && ids.indexOf(id) === index && sourceData.routeItems.some(function (item) { return item.id === id; });
+				});
+			}
+		} catch (error) { /* Missing or unreadable progress leaves item cards unchecked. */ }
+	}
+	function markItemPickedUp(item, checked) {
+		var next = {version: 1, pickedUp: itemProgress.pickedUp.filter(function (id) { return id !== item.id; })};
+		if (checked) next.pickedUp.push(item.id);
+		var serialized = JSON.stringify(next), key = "km-calculator.route-items.v1." + itemProfileId;
+		try {
+			window.kmCalculatorStorage.setItem(key, serialized);
+			if (window.kmCalculatorStorage.getItem(key) !== serialized) throw new Error("Storage unavailable");
+		} catch (error) {
+			window.alert("Item pickup progress could not be saved. Please check available storage and try again.");
+			return false;
+		}
+		itemProgress = next;
+		return true;
+	}
 	function renderItems(container, area) {
 		container.appendChild(el("h2", "", area.name));
 		var notes = (sourceData.itemNotes || []).filter(function (n) { return n.location === area.name; });
@@ -831,7 +882,20 @@
 		area.items.forEach(function (item) {
 			var card = el("article", "km-reference-card km-item-card");
 			var top = el("div", "km-card-heading");
-			top.appendChild(el("h3", "", item.items));
+			var heading = el("h3");
+			var label = el("label", "km-item-picked-control");
+			var check = el("input"); check.type = "checkbox";
+			check.setAttribute("aria-label", "Picked up: " + item.items);
+			check.checked = itemProgress.pickedUp.indexOf(item.id) !== -1;
+			card.classList.toggle("km-item-picked-up", check.checked);
+			check.addEventListener("change", function () {
+				if (!markItemPickedUp(item, check.checked)) check.checked = !check.checked;
+				card.classList.toggle("km-item-picked-up", check.checked);
+			});
+			label.appendChild(check);
+			label.appendChild(el("span", "km-item-name", item.items));
+			heading.appendChild(label);
+			top.appendChild(heading);
 			top.appendChild(el("span", "km-tag", item.acquisition));
 			card.appendChild(top);
 			card.appendChild(el("p", "km-item-directions", item.directions));
@@ -896,6 +960,7 @@
 		var data = window.KMCalculatorReferenceData;
 		sourceData = profile && data && Object.prototype.hasOwnProperty.call(data, profile.id) ? data[profile.id] : null;
 		loadTrainerProgress(profile);
+		loadItemProgress(profile);
 		if (encounterTracker) encounterTracker.setProfile(profile, sourceData);
 		profileLabel.textContent = profile ? profile.shortName + " / Generation " + profile.baseGeneration : "Choose a ROM hack";
 		views.forEach(function (view) {
@@ -923,6 +988,7 @@
 		var wrapper = document.querySelector(".wrapper");
 		var nav = el("nav", "km-app-tabs"); nav.id = "km-app-tabs"; nav.setAttribute("role", "tablist"); nav.setAttribute("aria-label", "App sections");
 		wrapper.parentNode.insertBefore(nav, wrapper);
+		wrapper.parentNode.insertBefore(document.getElementById("km-settings-page"), wrapper);
 		profileLabel = el("span", "km-active-profile");
 		document.querySelector(".km-calculator-header").appendChild(profileLabel);
 		var changeProfile = document.querySelector(".km-rom-hack-change");
@@ -955,8 +1021,20 @@
 			var about = disclosure("About", credits, false);
 			about.classList.add("km-about", "km-toolbar-disclosure");
 			document.querySelector("header").appendChild(about);
+			document.addEventListener("click", function (event) {
+				if (about.open && !about.contains(event.target)) about.open = false;
+			}, true);
 		}
+		document.querySelector("header").appendChild(document.getElementById("km-report-problem"));
+		document.getElementById("km-settings-button").addEventListener("click", function () {
+			if (activeTab !== -1) previousTab = activeTab;
+			document.getElementById("km-settings-back").textContent = "Back to " + tabs[previousTab];
+			activateTab(-1, false);
+			window.dispatchEvent(new window.CustomEvent("kmcalculator:settingsopen"));
+		});
+		document.getElementById("km-settings-back").addEventListener("click", function () { activateTab(previousTab, true); });
 		window.addEventListener("kmcalculator:romhackchange", refreshProfile);
+		window.addEventListener("kmcalculator:runrestored", refreshProfile);
 		window.addEventListener("resize", resizeReferences);
 		refreshProfile(); activateTab(0, false);
 		document.documentElement.removeAttribute("data-km-starting");
