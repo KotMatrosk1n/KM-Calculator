@@ -1,6 +1,6 @@
 # App workspace
 
-The app provides four sections: Calculator, Encounters, Trainers, and Route Items. Team & Boxes opens from the bottom of the Calculator page. The live calculator stays mounted when switching sections, preserving the matchup and each section's position.
+The app provides four main sections: Calculator, Encounters, Trainers, and Route Items. Settings opens its own page from the header. Team & Boxes opens from the bottom of the Calculator page. The live calculator stays mounted when switching sections, preserving the matchup and each section's position.
 
 During startup, the original calculator markup stays invisible until the workspace, profile, and initial tab are assembled. The desktop window waits for both page load and first paint before appearing. If workspace initialization fails, the startup surface displays an error instead of exposing the unfinished layout.
 
@@ -22,7 +22,7 @@ Stats & details keeps Type and Gender together when space allows, followed by op
 
 Damage results place the selected move's description and primary damage rolls above the move choices. Additional hit combinations expand through More damage rolls. Each move list is headed by its Pokémon's name, with slot numbers retained in doubles. Selected team sprites keep the same border and fill as their hover highlight, and the highlight follows the Pokémon currently being edited when switching slots.
 
-Battlefield opens a dialog with global weather, terrain, and field effects above matching Me and Opponent grids. Each side retains its own hazards, screens, support effects, and evenly sized Spikes controls. Preferences opens separately. The AI Battle Simulator entry is hidden. Notes remain available, with Clear Notes in the notes window.
+Battlefield expands upward beside Team & Boxes, with Player and Trainer effects aligned beneath their calculator columns and shared weather, terrain, and field effects alongside them. Each side retains its own hazards, screens, support effects, and Spikes controls. An Active indicator identifies selected effects. Reset Battlefield clears manual effects and reapplies starting weather and terrain from the current matchup's abilities while preserving the selected Pokemon, battle format, and level preference. Preferences opens separately. Notes remain available, with Clear Notes in the notes window.
 
 Team & Boxes expands upward from the bottom of the Calculator page. The drawer reserves space beneath the matchup, and the calculator adapts to the remaining height. Both stay interactive: rearranging Pokémon, assigning slots, and changing color coding use the same live controls and update the current matchup. All five destinations remain available, with named sprites, drag-and-drop, and assignment menus. Large collections use pages sized for the drawer; color updates retain the current page, while changed search matches reset it.
 
@@ -30,17 +30,27 @@ Pokémon context menus open below or above the pointer according to available sp
 
 Search & sort, Color coding, Manage boxes, and Import / Export open beside the boxes inside the drawer. These panels do not block the calculator. Selecting the same tool again closes its panel. Team & Boxes collapses the drawer; Escape also closes it when focus is inside, returning focus to the toggle. The drawer is hidden on reference pages and retains its state when returning to Calculator.
 
-Finder and color-code help open as native modal dialogs, with topic buttons instead of a scrolling body. Closing help returns focus to its opener. Notes has a larger resizable editor, consistent line-number sizing, and a footer that stays outside the editing area; its position and resize behavior account for workspace scaling. About, help, Notes, and Settings use the selected theme.
+Finder and color-code help open as native modal dialogs, with topic buttons instead of a scrolling body. Closing help returns focus to its opener. Notes has a larger resizable editor, consistent line-number sizing, and a footer that stays outside the editing area; its position and resize behavior account for workspace scaling. About closes when the user clicks outside its popup. About, help, Notes, and Settings use the selected theme.
 
-Import opens the drawer's Import / Export panel without leaving the matchup.
+Import / Export in Team & Boxes opens the import tools without leaving the matchup.
 
 Catch logs show eight records per page, keep newly added catches visible, and retain keyboard focus after removing a record. Update release notes use measured pages that preserve all source text. Long editable notes, imported team text, and searchable dropdowns retain normal scrolling.
 
-The profile chooser displays the Royal Sword logo and Creator: Matroskin. Attribution and licensing records remain available in the app's documentation.
+The profile chooser displays the Royal Sword logo and Creator: Matroskin. The active profile is labelled Currently selected without the filled toggle appearance used by other controls. Attribution and licensing records remain available in the app's documentation.
 
 The layout follows [Windows responsive-design guidance](https://learn.microsoft.com/en-us/windows/apps/design/layout/responsive-design): adapt to effective window dimensions, reflow controls, and show secondary details when space allows. Controls use consistent heights and spacing within each task.
 
 The shared app shell does not choose mechanics or input policies. Registered profile layouts still run their reversible lifecycle, and the active profile determines generation, EV policy, trainer data, save context, and optional features.
+
+## Settings and run backups
+
+Settings has Updates and Backup tabs, remembers its selected tab, and provides a button to return to the previous app section. Arrow keys, Home, and End navigate the Settings tabs. Updates retains version information, manual checks, paginated release notes, download progress, retry actions, and installation confirmation. Navigating away keeps the current calculator and update state available.
+
+Back Up Run saves a JSON file for the selected profile. It includes custom sets, team and box order, color settings, imported inventory, global and trainer notes, all encounter modes, trainer progress, item pickups, and associated imported trainer packs. Pending notes are saved before the backup is created.
+
+Restore Run validates the file and compatible profile, asks before replacing the run, and saves a recovery copy for Undo Last Restore. Other profiles and global preferences are kept. Restoring a backup made before item pickup tracking clears pickup checks for that restored profile. Desktop uses native file dialogs; browser use downloads and reads the same backup format.
+
+Report a Problem appears after About in the header. It opens a GitHub draft containing the calculator version, current profile, and generation, with space for reproduction steps and expected and actual behavior. The user reviews and submits the report; run data and attachments are not submitted automatically.
 
 ## Profile reference sections
 
@@ -49,6 +59,8 @@ Each reference section has search, filters, a selectable location or trainer lis
 Reference lists use content-sized rows with separate name and metadata lines. Names wrap inside their selection target. Previous/Next controls and a page selector replace the nested scrolling lists, with page sizes calculated from the available window space. The selected entry and catch controls retain keyboard focus after updates.
 
 Details use the same paging pattern. Trainer teams and route items share aligned card columns; encounter tables split between rows when a compact window cannot display a whole method. Every catch control keeps its original identity and odds continue to use the full encounter method, including entries on other pages. Trainer stats appear directly beneath the moves in six aligned columns. Source evidence and location notes open in dialogs. This follows [Carbon's guidance on readable sizing, spacious data placement and pagination](https://www.carbondesignsystem.com/building-blocks/core/components/data-table/guidelines).
+
+Route Items follows the location order in Encounters, placing additional item locations beside the relevant routes. Search and acquisition filters preserve that order. Every item card has a pickup checkbox that saves separately for each profile and crosses out the checked title. Cards with the same item name remain independent, and a card listing several items has one checkbox for that group. Acquisition tags stay at the top right while long names wrap. Pickup progress is included in run backups.
 
 The Royal Sword reference includes:
 

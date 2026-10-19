@@ -94,7 +94,18 @@ function createDesktopBridge() {
 				ipcRenderer.send("km-calculator-storage-clear-prefix", prefix);
 			}
 		},
-		updates: createUpdateBridge()
+		updates: createUpdateBridge(),
+		runs: {
+			save: function (backup) { return ipcRenderer.invoke("km-calculator-run-save", backup); },
+			read: function () { return ipcRenderer.invoke("km-calculator-run-read"); },
+			recovery: function (profile) { return ipcRenderer.invoke("km-calculator-run-recovery", profile); },
+			restore: function (backup) {
+				return ipcRenderer.invoke("km-calculator-run-restore", backup).then(function (result) {
+					if (result.snapshot) storageSnapshot = result.snapshot;
+					return result;
+				});
+			}
+		}
 	};
 }
 

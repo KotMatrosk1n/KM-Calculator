@@ -45,26 +45,27 @@
         <img class="km-calculator-header-icon" src="img/km-calculator-icon.png" alt="" />
         <span class="km-calculator-header-title">KM Calculator</span>
     </div>
-    <button id="km-settings-button" class="km-settings-button" type="button" aria-controls="km-settings-overlay" aria-haspopup="dialog" aria-expanded="false" aria-label="Settings">
+    <button id="km-settings-button" class="km-settings-button" type="button" aria-controls="km-settings-page" aria-pressed="false" aria-label="Settings">
         <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M19.4 13a7.8 7.8 0 0 0 .05-1 7.8 7.8 0 0 0-.05-1l2.1-1.64-2-3.46-2.55 1.03a7.6 7.6 0 0 0-1.72-1L14.85 3h-4l-.38 2.93a7.6 7.6 0 0 0-1.72 1L6.2 5.9l-2 3.46L6.3 11a7.8 7.8 0 0 0-.05 1 7.8 7.8 0 0 0 .05 1l-2.1 1.64 2 3.46 2.55-1.03a7.6 7.6 0 0 0 1.72 1l.38 2.93h4l.38-2.93a7.6 7.6 0 0 0 1.72-1l2.55 1.03 2-3.46L19.4 13Zm-6.55 2.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z"/></svg>
         <span>Settings</span>
         <span id="km-settings-update-badge" class="km-settings-update-badge" aria-hidden="true" hidden>!</span>
     </button>
+    <a id="km-report-problem" class="btn km-report-button" href="https://github.com/KotMatrosk1n/KM-Calculator/issues/new?template=bug_report.md" target="_blank" rel="noopener noreferrer">Report a Problem</a>
 </header>
 
-<div id="km-settings-overlay" class="km-settings-overlay" hidden>
-    <section id="km-settings-dialog" class="km-settings-dialog" role="dialog" aria-modal="true" aria-labelledby="km-settings-heading" tabindex="-1">
-        <div class="km-settings-heading-row">
-            <div class="km-settings-heading-copy">
-                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M19.4 13a7.8 7.8 0 0 0 .05-1 7.8 7.8 0 0 0-.05-1l2.1-1.64-2-3.46-2.55 1.03a7.6 7.6 0 0 0-1.72-1L14.85 3h-4l-.38 2.93a7.6 7.6 0 0 0-1.72 1L6.2 5.9l-2 3.46L6.3 11a7.8 7.8 0 0 0-.05 1 7.8 7.8 0 0 0 .05 1l-2.1 1.64 2 3.46 2.55-1.03a7.6 7.6 0 0 0 1.72 1l.38 2.93h4l.38-2.93a7.6 7.6 0 0 0 1.72-1l2.55 1.03 2-3.46L19.4 13Zm-6.55 2.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7Z"/></svg>
-                <h2 id="km-settings-heading">Settings</h2>
-            </div>
-            <button id="km-settings-close" class="km-settings-icon-button" type="button" aria-label="Close settings">
-                <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6.4 4.98 5.6 5.6 5.6-5.6 1.42 1.42-5.6 5.6 5.6 5.6-1.42 1.42-5.6-5.6-5.6 5.6-1.42-1.42 5.6-5.6-5.6-5.6 1.42-1.42Z"/></svg>
-            </button>
-        </div>
-
+<section id="km-settings-page" class="km-settings-page" aria-labelledby="km-settings-heading" hidden>
+    <div class="km-page-heading">
+        <h1 id="km-settings-heading">Settings</h1>
+        <button id="km-settings-back" type="button">Back to Calculator</button>
+    </div>
+    <nav class="km-settings-tabs" role="tablist" aria-label="Settings sections">
+        <button id="km-settings-tab-updates" type="button" role="tab" aria-controls="km-settings-updates" aria-selected="true">Updates</button>
+        <button id="km-settings-tab-backup" type="button" role="tab" aria-controls="km-settings-backup" aria-selected="false" tabindex="-1">Backup</button>
+    </nav>
+    <section id="km-settings-updates" class="km-settings-panel" role="tabpanel" aria-labelledby="km-settings-tab-updates" tabindex="0">
         <div id="km-settings-view">
+            <h2>Updates</h2>
+            <p class="km-settings-description">Keep KM Calculator up to date.</p>
             <div class="km-settings-summary">
                 <div class="km-settings-metric">
                     <span>Installed version</span>
@@ -88,40 +89,63 @@
                 <h3 id="km-update-prompt-heading">Update Available</h3>
             </div>
             <p id="km-update-prompt-copy" class="km-update-prompt-copy"></p>
-            <pre id="km-update-release-notes" class="km-update-release-notes" hidden></pre>
-            <nav id="km-update-notes-pages" class="km-pagination" aria-label="Release notes pages" hidden>
-                <span id="km-update-notes-page" class="km-pagination-summary" aria-live="polite"></span>
-                <button id="km-update-notes-previous" type="button">Previous</button>
-                <button id="km-update-notes-next" type="button">Next</button>
-            </nav>
-            <div id="km-update-progress-panel" class="km-update-progress-panel" role="status" hidden>
-                <div class="km-update-progress-header">
-                    <strong id="km-update-progress-title">Downloading update</strong>
-                    <span id="km-update-progress-percent"></span>
+            <div class="km-update-layout">
+                <div id="km-update-notes-content" class="km-update-notes-content" hidden>
+                    <pre id="km-update-release-notes" class="km-update-release-notes" hidden></pre>
+                    <nav id="km-update-notes-pages" class="km-pagination" aria-label="Release notes pages" hidden>
+                        <span id="km-update-notes-page" class="km-pagination-summary" aria-live="polite"></span>
+                        <button id="km-update-notes-previous" type="button">Previous</button>
+                        <button id="km-update-notes-next" type="button">Next</button>
+                    </nav>
                 </div>
-                <div id="km-update-progress-track" class="km-update-progress-track" role="progressbar" aria-label="Update download progress">
-                    <span id="km-update-progress-fill" class="km-update-progress-fill"></span>
+                <div class="km-update-controls">
+                    <div id="km-update-progress-panel" class="km-update-progress-panel" role="status" hidden>
+                        <div class="km-update-progress-header">
+                            <strong id="km-update-progress-title">Downloading update</strong>
+                            <span id="km-update-progress-percent"></span>
+                        </div>
+                        <div id="km-update-progress-track" class="km-update-progress-track" role="progressbar" aria-label="Update download progress">
+                            <span id="km-update-progress-fill" class="km-update-progress-fill"></span>
+                        </div>
+                        <p id="km-update-progress-message"></p>
+                    </div>
+                    <div id="km-update-error" class="km-update-error" role="alert" hidden>
+                        <strong id="km-update-error-title"></strong>
+                        <p id="km-update-error-message"></p>
+                        <p id="km-update-error-next-step"></p>
+                    </div>
+                    <div class="km-update-actions">
+                        <button id="km-update-install" class="km-settings-primary-button" type="button">
+                            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2Zm14-9h-4V3H9v8H5l7 7 7-7Z"/></svg>
+                            <span id="km-update-install-label">Install Update</span>
+                        </button>
+                        <button id="km-update-dismiss" class="km-settings-secondary-button" type="button">
+                            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6.4 4.98 5.6 5.6 5.6-5.6 1.42 1.42-5.6 5.6 5.6 5.6-1.42 1.42-5.6-5.6-5.6 5.6-1.42-1.42 5.6-5.6-5.6-5.6 1.42-1.42Z"/></svg>
+                            <span>Not Now</span>
+                        </button>
+                    </div>
                 </div>
-                <p id="km-update-progress-message"></p>
-            </div>
-            <div id="km-update-error" class="km-update-error" role="alert" hidden>
-                <strong id="km-update-error-title"></strong>
-                <p id="km-update-error-message"></p>
-                <p id="km-update-error-next-step"></p>
-            </div>
-            <div class="km-update-actions">
-                <button id="km-update-install" class="km-settings-primary-button" type="button">
-                    <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2Zm14-9h-4V3H9v8H5l7 7 7-7Z"/></svg>
-                    <span id="km-update-install-label">Install Update</span>
-                </button>
-                <button id="km-update-dismiss" class="km-settings-secondary-button" type="button">
-                    <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6.4 4.98 5.6 5.6 5.6-5.6 1.42 1.42-5.6 5.6 5.6 5.6-1.42 1.42-5.6-5.6-5.6 5.6-1.42-1.42 5.6-5.6-5.6-5.6 1.42-1.42Z"/></svg>
-                    <span>Not Now</span>
-                </button>
             </div>
         </div>
     </section>
-</div>
+    <section id="km-settings-backup" class="km-settings-panel" role="tabpanel" aria-labelledby="km-settings-tab-backup" tabindex="0" hidden>
+        <h2>Backup</h2>
+        <p class="km-settings-description">Keep your team, boxes, color coding, notes, catches, item pickups, and trainer progress together.</p>
+        <div class="km-run-card">
+            <div><h3>Back up your run</h3><p>Save a backup file for the selected ROM hack.</p></div>
+            <button id="km-run-backup" type="button">Back Up Run</button>
+        </div>
+        <div class="km-run-card">
+            <div><h3>Restore a run</h3><p>Load a backup file. A recovery copy keeps your previous run available.</p></div>
+            <button id="km-run-restore" type="button">Restore Run</button>
+        </div>
+        <div class="km-run-actions">
+            <button id="km-run-undo" type="button" hidden>Undo Last Restore</button>
+        </div>
+        <p id="km-run-status" class="km-muted" role="status" aria-live="polite"></p>
+        <input id="km-run-file" type="file" accept=".json,application/json" hidden />
+    </section>
+</section>
 
 [content]
 
@@ -143,6 +167,8 @@
         <option value="sovereign">Sovereign</option>
     </select>
     <script type="text/javascript" src="./js/update_settings.js?"></script>
+    <script type="text/javascript" src="./js/run_data.js?"></script>
+    <script type="text/javascript" src="./js/run_tools.js?"></script>
 </div>
 
 </body>

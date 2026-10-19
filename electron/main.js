@@ -295,6 +295,16 @@ function clearAppStorageByPrefix(prefix) {
 }
 
 function registerAppStorageIpc() {
+	require("./run-tools")({
+		data: require(path.join(__dirname, app.isPackaged ? "../dist/js/run_data.js" : "../src/js/run_data.js")),
+		ipcMain: ipcMain, BrowserWindow: BrowserWindow, dialog: dialog, isAppUrl: isAppUrl,
+		userData: function () { return app.getPath("userData"); }, version: function () { return app.getVersion(); },
+		storagePath: getAppStoragePath, readStorage: readAppStorageCache,
+		replaceStorage: function (next) {
+			if (appStorageWriteTimer) clearTimeout(appStorageWriteTimer);
+			appStorageWriteTimer = null; appStorageCache = next;
+		}
+	});
 	ipcMain.on("km-calculator-storage-snapshot", function (event) {
 		event.returnValue = readAppStorageCache();
 	});

@@ -3,9 +3,9 @@
 
 	var settingsButton = document.getElementById("km-settings-button");
 	var updateBadge = document.getElementById("km-settings-update-badge");
-	var overlay = document.getElementById("km-settings-overlay");
-	var dialog = document.getElementById("km-settings-dialog");
-	var closeButton = document.getElementById("km-settings-close");
+	var page = document.getElementById("km-settings-page");
+	var settingsTabs = Array.prototype.slice.call(document.querySelectorAll(".km-settings-tabs [role='tab']"));
+	var activeSettingsTab = 0;
 	var settingsView = document.getElementById("km-settings-view");
 	var updateView = document.getElementById("km-update-view");
 	var versionValue = document.getElementById("km-settings-version");
@@ -15,6 +15,7 @@
 	var openReleaseButton = document.getElementById("km-settings-open-release");
 	var promptCopy = document.getElementById("km-update-prompt-copy");
 	var releaseNotes = document.getElementById("km-update-release-notes");
+	var notesContent = document.getElementById("km-update-notes-content");
 	var notesNavigation = document.getElementById("km-update-notes-pages");
 	var notesPageLabel = document.getElementById("km-update-notes-page");
 	var notesPrevious = document.getElementById("km-update-notes-previous");
@@ -36,7 +37,6 @@
 	var desktopBridge = window.kmCalculatorDesktop || window.royalSwordDesktop;
 	var updateBridge = desktopBridge && desktopBridge.updates;
 	var activeView = "settings";
-	var previousFocus = null;
 	var unsubscribe = null;
 	var stateRevision = 0;
 	var updateState = {
@@ -60,7 +60,7 @@
 		canInstall: false
 	};
 
-	if (!settingsButton || !overlay || !dialog || !updateAction || !installButton) return;
+	if (!settingsButton || !page || !settingsTabs.length || !updateAction || !installButton) return;
 
 	function hasNumber(value) {
 		return typeof value === "number" && isFinite(value);
@@ -189,11 +189,12 @@
 	}
 
 	function renderReleaseNotes() {
+		notesContent.hidden = !updateState.releaseNotes;
 		releaseNotes.hidden = !updateState.releaseNotes;
 		notesNavigation.hidden = !updateState.releaseNotes;
-		if (!updateState.releaseNotes || overlay.hidden || updateView.hidden) return;
+		if (!updateState.releaseNotes || page.hidden || activeSettingsTab !== 0 || updateView.hidden) return;
 		var scale = parseFloat(window.getComputedStyle(document.body).getPropertyValue("--km-scale")) || 1;
-		var height = Math.max(100, Math.min(300, window.innerHeight / scale - 500));
+		var height = Math.max(70, Math.min(400, (window.innerHeight - releaseNotes.getBoundingClientRect().top) / scale - 110));
 		var key = releaseNotes.clientWidth + ":" + height + ":" + updateState.releaseNotes;
 		if (key !== notesLayoutKey) {
 			var offset = notesPages.slice(0, notesPage).join("").length;
@@ -239,7 +240,6 @@
 		updateErrorNextStep.textContent = updateState.nextStep;
 		installButton.disabled = applying || !updateState.canInstall;
 		dismissButton.disabled = applying;
-		closeButton.disabled = applying;
 		installLabel.textContent = applying ? (updateState.status === "installing" ? "Installing" : "Downloading") :
 			(updateState.status === "error" ? "Retry Update" : "Install Update");
 		renderProgress();
@@ -262,7 +262,6 @@
 		activeView = "settings";
 		settingsView.hidden = false;
 		updateView.hidden = true;
-		dialog.setAttribute("aria-labelledby", "km-settings-heading");
 		if (shouldFocus !== false) updateAction.focus();
 	}
 
@@ -272,81 +271,18 @@
 		settingsView.hidden = true;
 		updateView.hidden = false;
 		renderReleaseNotes();
-		dialog.setAttribute("aria-labelledby", "km-update-prompt-heading");
 		installButton.focus();
 	}
 
-	function openSettings() {
-		previousFocus = document.activeElement;
-		showSettingsView(false);
-		overlay.hidden = false;
-		document.body.classList.add("km-settings-open");
-		settingsButton.setAttribute("aria-expanded", "true");
-		window.setTimeout(function () {
-			dialog.focus();
-		}, 0);
-	}
-
-	function closeSettings() {
-		if (isApplyingUpdate()) return;
-		overlay.hidden = true;
-		document.body.classList.remove("km-settings-open");
-		settingsButton.setAttribute("aria-expanded", "false");
-		showSettingsView(false);
-		if (previousFocus && typeof previousFocus.focus === "function") previousFocus.focus();
-		previousFocus = null;
-	}
-
-	function getFocusableElements() {
-		var candidates = dialog.querySelectorAll("button:not([disabled]), [href], [tabindex]:not([tabindex='-1'])");
-		return Array.prototype.filter.call(candidates, function (element) {
-			var current = element;
-			while (current && current !== dialog) {
-				if (current.hidden) return false;
-				current = current.parentElement;
-			}
-			return current === dialog;
+	function selectSettingsTab(index, focus) {
+		activeSettingsTab = index;
+		settingsTabs.forEach(function (tab, i) {
+			tab.setAttribute("aria-selected", String(i === index));
+			tab.tabIndex = i === index ? 0 : -1;
+			document.getElementById(tab.getAttribute("aria-controls")).hidden = i !== index;
 		});
-	}
-
-	function keepFocusInsideDialog(event) {
-		if (overlay.hidden || dialog.contains(event.target)) return;
-		var focusable = getFocusableElements();
-		if (focusable.length) focusable[0].focus();
-		else dialog.focus();
-	}
-
-	function handleDialogKeydown(event) {
-		if (overlay.hidden) return;
-		if (event.key === "Escape") {
-			if (isApplyingUpdate()) return;
-			event.preventDefault();
-			if (activeView === "update") showSettingsView();
-			else closeSettings();
-			return;
-		}
-		if (event.key !== "Tab") return;
-		var focusable = getFocusableElements();
-		if (!focusable.length) {
-			event.preventDefault();
-			dialog.focus();
-			return;
-		}
-		var first = focusable[0];
-		var last = focusable[focusable.length - 1];
-		var activeElement = document.activeElement;
-		var activeIndex = focusable.indexOf(activeElement);
-		if (activeElement === dialog || !dialog.contains(activeElement) || activeIndex === -1) {
-			event.preventDefault();
-			if (event.shiftKey) last.focus();
-			else first.focus();
-		} else if (event.shiftKey && activeElement === first) {
-			event.preventDefault();
-			last.focus();
-		} else if (!event.shiftKey && activeElement === last) {
-			event.preventDefault();
-			first.focus();
-		}
+		if (focus) settingsTabs[index].focus();
+		renderReleaseNotes();
 	}
 
 	function setBridgeError(title, message) {
@@ -430,18 +366,29 @@
 		}
 	}
 
-	settingsButton.addEventListener("click", openSettings);
+	settingsTabs.forEach(function (tab, i) {
+		tab.addEventListener("click", function () { selectSettingsTab(i, false); });
+		tab.addEventListener("keydown", function (event) {
+			var index;
+			if (event.key === "ArrowRight") index = (i + 1) % settingsTabs.length;
+			else if (event.key === "ArrowLeft") index = (i + settingsTabs.length - 1) % settingsTabs.length;
+			else if (event.key === "Home") index = 0;
+			else if (event.key === "End") index = settingsTabs.length - 1;
+			else return;
+			event.preventDefault(); selectSettingsTab(index, true);
+		});
+	});
+	window.addEventListener("kmcalculator:settingsopen", function () { selectSettingsTab(activeSettingsTab, true); });
 	if (notesPrevious && notesNext) {
 		notesPrevious.addEventListener("click", function () { notesPage--; renderReleaseNotes(); });
 		notesNext.addEventListener("click", function () { notesPage++; renderReleaseNotes(); });
 		window.addEventListener("resize", renderReleaseNotes);
 	}
-	closeButton.addEventListener("click", closeSettings);
-	overlay.addEventListener("click", function (event) {
-		if (event.target === overlay) closeSettings();
+	updateView.addEventListener("keydown", function (event) {
+		if (event.key === "Escape" && !isApplyingUpdate()) {
+			event.preventDefault(); showSettingsView();
+		}
 	});
-	document.addEventListener("keydown", handleDialogKeydown);
-	document.addEventListener("focusin", keepFocusInsideDialog);
 	updateAction.addEventListener("click", function () {
 		if (updateState.available) showUpdateView();
 		else checkForUpdates();

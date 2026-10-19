@@ -3358,7 +3358,7 @@ $(".forme").change(function () {
 	if (isAltForme && abilities.indexOf(altForme.abilities[0]) !== -1 && !greninjaSet) {
 		container.find(".ability").val(altForme.abilities[0]);
 	} else if (!isAltForme && abilities.indexOf(altForme.abilities[0]) !== -1 && !greninjaSet) {
-		if (chosenSet && (chosenSet.ability || chosenSet.abilities[0])) {
+		if (chosenSet && (chosenSet.ability || (chosenSet.abilities && chosenSet.abilities[0]))) {
 			container.find(".ability").val(isRandoms ? chosenSet.abilities[0] : chosenSet.ability);
 		} else {
 			container.find(".ability").val(altForme.abilities[0]);
@@ -4038,6 +4038,17 @@ function resetTrainerBattlefield() {
 	autosetWeather($("#p1 .ability").val(), 0);
 	autosetTerrain($("#p1 .ability").val(), 0);
 	getTerrainEffects.call($("#p1 .ability")[0]);
+	if (typeof window.PC_HANDLER === "function") window.PC_HANDLER();
+	window.dispatchEvent(new CustomEvent("kmcalculator:fieldchange"));
+}
+
+function resetCurrentBattlefield() {
+	clearField(true);
+	["#p1", "#p2"].forEach(function (side, index) {
+		autosetWeather($(side + " .ability").val(), index);
+		autosetTerrain($(side + " .ability").val(), index);
+	});
+	$(".poke-info").each(function () { getTerrainEffects.call($(this).find(".ability")[0]); autosetQP($(this)); });
 	if (typeof window.PC_HANDLER === "function") window.PC_HANDLER();
 	window.dispatchEvent(new CustomEvent("kmcalculator:fieldchange"));
 }

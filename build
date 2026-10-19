@@ -247,6 +247,8 @@ const srcRuntimeFiles = new Set([
 	'js/swsh_ai_engine.js',
 	'js/trainer_data_registry.js',
 	'js/update_settings.js',
+	'js/run_data.js',
+	'js/run_tools.js',
 	'js/vendor/jquery-1.9.1.min.js',
 	'js/vendor/select2/select2-spinner.gif',
 	'js/vendor/select2/select2.css',

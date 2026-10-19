@@ -1,5 +1,11 @@
 {
     "root": true,
+    "overrides": [
+        {
+            "files": ["src/js/desktop_storage.js", "src/js/run_tools.js"],
+            "parserOptions": {"ecmaVersion": 2017}
+        }
+    ],
     "parserOptions": {
         "ecmaVersion": 5,
         "sourceType": "script"

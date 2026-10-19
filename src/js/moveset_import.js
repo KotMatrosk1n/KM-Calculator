@@ -523,6 +523,18 @@ function selectCalculatorTrainer(profileId, trainerId) {
 
 window.selectCalculatorTrainer = selectCalculatorTrainer;
 
+window.refreshRestoredRun = function (profileId) {
+	removeTrainerSetsFromDex();
+	trainerDataRegistry = null; builtInTrainerDataInstalled = false;
+	initializeTrainerDataRegistry();
+	var active = window.kmRomHackRegistry.getActiveProfile();
+	if (profileId && (!active || active.id !== profileId)) window.kmRomHackRegistry.activateProfile(profileId);
+	$(".gen:checked").trigger("change");
+	refreshTrainerDataViews();
+	if (typeof window.reloadImportedPlayerBagItems === "function") window.reloadImportedPlayerBagItems();
+	window.dispatchEvent(new CustomEvent("kmcalculator:runrestored"));
+};
+
 window.addEventListener("kmcalculator:romhackchange", function () {
 	setTimeout(function () {
 		refreshTrainerDataViews();

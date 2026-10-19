@@ -140,7 +140,7 @@ body.km-app button.km-app-tab { background: transparent; }
 body.km-app button.km-app-tab:hover { background: var(--km-hover); color: var(--km-text); }
 body.km-app button.km-app-tab[aria-selected="true"] { background: var(--km-selected-fill); color: var(--km-highlight); border-bottom-color: var(--km-highlight); box-shadow: none; }
 body.km-app :is(.combat-workspace > .panel, .km-results-column, .km-reference-card, .km-location-list, .lower-workspace fieldset) { background: var(--km-panel-fill); box-shadow: inset 0 1px 0 var(--km-sheen); }
-body.km-app :is(.km-dialog, .km-catch-dialog, .notes-window, .km-settings-dialog, .km-rom-hack-dialog) { background: var(--km-panel-fill); box-shadow: var(--km-elevation); border-color: var(--km-line); color: var(--km-text); }
+body.km-app :is(.km-dialog, .km-catch-dialog, .notes-window, .km-rom-hack-dialog) { background: var(--km-panel-fill); box-shadow: var(--km-elevation); border-color: var(--km-line); color: var(--km-text); }
 body.km-app :is(.notes-window-header, .team-box-heading) { background: var(--km-chrome-fill); }
 body.km-app :is(.km-section-heading, .km-results-heading h2, .km-reference-card h3, .km-page-heading h1) { color: var(--km-soft); }
 body.km-app fieldset > legend { color: var(--km-accent); }
@@ -179,7 +179,7 @@ body.km-app :is(.km-settings-primary-button, .km-catch-form button):hover:not(:d
 body.km-app :is(.locked-move, .locked-weather):checked + .btn { box-shadow: inset 3px 0 0 var(--km-accent); }
 
 /* The profile chooser and overlays share the selected identity. */
-body.km-app :is(.km-rom-hack-overlay, .km-settings-overlay) { background: var(--km-overlay); }
+body.km-app .km-rom-hack-overlay { background: var(--km-overlay); }
 body.km-app dialog::backdrop { background: var(--km-overlay); }
 body.km-app .km-rom-hack-question { color: var(--km-accent); text-shadow: none; }
 body.km-app :is(.km-rom-hack-intro, .km-rom-hack-tile-description) { color: var(--km-soft); }
