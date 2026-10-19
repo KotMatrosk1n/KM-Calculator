@@ -43,7 +43,7 @@ The resolved versions and license evidence come from the checked-in manifests an
 
 The three npm lockfiles contain 483 dependency locations and 373 distinct package/version identities. The summary and complete inventory below include every resolved lockfile identity, including optional packages retained for other operating systems. Consequently, this is intentionally broader than the set installed on any one machine or copied into any one binary.
 
-License strings are reproduced from installed package metadata when available and from lockfile metadata otherwise. The sole lock-only override is documented in the generator for the macOS-only `fsevents@2.3.2` entry in the older calculator lockfile. Compound expressions are preserved instead of being simplified to one license.
+License strings are reproduced from installed package metadata when available and from lockfile metadata otherwise. Compound expressions are preserved instead of being simplified to one license.
 
 | Package-declared license or expression | Distinct package/version identities |
 | --- | ---: |
