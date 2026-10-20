@@ -10,7 +10,7 @@ Before reporting an issue from an older version, update to the latest release an
 
 Use [GitHub Private Vulnerability Reporting](https://github.com/KotMatrosk1n/KM-Calculator/security/advisories/new) for suspected vulnerabilities. Please do not open a public issue, discussion, or pull request containing exploit details.
 
-If private reporting is unavailable, open a detail-free public issue stating only that you need a private security contact. Do not include the vulnerability, affected files, or reproduction details there.
+If private reporting is unavailable, open a public issue stating only that you need a private security contact. Do not include the vulnerability, affected files, or reproduction details there.
 
 ## What belongs in a security report
 
@@ -19,7 +19,7 @@ Security issues are problems that cross a trust, privacy, or ownership boundary.
 * Installer, updater, signature, or release download tampering.
 * Path traversal or writes outside locations owned by KM Calculator.
 * Cleanup or uninstall deleting files KM Calculator does not own.
-* Unintended command execution or unsafe handling of untrusted save files, trainer packs, or ROM-hack profile data.
+* Unintended command execution or unsafe handling of untrusted save files, trainer packs, or ROM hack profile data.
 * Exposure of credentials, signing material, private files, personal information, or sensitive local paths.
 * A dependency vulnerability that is reachable through KM Calculator.
 
@@ -27,7 +27,7 @@ File corruption is a security concern when it crosses one of those boundaries or
 
 ## What is normally a regular bug
 
-Crashes, incorrect damage calculations, incorrect Pokemon or trainer data, save-import compatibility problems, AI simulator behavior, unsupported ROM-hack combinations, display problems, slow operations, missing features, and documentation errors usually belong in the normal issue templates.
+Crashes, incorrect damage calculations, incorrect Pokemon or trainer data, save import compatibility problems, AI simulator behavior, unsupported ROM hack combinations, display problems, slow operations, missing features, and documentation errors usually belong in the normal issue templates.
 
 When in doubt, report privately. The maintainer can move a report to the normal bug process without exposing sensitive details.
 

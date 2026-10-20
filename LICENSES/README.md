@@ -1,11 +1,11 @@
 # Retained license texts
 
 These files supplement the application's root GPLv3 license. They do not
-relicense third-party components.
+relicense third party components.
 
 - `MIT-legacy.txt`: the complete root MIT notice before the 2026-10-20 GPLv3
   distribution change, preserving Honko, contributors, and Matroskin.
-- `Apache-2.0.txt`: the full Apache license, used for Select2's dual-license
+- `Apache-2.0.txt`: the full Apache license, used for Select2's dual license
   choice. Its original Igor Vaynberg copyright header is retained in the files.
 - `jQuery-MIT.txt`: upstream `MIT-LICENSE.txt` from jQuery 1.9.1.
 - `normalize-MIT.txt`: upstream `LICENSE.md` from normalize.css 3.0.2.

@@ -19,23 +19,23 @@ copyright and license notices must be retained:
 | --- | --- |
 | Original MIT calculator lineage | [Original MIT notice](LICENSES/MIT-legacy.txt), including Honko, contributors, and Matroskin. Earlier MIT grants are not revoked. |
 | Standalone calculation engine in `calc/` | [MIT](calc/LICENSE), including its local extensions. It can be included in the GPLv3 application. |
-| Import-data generation tools in `import/` | [MIT](import/LICENSE). Generated third-party data retains the notices in [import/THIRD_PARTY_NOTICES.md](import/THIRD_PARTY_NOTICES.md). |
-| Save importer in `src/js/save_import.js` | GPLv3, including the 127-byte Switch XOR constant from the pinned PKHeX source. The PKHeX executable and libraries are not bundled. |
+| Import data generation tools in `import/` | [MIT](import/LICENSE). Generated third party data retains the notices in [import/THIRD_PARTY_NOTICES.md](import/THIRD_PARTY_NOTICES.md). |
+| Save importer in `src/js/save_import.js` | GPLv3, including the 127 byte Switch XOR constant from the pinned PKHeX source. The PKHeX executable and libraries are not bundled. |
 | Separate Windows installer in `installer/windows/` | [MIT](installer/windows/LICENSE) for original installer code. WiX components retain [MS-RL](LICENSES/WiX-MS-RL.txt); .NET and its dependencies retain their notices. |
-| Other third-party code | Its original license, preserved file headers, [CREDITS.md](CREDITS.md), and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). |
+| Other third party code | Its original license, preserved file headers, [CREDITS.md](CREDITS.md), and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). |
 | Game text, portraits, sprites, trademarks, and other artwork | Excluded from the software license. Their rights remain with their respective holders; GPLv3 supplies no additional asset permissions. |
 
 The app and installer are separate programs: the installer copies and launches
 the app payload; the calculator does not link to WiX or its bootstrapper API.
-MS-RL is [not GPL-compatible](https://www.gnu.org/licenses/license-list.html#ms-rl).
+MS-RL is [not compatible with GPL](https://www.gnu.org/licenses/license-list.html#ms-rl).
 It must remain on the installer side of this boundary, as an
 [aggregate](https://www.gnu.org/licenses/gpl-faq.html#MereAggregation), and must
-not be copied into GPL-covered application code. The WiX v7 build-package
-[OSMF terms](https://wixtoolset.org/osmf/) remain a separate build-tool obligation.
+not be copied into GPL covered application code. The WiX v7 build package
+[OSMF terms](https://wixtoolset.org/osmf/) remain a separate build tool obligation.
 
 ## Compatibility review
 
-The checked-in npm lockfiles and installed license texts were reviewed on
+The committed npm lockfiles and installed license texts were reviewed on
 2026-10-20. The inventory includes development tools as well as runtime packages;
 it is not a claim that every listed package ships in the application.
 
@@ -49,17 +49,17 @@ it is not a claim that every listed package ships in the application.
   The [GNU license list](https://www.gnu.org/licenses/license-list.html)
   documents compatibility for these license families. The MIT/ISC alternatives
   may be used where offered.
-- Bundled jQuery, normalize.css, and Bootstrap-derived CSS retain MIT terms.
+- Bundled jQuery, normalize.css, and CSS derived from Bootstrap retain MIT terms.
   Select2 3.4.5 offers Apache-2.0 or GPL-2.0-only. This distribution explicitly
   uses its **Apache-2.0 option**, which is compatible with GPLv3.
 - PokéAPI's BSD-3-Clause data and Pokémon Showdown's MIT data retain their
-  notices. No AGPL implementation or GPLv2-only dependency is introduced.
-- Electron is an unmodified, general-purpose runtime. Its MIT license and
+  notices. No AGPL implementation or GPLv2 only dependency is introduced.
+- Electron is an unmodified, general purpose runtime. Its MIT license and
   `LICENSES.chromium.html` must ship with it; the npm MIT declaration does not
   replace Chromium's component notices.
 
 Changing a dependency, copying code across the installer boundary, or adding
-third-party data requires checking those terms again.
+third party data requires checking those terms again.
 
 ## Binary releases and matching source
 
@@ -68,7 +68,7 @@ at no additional charge and without an account requirement. The release workflow
 creates and uploads `KM-Calculator-Source-<version>.zip` from the same clean,
 tagged commit as the installer. It includes tracked source, license notices,
 lockfiles, and build scripts. `KM-Calculator-Dependencies-<version>.tar.gz`
-contains integrity-checked production npm packages, pinned preferred TypeScript
+contains integrity checked production npm packages, pinned preferred TypeScript
 sources for compiled packages, and the unminified jQuery, Sizzle, and Select2
 sources. It also contains the unmodified WiX
 source archive for the version embedded in the separate installer, satisfying
@@ -101,7 +101,7 @@ integrities, repository locations, and Electron's matching source release.
 update and review it when changing the corresponding dependencies. The .NET
 notices in `LICENSES/` come from the 8.0.28 runtime and desktop runtime packages;
 refresh them when updating the installer's runtime.
-Unmodified general-purpose build tools and runtimes are obtained separately.
+Unmodified general purpose build tools and runtimes are obtained separately.
 When distributing changes to dependencies, include their preferred source and
 build instructions too; the upstream links alone do not cover local changes.
 Keep the source artifacts available for as long as their binaries are offered,

@@ -8,15 +8,15 @@ assignees: ""
 
 # What are you trying to do?
 
-Describe the player-visible or calculator-visible goal.
+Describe what players should be able to do in the calculator.
 
 # Profile and generation
 
-Name the affected ROM hack, canonical generation, or cross-generation workflow.
+Name the affected ROM hack, canonical generation, or workflow spanning generations.
 
 # Why is this useful?
 
-Describe the calculation, team-building, trainer-data, save-import, or desktop use case.
+Describe the calculation, team building, trainer data, save import, or desktop use case.
 
 # Desired workflow
 

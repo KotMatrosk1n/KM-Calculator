@@ -17,6 +17,7 @@
 	var trainerProfileId;
 	var itemProgress = {version: 1, pickedUp: []};
 	var itemProfileId;
+	var resetRunDialog;
 	var resizeWorkspace = function () {};
 
 	function el(tag, className, text) {
@@ -206,7 +207,7 @@
 		}, "km-field-reset");
 		resetField.id = "km-battlefield-reset"; resetField.hidden = true;
 		resetField.setAttribute("aria-label", "Reset Battlefield to the current matchup's starting conditions");
-		var hint = el("span", "km-muted km-team-drawer-hint", "Drag to rearrange · Right-click to assign"); hint.hidden = true;
+		var hint = el("span", "km-muted km-team-drawer-hint", "Drag to rearrange · Right click to assign"); hint.hidden = true;
 		var actions = el("div", "km-team-drawer-actions"); actions.hidden = true;
 		function setOpen(value) {
 			hideFieldTooltip();
@@ -480,7 +481,7 @@
 				var rowHeight = Math.max.apply(null, table.rows.map(function (row) { return row.getBoundingClientRect().height; }));
 				var capacity = Math.max(1, Math.floor((available - overhead) / rowHeight));
 				if (table.rows.length <= capacity) { card.setAttribute("data-page-key", table.rows[0].querySelector("input").id); return; }
-				var range = el("small", "km-table-range", " · " + table.rows.length + "–" + table.rows.length + " / " + table.rows.length);
+				var range = el("small", "km-table-range", " · " + table.rows.length + " to " + table.rows.length + " / " + table.rows.length);
 				card.querySelector("h3").appendChild(range);
 				overhead = card.getBoundingClientRect().height - body.getBoundingClientRect().height;
 				capacity = Math.max(1, Math.floor((available - overhead) / rowHeight));
@@ -488,7 +489,7 @@
 				for (var start = 0; start < table.rows.length; start += capacity) {
 					var chunk = card.cloneNode(true); var chunkBody = chunk.querySelector("tbody"); chunkBody.textContent = "";
 					table.rows.slice(start, start + capacity).forEach(function (row) { chunkBody.appendChild(row); });
-					chunk.querySelector("h3").appendChild(el("small", "km-table-range", " · " + (start + 1) + "–" + Math.min(start + capacity, table.rows.length) + " / " + table.rows.length));
+					chunk.querySelector("h3").appendChild(el("small", "km-table-range", " · " + (start + 1) + " to " + Math.min(start + capacity, table.rows.length) + " / " + table.rows.length));
 					chunk.setAttribute("data-page-key", table.rows[start].querySelector("input").id); grid.insertBefore(chunk, card);
 				}
 				card.remove();
@@ -557,7 +558,7 @@
 			previous.disabled = state.page === 0; next.disabled = state.page >= pages.length - 1;
 			select.value = String(state.page);
 			footer.hidden = !!encounterTables && pages.length <= 1;
-			summary.textContent = encounterTables ? page.length + " of " + grid.children.length + " tables" : page.length ? (Array.prototype.indexOf.call(grid.children, page[0]) + 1) + "–" +
+			summary.textContent = encounterTables ? page.length + " of " + grid.children.length + " tables" : page.length ? (Array.prototype.indexOf.call(grid.children, page[0]) + 1) + " to " +
 				(Array.prototype.indexOf.call(grid.children, page[page.length - 1]) + 1) + " of " + grid.children.length : "0 results";
 		}
 		return function () {
@@ -601,6 +602,61 @@
 			if (view.resizeDetail) view.resizeDetail();
 		});
 	}
+	function reloadReferenceProgress(profile) {
+		loadTrainerProgress(profile);
+		loadItemProgress(profile);
+		if (encounterTracker) encounterTracker.setProfile(profile, sourceData);
+		views.forEach(function (view) { render(view); });
+	}
+	function confirmResetRun(opener) {
+		var profile = registry && registry.getActiveProfile();
+		if (!profile || !sourceData || resetRunDialog) return;
+		var profileId = profile.id, busy = false;
+		var dialog = el("dialog", "km-dialog km-reset-run-dialog");
+		resetRunDialog = dialog;
+		dialog.setAttribute("role", "alertdialog");
+		dialog.setAttribute("aria-labelledby", "km-reset-run-title");
+		dialog.setAttribute("aria-describedby", "km-reset-run-description");
+		var title = el("h2", "", "Reset Run"); title.id = "km-reset-run-title"; dialog.appendChild(title);
+		var description = el("div"); description.id = "km-reset-run-description";
+		description.appendChild(el("p", "", "Accept will permanently clear the following progress for " + (profile.shortName || profile.name) + ":"));
+		var list = el("ul");
+		[
+			"All encounter records in Normal, Royalocke, and Nuzlocke, including catches, excluded families, and locations marked used, missed, or closed.",
+			"Every Route Items pickup check.",
+			"Every trainer's Beaten check."
+		].forEach(function (text) { list.appendChild(el("li", "", text)); });
+		description.appendChild(list);
+		description.appendChild(el("p", "", "Your team, boxes, imported inventory, notes, settings, and other ROM hack profiles will be kept."));
+		description.appendChild(el("p", "km-reset-run-warning", "This is NOT reversible. There is no undo."));
+		dialog.appendChild(description);
+		var feedback = el("p", "km-reset-run-error"); feedback.setAttribute("role", "alert"); feedback.hidden = true; dialog.appendChild(feedback);
+		var actions = el("div", "km-dialog-actions");
+		var decline = button("Decline", function () { if (!busy) dialog.close(); });
+		decline.autofocus = true;
+		var accept = button("Accept", function () {
+			if (busy || !dialog.open || (registry.getActiveProfile() || {}).id !== profileId) return;
+			busy = true; accept.disabled = decline.disabled = true;
+			feedback.hidden = true; dialog.setAttribute("aria-busy", "true");
+			window.kmCalculatorStorage.resetProgress(profileId).then(function () {
+				if ((registry.getActiveProfile() || {}).id === profileId) {
+					reloadReferenceProgress(registry.getActiveProfile());
+				}
+				busy = false; dialog.close();
+			}, function (error) {
+				busy = false; accept.disabled = decline.disabled = false; dialog.removeAttribute("aria-busy");
+				feedback.textContent = error.message || "The run could not be reset. Check available storage and try again."; feedback.hidden = false;
+				decline.focus(); return;
+			});
+		}, "km-action km-danger-action");
+		actions.appendChild(decline); actions.appendChild(accept); dialog.appendChild(actions);
+		dialog.addEventListener("cancel", function (event) { if (busy) event.preventDefault(); });
+		dialog.addEventListener("close", function () {
+			dialog.remove(); if (resetRunDialog === dialog) resetRunDialog = null;
+			if (opener.isConnected && !opener.closest("[hidden]")) opener.focus({preventScroll: true});
+		});
+		document.body.appendChild(dialog); dialog.showModal(); decline.focus();
+	}
 	function buildReference(title, kind, subtitle) {
 		var panel = el("section", "km-reference-panel" + (kind === "encounters" ? " km-encounters-panel" : ""));
 		var heading = el("div", "km-page-heading");
@@ -638,10 +694,16 @@
 			encounterTracker = window.KMEncounterTracker.create({panel: panel, heading: heading, note: note, onChange: function () { render(view); }});
 			var help = el("div");
 			help.appendChild(note);
-			help.appendChild(el("p", "km-muted", "In areas with weather encounters, the first seven land slots apply in every weather. Weather cards show only the three replacement slots, with odds calculated from the full ten-slot table. Land shows normal-weather odds. Filter by a weather to see its complete table."));
+			help.appendChild(el("p", "km-muted", "In areas with weather encounters, the first seven land slots apply in every weather. Weather cards show only the three replacement slots, with odds calculated from all ten slots. Land shows the odds for normal weather. Filter by a weather to see its complete table."));
 			referenceDetails("Encounter rules", help, heading.querySelector(".km-catch-summary"));
 			navigation.insertBefore(status, navigation.firstChild);
 		}
+		var actions = kind === "encounters" ? heading.querySelector(".km-catch-summary") : el("div", "km-reference-actions");
+		if (kind !== "encounters") heading.appendChild(actions);
+		view.resetButton = button("Reset Run", function () { confirmResetRun(view.resetButton); }, "km-action km-danger-action");
+		view.resetButton.disabled = true;
+		view.resetButton.setAttribute("aria-haspopup", "dialog");
+		actions.appendChild(view.resetButton);
 		search.addEventListener("input", function () { render(view); });
 		view.primary = makeFilter(view, kind === "encounters" ? "Encounter method" : kind === "items" ? "Acquisition" : "Story split", [{value: "", label: "All"}]);
 		if (kind === "trainers") view.secondary = makeFilter(view, "Battle format", [{value: "", label: "All formats"}, "Single", "Double", "Not listed"]);
@@ -663,6 +725,7 @@
 			return {method: g.method, weather: weather, sharedEntries: shared, entries: shared.concat(g.entries)};
 		}).sort(function (a, b) { return order(a) - order(b); });
 	}
+	function itemLocationName(item) { return item.postGame === true ? "Post Game" : item.location; }
 	function getResults(view) {
 		var query = view.search.value.toLowerCase().trim();
 		var filter = view.primary.value;
@@ -693,12 +756,13 @@
 				(!query || textMatch([trainer.name, trainer.location, trainerSplitLabel(trainer.split), JSON.stringify(trainer.team)].join(" "), query));
 		});
 		var rows = sourceData.routeItems.filter(function (item) {
-			return (!filter || item.acquisition === filter) && (!query || textMatch([item.location, item.items, item.directions].join(" "), query));
+			return (!filter || item.acquisition === filter) && (!query || textMatch([itemLocationName(item), item.location, item.items, item.directions].join(" "), query));
 		});
 		var locations = [];
 		rows.forEach(function (item) {
-			var group = locations.filter(function (entry) { return entry.name === item.location; })[0];
-			if (!group) { group = {id: item.location, name: item.location, items: [], count: 0}; locations.push(group); }
+			var name = itemLocationName(item);
+			var group = locations.filter(function (entry) { return entry.name === name; })[0];
+			if (!group) { group = {id: name, name: name, items: [], count: 0}; locations.push(group); }
 			group.items.push(item);
 			group.count++;
 		});
@@ -711,6 +775,7 @@
 			if (index !== -1) locationOrder[location.name] = index * 3 + (location.beforeEncounter ? 0 : location.afterEncounter ? 2 : 1);
 		});
 		var fallback = encounterNames.length * 3;
+		locationOrder["Post Game"] = fallback + 1;
 		locations.sort(function (a, b) {
 			var aOrder = locationOrder[a.name], bOrder = locationOrder[b.name];
 			return (aOrder === undefined ? fallback : aOrder) - (bOrder === undefined ? fallback : bOrder);
@@ -733,7 +798,7 @@
 			var sharedLevel = level && group.totalEntries.every(function (entry) { return entry.level === level; });
 			var cardHeading = el("div", "km-encounter-card-heading");
 			cardHeading.appendChild(el("h3", "", group.method === "Land" ? "Land (no weather)" : group.method));
-			if (sharedLevel) cardHeading.appendChild(el("span", "km-encounter-level", "Lv. " + level));
+			if (sharedLevel) cardHeading.appendChild(el("span", "km-encounter-level", "Lv. " + String(level).replace(/(\d)\s*-\s*(?=\d)/g, "$1 to ")));
 			card.appendChild(cardHeading);
 			var table = el("table", "km-data-table");
 			var head = el("thead");
@@ -746,8 +811,8 @@
 				var row = el("tr");
 				encounterTracker.renderEntry(row, area, group, entry);
 				row.appendChild(el("td", "km-pokemon-name", entry.pokemon));
-				if (!sharedLevel) row.appendChild(el("td", "", entry.level || "Not listed"));
-				var rate = trade ? el("td", "km-pokemon-name", entry.requiredPokemon || "Not listed") : el("td", "km-rate", entry.rate === null ? "—" : entry.rate + "%");
+				if (!sharedLevel) row.appendChild(el("td", "", entry.level ? String(entry.level).replace(/(\d)\s*-\s*(?=\d)/g, "$1 to ") : "Not listed"));
+				var rate = trade ? el("td", "km-pokemon-name", entry.requiredPokemon || "Not listed") : el("td", "km-rate", entry.rate === null ? "N/A" : entry.rate + "%");
 				row.appendChild(rate); body.appendChild(row);
 				row.appendChild(el("td", "km-available-rate", encounterTracker.rate(area, group, entry)));
 			});
@@ -804,7 +869,7 @@
 		var items = validItems ? rewards.items.map(function (item) {
 			return typeof item === "string" ? item : item.name + (item.quantity > 1 ? " ×" + item.quantity : "");
 		}).join(", ") || "None" : "Not recorded";
-		return "Rewards — Money: " + money + " · Items: " + items;
+		return "Money: " + money + " · Items: " + items;
 	}
 	function renderTrainerStats(card, pokemon) {
 		var text = pokemon.stats || "", values = {}, match;
@@ -957,10 +1022,25 @@
 			return false;
 		}
 		itemProgress = next;
+		views.forEach(function (view) {
+			if (view.kind !== "items") return;
+			Array.prototype.forEach.call(view.list.children, function (node) { decorateItemLocation(node, node.getAttribute("data-page-key")); });
+			var heading = view.detail.querySelector(".km-item-location-heading");
+			if (heading) decorateItemLocation(heading, view.selected);
+		});
 		return true;
 	}
+	function decorateItemLocation(node, name) {
+		var items = sourceData.routeItems.filter(function (item) { return itemLocationName(item) === name; });
+		var complete = items.length > 0 && items.every(function (item) { return itemProgress.pickedUp.indexOf(item.id) !== -1; });
+		node.classList.toggle("km-item-location-complete", complete);
+		if (complete) node.setAttribute("aria-label", name + ", all items picked up");
+		else node.removeAttribute("aria-label");
+	}
 	function renderItems(container, area) {
-		container.appendChild(el("h2", "", area.name));
+		var locationHeading = el("h2", "km-item-location-heading", area.name);
+		decorateItemLocation(locationHeading, area.name);
+		container.appendChild(locationHeading);
 		var notes = (sourceData.itemNotes || []).filter(function (n) { return n.location === area.name; });
 		if (notes.length) {
 			var content = el("div");
@@ -987,13 +1067,14 @@
 			top.appendChild(heading);
 			top.appendChild(el("span", "km-tag", item.acquisition));
 			card.appendChild(top);
+			if (item.postGame === true) card.appendChild(el("p", "km-item-origin km-muted", "Location: " + item.location));
 			card.appendChild(el("p", "km-item-directions", item.directions));
 			if (item.edition && item.edition !== "Both") card.appendChild(el("p", "km-edition", "Edition: " + item.edition));
 			var evidence = el("div", "km-item-evidence");
 			evidence.appendChild(el("p", "", "Placement match: " + item.match + ". " + (item.reason || "")));
 			if (item.map) evidence.appendChild(el("p", "km-muted", "Map: " + item.map));
-			evidence.appendChild(el("p", "km-muted", "Guide entry " + item.id + ". Source: " + item.source + ". A data match is not in-game verification."));
-			var location = (sourceData.itemLocations || []).filter(function (l) { return l.name === area.name; })[0];
+			evidence.appendChild(el("p", "km-muted", "Guide entry " + item.id + ". Source: " + item.source + ". A data match does not confirm placement in the game."));
+			var location = (sourceData.itemLocations || []).filter(function (l) { return l.name === item.location; })[0];
 			if (location) [["GameWith guide", location.gameWith], ["Bulbapedia guide", location.bulbapedia]].forEach(function (pair) {
 				if (!/^https:\/\/(gamewith\.net|bulbapedia\.bulbagarden\.net)\//.test(pair[1] || "")) return;
 				var link = el("a", "km-source-link", pair[0]); link.href = pair[1]; link.target = "_blank"; link.rel = "noopener noreferrer"; evidence.appendChild(link);
@@ -1029,6 +1110,7 @@
 			b.appendChild(el("small", "", view.kind === "trainers" ? trainerSplitLabel(entry.split) + " · " + entry.team.length + " Pokémon" : entry.count + (view.kind === "items" ? " item" : " encounter slot") + (entry.count === 1 ? "" : "s")));
 			if (view.kind === "encounters") encounterTracker.decorateLocation(b, entry);
 			if (view.kind === "trainers") b.classList.toggle("km-trainer-beaten", trainerProgress.beaten.indexOf(entry.id) !== -1);
+			if (view.kind === "items") decorateItemLocation(b, entry.name);
 			b.setAttribute("aria-current", String(entry.id === view.selected));
 			view.list.appendChild(b);
 		});
@@ -1045,6 +1127,7 @@
 		}
 	}
 	function refreshProfile() {
+		if (resetRunDialog) resetRunDialog.close();
 		var profile = registry.getActiveProfile();
 		var data = window.KMCalculatorReferenceData;
 		sourceData = profile && data && Object.prototype.hasOwnProperty.call(data, profile.id) ? data[profile.id] : null;
@@ -1053,6 +1136,7 @@
 		if (encounterTracker) encounterTracker.setProfile(profile, sourceData);
 		profileLabel.textContent = profile ? profile.shortName + " / Generation " + profile.baseGeneration : "Choose a ROM hack";
 		views.forEach(function (view) {
+			view.resetButton.disabled = !profile || !sourceData;
 			view.selected = null; view.search.value = ""; view.listPage.anchor = null; view.listPage.page = 0; view.detailPage.anchor = null; view.detailPage.page = 0;
 			var options = [];
 			if (sourceData) {
@@ -1066,7 +1150,7 @@
 			var all = el("option", "", "All"); all.value = ""; view.primary.appendChild(all);
 			options.forEach(function (value) { var option = el("option", "", view.kind === "trainers" ? trainerSplitLabel(value) : value); option.value = value; view.primary.appendChild(option); });
 			if (view.secondary) view.secondary.value = "";
-			if (view.kind !== "encounters") view.note.textContent = !sourceData ? "" : view.kind === "items" ? "Sword/Shield 1.3.2 base-game reference; item placements in this ROM hack are unverified. Includes both editions. Some landmarks and item pools remain uncertain; expand an entry for its source and match details." : "Trainers are organized by story split. Check Beaten to record your progress.";
+			if (view.kind !== "encounters") view.note.textContent = !sourceData ? "" : view.kind === "items" ? "Reference for the base Sword/Shield 1.3.2 games; item placements in this ROM hack are unverified. Includes both editions. Some landmarks and item pools remain uncertain; expand an entry for its source and match details." : "Trainers are organized by story split. Check Beaten to record your progress.";
 			render(view);
 		});
 	}

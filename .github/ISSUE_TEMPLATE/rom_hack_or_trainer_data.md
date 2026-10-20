@@ -1,6 +1,6 @@
 ---
 name: ROM Hack or Trainer Data
-about: Propose a new profile, data overlay, trainer pack, save adapter, or profile-only tool.
+about: Propose a new profile, data overlay, trainer pack, save adapter, or exclusive profile tool.
 title: ""
 labels: enhancement
 assignees: ""
@@ -12,7 +12,7 @@ Name the ROM hack or mod and the canonical generation it extends.
 
 # Requested scope
 
-Describe whether this needs a selectable profile, calculation overlay, trainer pack, save-import adapter, profile-only tool, or a combination of them.
+Describe whether this needs a selectable profile, calculation overlay, trainer pack, save import adapter, exclusive profile tool, or a combination of them.
 
 # Authors and permission
 
@@ -32,4 +32,4 @@ Explain who can confirm future updates and how the profile or pack version will 
 
 # File safety
 
-Do not attach ROMs, patches containing copyrighted game data, game dumps, console keys, executable game files, private saves, credentials, signing material, personal data, complete generated mods, or private research. Small original examples and schema-valid synthetic data are welcome.
+Do not attach ROMs, patches containing copyrighted game data, game dumps, console keys, executable game files, private saves, credentials, signing material, personal data, complete generated mods, or private research. Small original examples and synthetic data that follows the schema are welcome.

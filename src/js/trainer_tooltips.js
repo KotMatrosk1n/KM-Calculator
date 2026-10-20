@@ -11,6 +11,15 @@
 	function keyFor(name) {
 		return String(name || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
 	}
+	function descriptionText(text) {
+		return String(text || "")
+			.replace(/\u2014/g, ", ")
+			.replace(/(\d)\s*-\s*(?=\d)/g, "$1 to ")
+			.replace("10000 - its normal Speed", "10000 minus its normal Speed")
+			.replace(/\b(Bug|Dark|Dragon|Electric|Fairy|Fighting|Fire|Flying|Ghost|Grass|Ground|Ice|Normal|Poison|Psychic|Rock|Steel|Water)-type\b/g, "$1 type")
+			.replace(/\b(critical-hit|Defense-lowering|HP-stealing|One-hit|exotic-smelling|gem-filled|life-force|move-binding|multi-target|multi-turn|no-guard|non-damaging|non-volatile|semi-invulnerability|shady-looking|single-target|single-use|sound-based|stat-lowering|teardrop-shaped|two-turn|weather-related|well-worn)\b/g, function (word) { return word.replace(/-/g, " "); })
+			.replace(/switch-in/g, "entry");
+	}
 	function lookup(catalogId, kind, name, pokemon) {
 		var catalogs = window.KMCalculatorTooltipData;
 		var catalog = catalogs && Object.prototype.hasOwnProperty.call(catalogs, catalogId) && catalogs[catalogId];
@@ -125,12 +134,12 @@
 			var type = node("span", "km-tooltip-type km-type-badge", detail.type);
 			type.setAttribute("data-type", detail.type); facts.appendChild(type);
 			var metrics = node("span", "km-tooltip-move-metrics");
-			metrics.appendChild(node("span", "", "Power " + (detail.category === "Status" ? "—" : detail.power || detail.powerLabel || "Varies")));
-			metrics.appendChild(node("span", "", "Accuracy " + (detail.accuracy === true ? "—" : typeof detail.accuracy === "number" ? detail.accuracy + "%" : "Unknown")));
+			metrics.appendChild(node("span", "", "Power " + (detail.category === "Status" ? "None" : detail.power || detail.powerLabel || "Varies")));
+			metrics.appendChild(node("span", "", "Accuracy " + (detail.accuracy === true ? "No check" : typeof detail.accuracy === "number" ? detail.accuracy + "%" : "Unknown")));
 			facts.appendChild(metrics);
 			popup.appendChild(facts);
-			popup.appendChild(node("p", "km-tooltip-description", detail.effects));
-		} else popup.appendChild(node("p", "km-tooltip-description", detail.description));
+			popup.appendChild(node("p", "km-tooltip-description", descriptionText(detail.effects)));
+		} else popup.appendChild(node("p", "km-tooltip-description", descriptionText(detail.description)));
 		var descriptions = (anchor.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean);
 		descriptions.push(popup.id); anchor.setAttribute("aria-describedby", descriptions.join(" "));
 		position(detail);

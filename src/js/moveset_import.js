@@ -71,7 +71,7 @@ function createRoyalSwordTrainerPack() {
 		mod: "Pokemon Royal Sword",
 		authors: [{name: "Matroskin", url: "https://github.com/KotMatrosk1n"}],
 		source: {
-			name: "KM Calculator built-in trainer data",
+			name: "KM Calculator bundled trainer data",
 			url: "https://github.com/KotMatrosk1n/KM-Calculator"
 		},
 		license: "MIT",
@@ -562,7 +562,7 @@ function getTrainerPackGroup(entry) {
 }
 
 function getTrainerPackCredit(entry) {
-	if (!entry || !entry._kmPack) return "Built-in trainer data";
+	if (!entry || !entry._kmPack) return "Bundled trainer data";
 	var authors = [];
 	for (var i = 0; i < entry._kmPack.authors.length; i++) authors.push(entry._kmPack.authors[i].name);
 	return entry._kmPack.name + " v" + entry._kmPack.version + " · " + authors.join(", ") +
@@ -838,7 +838,7 @@ function initializeTrainerSelector(selector) {
 			});
 			pager.prop("hidden", total <= pageSize);
 			previous.prop("disabled", !page); next.prop("disabled", start + pageSize >= total);
-			status.text(total ? (start + 1) + "–" + Math.min(start + pageSize, total) + " of " + total : "No trainers");
+			status.text(total ? (start + 1) + " to " + Math.min(start + pageSize, total) + " of " + total : "No trainers");
 			query.callback({results: results, more: false});
 		}}));
 	};

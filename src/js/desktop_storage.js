@@ -136,6 +136,29 @@
 			keys.forEach(function (name) { var value = getItem(name); if (value !== null) snapshot[name] = value; });
 			return snapshot;
 		},
+		resetProgress: async function (profileId) {
+			var next = window.KMRunData.resetProgress({}, profileId), keys = Object.keys(next);
+			var localStorage = getLocalStorage();
+			if (nativeStorage) {
+				if (!desktopBridge.runs || !desktopBridge.runs.resetProgress) throw new Error("Restart the app before resetting a run.");
+				var result = await desktopBridge.runs.resetProgress(profileId);
+				if (result.error || !result.snapshot) throw new Error(result.error || "The run could not be reset.");
+				keys.forEach(function (name) {
+					migratedKeys[name] = true;
+					try { if (localStorage) localStorage.removeItem(name); } catch (error) { /* Native storage keeps empty records even if the browser mirror is unavailable. */ }
+				});
+				return;
+			}
+			if (!localStorage) throw new Error("Storage is unavailable. The run has not been reset.");
+			var before = {};
+			keys.forEach(function (name) { before[name] = localStorage.getItem(name); });
+			try {
+				keys.forEach(function (name) { localStorage.setItem(name, next[name]); });
+			} catch (error) {
+				keys.forEach(function (name) { if (before[name] === null) localStorage.removeItem(name); else localStorage.setItem(name, before[name]); });
+				throw new Error("The run could not be reset. Your saved progress has been kept. Check available storage and try again.");
+			}
+		},
 		restoreRun: async function (backup) {
 			var before = this.snapshot(), next = window.KMRunData.apply(before, backup), localStorage = getLocalStorage();
 			var keys = Object.keys(before).concat(Object.keys(next)).filter(function (name, index, all) { return all.indexOf(name) === index && before[name] !== next[name]; });

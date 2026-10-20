@@ -992,6 +992,10 @@ function getMoveResultTargets(location) {
 	return $(location.move).next("label").add($(location.damage));
 }
 
+function formatDamageResultText(text) {
+	return String(text).replace(/(\d+(?:\.\d+)?%?)\s*-\s*(?=\d)/g, "$1 to ").replace(/ -- /g, "; ");
+}
+
 function setMoveResultDisplay(location, text, state) {
 	var targets = getMoveResultTargets(location);
 	targets.removeClass(MOVE_RESULT_STATE_CLASSES.join(" "));
@@ -1024,7 +1028,7 @@ function getMoveResultText(result, move, notation) {
 	if (state === "invalid") return "No move";
 	if (state === "status") return "Status move";
 	if (state === "no-effect") return "No effect";
-	return result ? result.moveDesc(notation) : "??? - ???%";
+	return result ? formatDamageResultText(result.moveDesc(notation)) : "Pending";
 }
 
 function renderMoveResultDisplay(location, result, move, notation) {
@@ -1581,7 +1585,7 @@ function getTeamBoxPokemonTooltip(fullSetName) {
 	var label = nickname || data.pokemonName;
 	if (nickname) details.push(data.pokemonName);
 	if (location) details.push(location);
-	if (details.length) label += " (" + details.join(" - ") + ")";
+	if (details.length) label += " (" + details.join(", ") + ")";
 	return label + "\nType: " + typeText + "\nItem: " + item;
 }
 
@@ -2756,7 +2760,7 @@ function createColorCodeExplanationWindow() {
 		"</section>",
 		"<section class='color-code-section'>",
 		"<h3>OHKO Color</h3>",
-		"<p>Read the left and right halves separately. Left-side colors are your damage into the Trainer target. Right-side colors are the Trainer target's damage back into your Pokemon.</p>",
+		"<p>Read the left and right halves separately. Colors on the left show your damage to the Trainer target. Colors on the right show the Trainer target's damage to your Pokemon.</p>",
 		"<div class='color-code-example-grid'>",
 		getColorCodeExamplesMarkup(damageExamples),
 		"</div>",
@@ -2829,7 +2833,7 @@ function createFinderExplanationWindow() {
 		"<div class='finder-explanation-token finder-explanation-token-wide' aria-hidden='true'>Search</div>",
 		"<div><strong>Search box:</strong> type one or more words.<br><strong>Field dropdown:</strong> choose what the words should match.<br><strong>Extra dropdown:</strong> appears only for Type or Speed.</div>",
 		"</div>",
-		"<p class='finder-explanation-note'>Changing fields clears the previous search and any field-specific dropdown so old filters do not carry into the new mode.</p>",
+		"<p class='finder-explanation-note'>Changing fields clears the previous search and its extra dropdown so old filters do not carry into the new mode.</p>",
 		"</section>",
 		"<section class='color-code-section'>",
 		"<h3>Text Fields</h3>",
@@ -2841,7 +2845,7 @@ function createFinderExplanationWindow() {
 		"<h3>Type Dropdown</h3>",
 		"<p>Type filters to one selected type, then orders visible matches inside each Team/Box area like this:</p>",
 		"<ol class='finder-explanation-order'>",
-		"<li><span>1</span><strong>Mono-type first</strong><em>Steel</em></li>",
+		"<li><span>1</span><strong>Single type first</strong><em>Steel</em></li>",
 		"<li><span>2</span><strong>Primary type second</strong><em>Steel/Flying</em></li>",
 		"<li><span>3</span><strong>Secondary type third</strong><em>Fire/Steel</em></li>",
 		"</ol>",

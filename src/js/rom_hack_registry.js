@@ -1,7 +1,7 @@
 /*global module */
 
 /*
- * KM Calculator ROM-hack profile registry.
+ * KM Calculator ROM hack profile registry.
  *
  * Profiles describe which canonical generation a ROM hack extends and which
  * calculator, trainer, save-import, and optional data-provider layers belong
@@ -77,7 +77,7 @@
 	function normalizeIdentifier(value, fallback, path, issues) {
 		var id = cleanString(value || fallback).toLowerCase();
 		if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) {
-			issues.push(path + " must be a lowercase, hyphen-separated identifier.");
+			issues.push(path + " must be a lowercase identifier with words separated by hyphens.");
 		}
 		return id;
 	}
@@ -178,13 +178,13 @@
 		var profile;
 
 		if (!isObject(value)) {
-			throw new RomHackProfileError("ROM-hack profile must be an object.", ["profile must be an object."]);
+			throw new RomHackProfileError("ROM hack profile must be an object.", ["profile must be an object."]);
 		}
 
 		id = cleanString(value.id).toLowerCase();
 		name = cleanString(value.name);
 		if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(id)) {
-			issues.push("id must be a lowercase, hyphen-separated identifier.");
+			issues.push("id must be a lowercase identifier with words separated by hyphens.");
 		}
 		if (!name) issues.push("name is required.");
 		baseGeneration = normalizeGeneration(value.baseGeneration, "baseGeneration", issues);
@@ -211,7 +211,7 @@
 			issues.push("trainerData.packId is required.");
 		}
 		if (saveAdapter && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(saveAdapter)) {
-			issues.push("saveImport.adapter must be a lowercase, hyphen-separated identifier.");
+			issues.push("saveImport.adapter must be a lowercase identifier with words separated by hyphens.");
 		}
 
 		profile = {
@@ -269,7 +269,7 @@
 		};
 
 		if (issues.length) {
-			throw new RomHackProfileError("Invalid ROM-hack profile " + (name || id || "(unnamed)") + ".", issues);
+			throw new RomHackProfileError("Invalid ROM hack profile " + (name || id || "(unnamed)") + ".", issues);
 		}
 		return profile;
 	}
@@ -344,7 +344,7 @@
 		options = options || {};
 
 		if (exists && !options.replace) {
-			throw new RomHackProfileError("ROM-hack profile already registered: " + normalized.id + ".", [
+			throw new RomHackProfileError("ROM hack profile already registered: " + normalized.id + ".", [
 				"Pass {replace: true} to intentionally replace a bundled profile."
 			]);
 		}
@@ -404,7 +404,7 @@
 		if (provider === null || provider === undefined) throw new TypeError("provider is required.");
 		providerId = cleanString(provider.id).toLowerCase();
 		if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(providerId)) {
-			throw new TypeError("generation provider id must be a lowercase, hyphen-separated identifier.");
+			throw new TypeError("generation provider id must be a lowercase identifier with words separated by hyphens.");
 		}
 		this._generationProviders[normalizedGeneration] = provider;
 		this._generationProvidersById[providerId] = provider;
@@ -427,7 +427,7 @@
 	Registry.prototype.registerLayoutProvider = function (id, provider) {
 		var normalizedId = cleanString(id).toLowerCase();
 		if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(normalizedId)) {
-			throw new TypeError("layout provider id must be a lowercase, hyphen-separated identifier.");
+			throw new TypeError("layout provider id must be a lowercase identifier with words separated by hyphens.");
 		}
 		if (!isObject(provider)) {
 			throw new TypeError("layout provider is required.");
@@ -458,11 +458,11 @@
 		var profile = typeof profileOrId === "string" ? this.getProfile(profileOrId) : clone(profileOrId);
 		var layoutId;
 		var provider;
-		if (!profile) throw new Error("Cannot resolve layout for an unknown ROM-hack profile.");
+		if (!profile) throw new Error("Cannot resolve layout for an unknown ROM hack profile.");
 		layoutId = profile.ui && profile.ui.layout ? profile.ui.layout : DEFAULT_LAYOUT_ID;
 		provider = this.getLayoutProvider(layoutId);
 		if (!provider) {
-			throw new Error("ROM-hack profile " + profile.id + " requires unavailable layout " + layoutId + ".");
+			throw new Error("ROM hack profile " + profile.id + " requires unavailable layout " + layoutId + ".");
 		}
 		return provider;
 	};
@@ -470,11 +470,11 @@
 	Registry.prototype.registerProfileOverrideProvider = function (profileId, provider) {
 		var id = cleanString(profileId).toLowerCase();
 		var providerId;
-		if (!this._profiles[id]) throw new Error("Unknown ROM-hack profile: " + id + ".");
+		if (!this._profiles[id]) throw new Error("Unknown ROM hack profile: " + id + ".");
 		if (provider === null || provider === undefined) throw new TypeError("provider is required.");
 		providerId = cleanString(provider.id).toLowerCase();
 		if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(providerId)) {
-			throw new TypeError("profile override provider id must be a lowercase, hyphen-separated identifier.");
+			throw new TypeError("profile override provider id must be a lowercase identifier with words separated by hyphens.");
 		}
 		this._profileOverrideProviders[id] = provider;
 		this._profileOverrideProvidersById[providerId] = provider;
@@ -503,26 +503,26 @@
 		var resolvedProvider;
 		var hookResult;
 
-		if (!profile) throw new Error("Cannot resolve data provider for an unknown ROM-hack profile.");
+		if (!profile) throw new Error("Cannot resolve data provider for an unknown ROM hack profile.");
 		canonicalProvider = this.getGenerationProviderById(profile.generationData.canonicalProviderId);
 		if (!canonicalProvider) {
-			throw new Error("ROM-hack profile " + profile.id + " requires unavailable generation provider " +
+			throw new Error("ROM hack profile " + profile.id + " requires unavailable generation provider " +
 				profile.generationData.canonicalProviderId + ".");
 		}
 		if (canonicalProvider.generation && Number(canonicalProvider.generation) !== Number(profile.baseGeneration)) {
-			throw new Error("ROM-hack profile " + profile.id + " declares base Generation " +
+			throw new Error("ROM hack profile " + profile.id + " declares base Generation " +
 				profile.baseGeneration + " but uses " + profile.generationData.canonicalProviderId + ".");
 		}
 		overrideProvider = profile.generationData.overrideProviderId ?
 			this._profileOverrideProvidersById[profile.generationData.overrideProviderId] :
 			(this._profileOverrideProviders[profile.id] || null);
 		if (profile.generationData.overrideProviderId && !overrideProvider) {
-			throw new Error("ROM-hack profile " + profile.id + " requires unavailable override provider " +
+			throw new Error("ROM hack profile " + profile.id + " requires unavailable override provider " +
 				profile.generationData.overrideProviderId + ".");
 		}
 		if (overrideProvider && overrideProvider.baseGeneration &&
 			Number(overrideProvider.baseGeneration) !== Number(profile.baseGeneration)) {
-			throw new Error("ROM-hack profile " + profile.id + " cannot apply override " +
+			throw new Error("ROM hack profile " + profile.id + " cannot apply override " +
 				profile.generationData.overrideProviderId + " to Generation " + profile.baseGeneration + ".");
 		}
 		resolvedProvider = overrideProvider || canonicalProvider;
@@ -548,7 +548,7 @@
 		var profile = typeof profileOrId === "string" ? this.getProfile(profileOrId) : clone(profileOrId);
 		var providers;
 		var layoutProvider;
-		if (!profile) throw new Error("Unknown ROM-hack profile.");
+		if (!profile) throw new Error("Unknown ROM hack profile.");
 		providers = this.resolveGenerationProvider(profile, extraContext);
 		layoutProvider = this.resolveLayoutProvider(profile);
 		return {
@@ -578,7 +578,7 @@
 		var previousProfileId = this._activeProfileId;
 		var previousExtraContext = clone(this._activeExtraContext);
 		var previousContext = this.getActiveContext();
-		if (!profile) throw new Error("Unknown ROM-hack profile: " + id + ".");
+		if (!profile) throw new Error("Unknown ROM hack profile: " + id + ".");
 		context = this.getActivationContext(profile, extraContext || {});
 		context.previousContext = previousContext;
 		this._activeProfileId = profile.id;

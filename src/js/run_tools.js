@@ -123,7 +123,7 @@
 	});
 	function updateReport() {
 		var selected = window.kmRomHackRegistry.getActiveProfile();
-		var body = "# KM Calculator version\n\n" + version() + "\n\n# ROM-hack profile and generation\n\n" +
+		var body = "# KM Calculator version\n\n" + version() + "\n\n# ROM hack profile and generation\n\n" +
 			(selected ? (selected.shortName || selected.name) + " / Generation " + selected.baseGeneration : "No profile selected") +
 			"\n\n# Steps to reproduce\n\n1. \n\n# Expected behavior\n\n\n# Actual behavior\n\n\n# Additional details\n\nAdd relevant details or a cropped screenshot. Check attachments for personal information before posting.\n";
 		var url = new URL("https://github.com/KotMatrosk1n/KM-Calculator/issues/new");

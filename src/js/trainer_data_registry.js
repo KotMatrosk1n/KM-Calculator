@@ -106,7 +106,7 @@
 
 	function normalizeSource(value, issues) {
 		if (!isObject(value)) {
-			pushIssue(issues, "source", "must identify the trainer-data source");
+			pushIssue(issues, "source", "must identify the trainer data source");
 			return {name: "", url: ""};
 		}
 		var source = {
@@ -179,7 +179,7 @@
 				pokemon.moves = [];
 				for (var moveIndex = 0; moveIndex < value.moves.length && moveIndex < 4; moveIndex++) {
 					var move = cleanString(value.moves[moveIndex]);
-					if (!move) pushIssue(issues, path + ".moves[" + moveIndex + "]", "must be a non-empty move name");
+					if (!move) pushIssue(issues, path + ".moves[" + moveIndex + "]", "must be a nonempty move name");
 					else pokemon.moves.push(move);
 				}
 				if (value.moves.length > 4) pushIssue(issues, path + ".moves", "cannot contain more than four moves");
@@ -418,7 +418,7 @@
 			var pack = normalizePack(value);
 			for (var i = 0; i < builtInPacks.length; i++) {
 				if (builtInPacks[i].id === pack.id) {
-					throw new TrainerDataError("Trainer pack id is reserved by built-in data", ["id: " + pack.id + " is built in"]);
+					throw new TrainerDataError("Trainer pack id is reserved by bundled data", ["id: " + pack.id + " is built in"]);
 				}
 			}
 			var next = importedPacks.slice();

@@ -30,7 +30,7 @@ internal static class LegacyUpdaterRelocation
             Environment.SpecialFolderOption.DoNotVerify);
         if (string.IsNullOrWhiteSpace(localRoot))
         {
-            throw new IOException("Windows did not provide the current user's local application-data folder.");
+            throw new IOException("Windows did not provide the current user's local application data folder.");
         }
 
         var normalizedExecutable = NormalizePath(executablePath);

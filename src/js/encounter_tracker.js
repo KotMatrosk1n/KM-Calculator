@@ -65,7 +65,7 @@
 			var status = describe({id: record.area}, state);
 			if (status.manual) return status.areas.length > 1 ? "These paired areas are manually closed." : "This location is manually closed.";
 			var match = allowance(record);
-			if (!match) return "Choose " + status.allowances.map(function (item) { return item.label.toLowerCase(); }).join(" or ") + " for this location, or use Unassigned for a family-only record.";
+			if (!match) return "Choose " + status.allowances.map(function (item) { return item.label.toLowerCase(); }).join(" or ") + " for this location, or use Unassigned for a record for the evolution family.";
 			var progress = status.allowances.filter(function (item) { return item.id === match.id; })[0];
 			return progress.remaining ? "" : match.label + " limit reached (" + progress.count + "/" + progress.limit + ").";
 		}
@@ -125,7 +125,7 @@
 		var nextPage = button("Next", function () { logPage++; renderLog(); });
 		pagination.appendChild(pageStatus); pagination.appendChild(previous); pagination.appendChild(nextPage);
 		dialog.appendChild(pagination);
-		dialog.appendChild(button("Reset this run…", function () {
+		dialog.appendChild(button("Clear this mode…", function () {
 			if (window.confirm("Clear all " + modeName() + " catches and used locations for this profile? Other modes will be kept. This cannot be undone.")) {
 				commit({version: 2, catches: [], usedAreas: []});
 			}
@@ -338,11 +338,11 @@
 				check.setAttribute("aria-describedby", status.id); cell.appendChild(status); row.appendChild(cell);
 			},
 			rate: function (area, group, entry) {
-				if (mode === "normal") return entry.rate === null ? "—" : entry.rate + "%";
-				if (entry.rate === null || used(area) || rules.reason(entryRecord(area, group, entry), state)) return "—";
+				if (mode === "normal") return entry.rate === null ? "N/A" : entry.rate + "%";
+				if (entry.rate === null || used(area) || rules.reason(entryRecord(area, group, entry), state)) return "N/A";
 				if (familyCatch(entry.pokemon)) return "0%";
 				var total = group.totalEntries.reduce(function (sum, e) { return sum + (familyCatch(e.pokemon) ? 0 : Number(e.rate)); }, 0);
-				return total ? Number((entry.rate / total * 100).toFixed(1)) + "%" : "—";
+				return total ? Number((entry.rate / total * 100).toFixed(1)) + "%" : "N/A";
 			}
 		};
 	}

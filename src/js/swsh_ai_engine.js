@@ -1799,7 +1799,7 @@
 		selectors.sort(function (a, b) {
 			return cell(a) - cell(b);
 		});
-		if (selectors.length) addScoreNote(score, "neutral defaults for unmapped live-only selectors: " + selectors.join(", "));
+		if (selectors.length) addScoreNote(score, "neutral defaults for unmapped selectors exclusive to live battles: " + selectors.join(", "));
 	}
 
 	function getSwitchDecisions(state, side, playerState, helpers) {

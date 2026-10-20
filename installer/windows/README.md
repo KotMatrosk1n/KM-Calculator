@@ -2,7 +2,7 @@
 
 KM Calculator uses an independently authored WiX Toolset v7 Burn bundle and MSI. The public setup executable is a small launcher that embeds and SHA-256 verifies the Burn bundle, translates the legacy `electron-updater` installer arguments, waits for setup, and returns Burn's exact exit code.
 
-The installer remains a separate MIT-licensed program and does not copy KM Editor's GPL-3.0-only installer source. KM Editor is a behavioral and visual reference only. The calculator payload is GPLv3; WiX retains MS-RL and .NET retains its own notices. See [LICENSING.md](../../LICENSING.md) for these boundaries and matching-source distribution.
+The installer remains a separate MIT licensed program and does not copy KM Editor's GPL-3.0-only installer source. KM Editor is a behavioral and visual reference only. The calculator payload is GPLv3; WiX retains MS-RL and .NET retains its own notices. See [LICENSING.md](../../LICENSING.md) for these boundaries and matching source distribution.
 
 ## Custom setup interface
 
@@ -10,20 +10,20 @@ The installer remains a separate MIT-licensed program and does not copy KM Edito
 installer, updater, repair, and uninstaller screens, replacing the former
 WixStdBA XML theme. All modes use the same dark window chrome, Calculator logo,
 inset cards, indigo actions, gold accents, styled checkboxes, and progress bar.
-The baseline window is 760 by 440 device-independent pixels; longer disclosures
-expand vertically, with a work-area limit and per-monitor DPI support.
+The baseline window is 760 by 440 device independent pixels; longer disclosures
+expand vertically, with a work area limit and per monitor DPI support.
 
 Progress comes from Burn and Windows Installer. Interactive setup waits for an
-explicit action, including an uninstall confirmation. Updater-driven passive
+explicit action, including an uninstall confirmation. Passive
 mode shows progress and exits on success. Quiet mode creates no visible window.
 Cancellation waits for the engine's terminal result and does not interrupt
-rollback. Restart-required results are preserved, including with `/norestart`.
+rollback. Results that require a restart are preserved, including with `/norestart`.
 The UI evaluates the bundle's authored installation conditions before planning;
-the MSI retains its independent path and legacy-identity checks.
+the MSI retains its independent path and legacy identity checks.
 
 The setup UI is published with its .NET desktop runtime and embedded in Burn,
 so installation and the cached uninstaller do not require a preinstalled .NET
-runtime. The public launcher still owns post-install legacy cleanup and updater
+runtime. The public launcher still owns legacy cleanup after installation and updater
 relaunch. Finish returns control to that launcher; setup does not launch the
 application ahead of cleanup. Uninstall preserves Calculator user data.
 
@@ -34,7 +34,7 @@ application ahead of cleanup. Uninstall preserves Calculator user data.
 - PowerShell 7 (`pwsh`), not Windows PowerShell 5.1
 - .NET SDK 8 or later
 - WiX Toolset v7 packages restored by the projects
-- Windows 10 or 11 SDK `signtool.exe` and a trusted code-signing PFX for signed builds
+- Windows 10 or 11 SDK `signtool.exe` and a trusted code signing PFX for signed builds
 
 WiX v7 requires explicit acceptance of its OSMF EULA. Review <https://wixtoolset.org/osmf/> first. The build fails closed unless either `-AcceptWixEula` is supplied directly or the authorized build environment contains `WIX_V7_EULA_ACCEPTED=true`. The repository does not record acceptance.
 
@@ -55,7 +55,7 @@ The driver validates the package version and Electron executable metadata, stage
 - `release/SHA256SUMS.txt`
 - a local ignored build receipt
 
-Intermediate payloads and local validation artifacts stay under ignored `installer/windows/obj` and `release` paths. Do not commit generated installers, smoke-test output, or local logs.
+Intermediate payloads and local validation artifacts stay under ignored `installer/windows/obj` and `release` paths. Do not commit generated installers, smoke test output, or local logs.
 
 Before distributing a version, run `npm run release:source` from its clean version
 tag. Publish the application source ZIP, dependency source archive, source
@@ -71,40 +71,40 @@ Unsigned local builds remain available for development. To create a signed local
 
 Signed builds use SHA-256 Authenticode signatures and an RFC 3161 SHA-256 timestamp for the already stamped `KM Calculator.exe`, the MSI, the custom setup UI executable, the inner Burn bundle, and the final public launcher. Each signature is verified against the supplied certificate and must contain a trusted timestamp before the next layer is built. The inner bundle is signed before its SHA-256 digest is embedded in the launcher. The certificate's complete subject distinguished name is added to the staged `resources/app-update.yml` before payload harvesting; this makes `electron-updater` verify the downloaded installer against that exact publisher instead of relying on the asset hash alone.
 
-The release workflow always sets `KM_REQUIRE_SIGNING=true`. It expects a base64-encoded PFX in the `KM_WINDOWS_SIGNING_CERTIFICATE_BASE64` repository secret and its non-empty password in `KM_WINDOWS_SIGNING_CERTIFICATE_PASSWORD`. The PFX is written only to the runner's temporary directory and removed in an `always()` cleanup step. Missing credentials, an unusable or expired certificate, an unavailable timestamp, a signer mismatch, or an invalid signature stops the workflow before publication.
+The release workflow always sets `KM_REQUIRE_SIGNING=true`. It expects a base64 encoded PFX in the `KM_WINDOWS_SIGNING_CERTIFICATE_BASE64` repository secret and its nonempty password in `KM_WINDOWS_SIGNING_CERTIFICATE_PASSWORD`. The PFX is written only to the runner's temporary directory and removed in an `always()` cleanup step. Missing credentials, an unusable or expired certificate, an unavailable timestamp, a signer mismatch, or an invalid signature stops the workflow before publication.
 
 ## Stable installer identity
 
 - MSI UpgradeCode: `9971df03-d3bd-4fb5-a51b-d975985eea2c`
 - Burn UpgradeCode: `6fec009c-ac8f-45c2-b84b-a648204cd665`
 - Burn provider key: `com.kotmatrosk1n.kmcalculator.bundle`
-- MSI scope: per-machine
+- MSI scope: per machine
 - Canonical destination: `%ProgramFiles%\KM Calculator`
 
 Burn is the only visible Programs and Features entry. Its chained MSI is hidden, supports major upgrades, repair, and uninstall, and owns the complete Electron payload.
 
 ## Upgrade and uninstall behavior
 
-Setup saves its validated marker in 64-bit `HKLM\Software\KM Calculator`. Shortcut preferences are written there by the MSI and reloaded by Burn. Installation and maintenance are restricted to the single canonical `%ProgramFiles%\KM Calculator` path; the Burn variable is not command-line overridable, no folder browser is exposed, and the MSI independently rejects any other destination. Uninstall always preserves KM Calculator saved teams, notes, settings, and updater caches. The elevated MSI does not accept or perform recursive cleanup of user-profile paths.
+Setup saves its validated marker in 64 bit `HKLM\Software\KM Calculator`. Shortcut preferences are written there by the MSI and reloaded by Burn. Installation and maintenance are restricted to the single canonical `%ProgramFiles%\KM Calculator` path; the Burn variable cannot be overridden through the command line, no folder browser is exposed, and the MSI independently rejects any other destination. Uninstall always preserves KM Calculator saved teams, notes, settings, and updater caches. The elevated MSI does not accept or perform recursive cleanup of user profile paths.
 
-The published legacy validation set is `0.1.0` through `0.2.2`, plus `0.3.21` and `0.4.26`. Every release uses NSIS identity `cef17072-1d18-5c82-9672-1f987b4e4970`; `0.1.0`-`0.1.2` are named `Pokemon Royal Sword`, while later releases are `Royal Sword Calculator`. Setup validates the exact version, display name, publisher, executable and uninstaller versions, `/allusers` uninstall command, Electron archive, updater configuration, and the sprite manifest for releases that shipped one. It recognizes the published upgrade lineage at the fixed 64-bit Program Files `Royal Sword Calculator`, `Pokemon Royal Sword`, and nested `Pokemon Royal Sword\Royal Sword Calculator` locations. A nested installation removes only the registered inner tree and removes its parent nonrecursively when empty.
+The published legacy validation set is `0.1.0` through `0.2.2`, plus `0.3.21` and `0.4.26`. Every release uses NSIS identity `cef17072-1d18-5c82-9672-1f987b4e4970`; `0.1.0` through `0.1.2` are named `Pokemon Royal Sword`, while later releases are `Royal Sword Calculator`. Setup validates the exact version, display name, publisher, executable and uninstaller versions, `/allusers` uninstall command, Electron archive, updater configuration, and the sprite manifest for releases that shipped one. It recognizes the published upgrade lineage at the fixed 64 bit Program Files `Royal Sword Calculator`, `Pokemon Royal Sword`, and nested `Pokemon Royal Sword\Royal Sword Calculator` locations. A nested installation removes only the registered inner tree and removes its parent nonrecursively when empty.
 
-Burn and the MSI perform independent identity checks; Burn's result is only an additional gate. The MSI builds every recursive target from `ProgramFiles64Folder`, never from process environment or a command-line/registry-provided custom path. Before elevation, the public launcher rejects reparse points in either known machine tree. Unknown releases, custom locations, malformed or partial registration, conflicting roots, and unregistered executable trees fail closed with manual-removal instructions. After MSI success, invoking-user cleanup is deferred until both machine registry keys and every legacy Program Files root are confirmed absent; reboot-required results leave the cleanup receipt pending for a later verified retry.
+Burn and the MSI perform independent identity checks; Burn's result is only an additional gate. The MSI builds every recursive target from `ProgramFiles64Folder`, never from the process environment or a custom path supplied through the command line or registry. Before elevation, the public launcher rejects reparse points in either known machine tree. Unknown releases, custom locations, malformed or partial registration, conflicting roots, and unregistered executable trees fail closed with manual removal instructions. After MSI success, invoking user cleanup is deferred until both machine registry keys and every legacy Program Files root are confirmed absent; results that require a reboot leave the cleanup receipt pending for a later verified retry.
 
-After Burn reports a successful first KM Calculator installation on a machine with no registered KM MSI, the unelevated public launcher requires a per-run receipt and initiating-user SID written by the elevated MSI before it removes the invoking user's fixed Royal Sword profile, updater-cache, default per-user program, shortcut, and HKCU registration paths. Before mutating an identity-proven program tree, it durably persists a receipt-named cleanup plan under `%APPDATA%\KM Calculator`, binds the original registry fingerprints and NTFS/ReFS volume/file identity, and handle-renames the old program tree to a receipt-specific quarantine path. A retry can finish only that quarantined object; a recreated canonical folder, changed registration, or later Royal Sword reinstall fails closed before profile or cache deletion. A later fresh KM installation safely retires any prior receipt's proven quarantine without applying that prior authority to a canonical app, settings, or registration. It binds cleanup revision `1` to the receipt only after every target and registration is gone, then removes the plan as post-commit housekeeping. The elevated receipt remains pending after a reboot or failed post-install cleanup, is carried through later upgrades without authorizing new deletion, and lets the same Windows SID safely retry after the installed KM payload validates; another account cannot consume it, and a fresh install after a true uninstall receives a different receipt. Existing-KM upgrades, cancellation, same-version maintenance, repair, modify, cache, layout, and uninstall do not independently authorize launcher cleanup.
+After Burn reports a successful first KM Calculator installation on a machine with no registered KM MSI, the unelevated public launcher requires a per run receipt and initiating user SID written by the elevated MSI before it removes the invoking user's fixed Royal Sword profile, updater cache, default per user program, shortcut, and HKCU registration paths. Before mutating a verified program tree, it durably persists a receipt named cleanup plan under `%APPDATA%\KM Calculator`, binds the original registry fingerprints and NTFS/ReFS volume/file identity, and uses its handle to rename the old program tree to a receipt specific quarantine path. A retry can finish only that quarantined object; a recreated canonical folder, changed registration, or later Royal Sword reinstall fails closed before profile or cache deletion. A later fresh KM installation safely retires any prior receipt's proven quarantine without applying that prior authority to a canonical app, settings, or registration. It binds cleanup revision `1` to the receipt only after every target and registration is gone, then removes the plan after committing those changes. The elevated receipt remains pending after a reboot or failed cleanup following installation, is carried through later upgrades without authorizing new deletion, and lets the same Windows SID safely retry after the installed KM payload validates; another account cannot consume it, and a fresh install after a true uninstall receives a different receipt. Existing KM upgrades, cancellation, same version maintenance, repair, modify, cache, layout, and uninstall do not independently authorize launcher cleanup.
 
-The complete files-and-settings guarantee belongs to the public setup launcher and the invoking Windows user; launching the inner Burn bundle directly is not a supported cleanup path, and additional dormant Windows profiles are not enumerated or modified. Cleanup covers the released `%APPDATA%\Royal Sword Calculator` and `%APPDATA%\Pokemon Royal Sword` profiles; the lowercase `%LOCALAPPDATA%\royal-sword-calculator-updater` and `%LOCALAPPDATA%\pokemon-royal-sword-updater` caches; exact legacy shortcuts, jump-list destinations, custom destination lists, and HKCU registration; and only a registered, fully validated default per-user program tree resolved from Windows `FOLDERID_UserProgramFiles`, including its published flat and nested upgrade locations. It never deletes `%APPDATA%\KM Calculator`, the `km-calculator-updater` cache, speculative aliases, or a recursive path supplied through the command line or registry.
+The complete files and settings guarantee belongs to the public setup launcher and the invoking Windows user; launching the inner Burn bundle directly is not a supported cleanup path, and additional dormant Windows profiles are not enumerated or modified. Cleanup covers the released `%APPDATA%\Royal Sword Calculator` and `%APPDATA%\Pokemon Royal Sword` profiles; the lowercase `%LOCALAPPDATA%\royal-sword-calculator-updater` and `%LOCALAPPDATA%\pokemon-royal-sword-updater` caches; exact legacy shortcuts, jump list destinations, custom destination lists, and HKCU registration; and only a registered, fully validated default per user program tree resolved from Windows `FOLDERID_UserProgramFiles`, including its published flat and nested upgrade locations. It never deletes `%APPDATA%\KM Calculator`, the `km-calculator-updater` cache, speculative aliases, or a recursive path supplied through the command line or registry.
 
-Burn detects the canonical legacy program folder plus both the product key and Programs and Features key even when registry values are missing or malformed. Any machine-wide legacy installation at a custom location, an unknown version, an orphaned canonical folder, or an otherwise incomplete identity blocks setup with instructions to uninstall Royal Sword Calculator or remove an unregistered leftover folder first and rerun. The MSI repeats the canonical-folder gate independently, and the launcher applies the same fail-closed rule to an existing custom per-user location. This prevents side-by-side installations without recursively deleting an unproven or registry-provided custom path. The legacy uninstaller may preserve its profile by default, but the next successful first KM Calculator installation removes that remaining invoking-user data.
+Burn detects the canonical legacy program folder plus both the product key and Programs and Features key even when registry values are missing or malformed. Any machine wide legacy installation at a custom location, an unknown version, an orphaned canonical folder, or an otherwise incomplete identity blocks setup with instructions to uninstall Royal Sword Calculator or remove an unregistered leftover folder first and rerun. The MSI repeats the canonical folder gate independently, and the launcher applies the same strict rejection rule to an existing custom per user location. This prevents side by side installations without recursively deleting an unproven path or a custom path provided through the registry. The legacy uninstaller may preserve its profile by default, but the next successful first KM Calculator installation removes that remaining invoking user data.
 
 ## electron-updater compatibility
 
 The public launcher recognizes the existing Electron contract:
 
-- `--updated` maps existing-KM upgrades to Burn `/passive` and `KMUpdaterInvocation=1`; updater-driven upgrades never authorize new Royal Sword removal. The one legacy-NSIS-to-first-KM transition is relocated out of the legacy updater cache and converted to the fully disclosed interactive Install page, so only the user's Install action authorizes cleanup.
-- `--force-run` with `--updated` requests a post-update relaunch.
-- updater-provided `/S` does not hide explicitly requested update progress; standalone `/S` maps to `/quiet`.
-- updater-provided `/D=...` and `--package-file=...` are consumed but never opened or forwarded. Outside an updater invocation they are rejected.
-- relaunch occurs only after success and only from the validated 64-bit `HKLM\Software\KM Calculator` marker at the canonical `%ProgramFiles%\KM Calculator` path, with the expected version, executable metadata, non-reparse directory chain, and `resources\app.asar`.
+- `--updated` maps existing KM upgrades to Burn `/passive` and `KMUpdaterInvocation=1`; upgrades driven by the updater never authorize new Royal Sword removal. The initial migration from legacy NSIS to KM is relocated out of the legacy updater cache and converted to the fully disclosed interactive Install page, so only the user's Install action authorizes cleanup.
+- `--force-run` with `--updated` requests a relaunch after updating.
+- `/S` provided by the updater does not hide explicitly requested update progress; standalone `/S` maps to `/quiet`.
+- `/D=...` and `--package-file=...` provided by the updater are consumed but never opened or forwarded. Outside an updater invocation they are rejected.
+- relaunch occurs only after success and only from the validated 64 bit `HKLM\Software\KM Calculator` marker at the canonical `%ProgramFiles%\KM Calculator` path, with the expected version, executable metadata, a directory chain without reparse points, and `resources\app.asar`.
 
 The custom installer does not produce an NSIS blockmap. `latest.yml` remains the authoritative `electron-updater` metadata and contains the exact asset name, byte size, and base64 SHA-512 digest.

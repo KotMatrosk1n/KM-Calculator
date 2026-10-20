@@ -78,7 +78,7 @@ internal sealed class SetupState : INotifyPropertyChanged
             SetupOperation.Repair => "Restore missing or damaged application files, or uninstall KM Calculator.",
             SetupOperation.Layout => "Save the complete setup payload to the requested folder for installation later.",
             SetupOperation.Cache => "Prepare the setup cache without installing or removing KM Calculator.",
-            _ => "Multi-generation damage calculation with ROM hack profiles, encounter tracking, and trainer references."
+            _ => "Damage calculation across generations with ROM hack profiles, encounter tracking, and trainer references."
         }
     };
     public string ActionText => Operation switch

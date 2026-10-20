@@ -1,6 +1,6 @@
 # Trainer Data Packs
 
-KM Calculator trainer packs let mod authors and community maintainers distribute trainer teams without editing the calculator's built-in data file.
+KM Calculator trainer packs let mod authors and community maintainers distribute trainer teams without editing the calculator's bundled data file.
 
 ## Format
 
@@ -17,15 +17,15 @@ Every pack declares:
 - the license or permission governing redistribution
 - one or more trainer records and their Pokemon
 
-`profileId` is optional and defaults to the pack ID. IDs are normalized to lowercase hyphen-separated values. The profile's declared `trainerData.packId` selects its primary pack, while another imported pack with the same `profileId` can supplement that profile without replacing its bundled data.
+`profileId` is optional and defaults to the pack ID. IDs are normalized to lowercase values with words separated by hyphens. The profile's declared `trainerData.packId` selects its primary pack, while another imported pack with the same `profileId` can supplement that profile without replacing its bundled data.
 
 KM Calculator requires attribution fields so a trainer pack cannot silently separate community data from its creators and source project.
 
 Trainer and Pokemon records may target legacy or modern games. A trainer's generations must be a nonempty subset of its pack's generations. Double teams require Generation 3 or later. Teams contain at most six Pokemon. Optional `slot` values must be present for the complete team, unique, and form the sequence from 1 through the team size; KM Calculator sorts that sequence before displaying it. Stat maps accept either calculator keys (`at`, `df`, `sl`, `sa`, `sd`, `sp`) or common keys (`atk`, `def`, `spc`, `spa`, `spd`, `spe`). Use DVs for Generations 1 and 2 and IVs for Generations 3 through 9.
 
-A standalone imported mod pack should declare one base generation. KM Calculator then creates a selectable ROM-hack tile for it, locks the active profile to that generation, and layers the pack's trainers over the canonical data. The generated profile uses the standard `base` layout, the generation's normal EV rules, and the shared Team/Box, Player Notes and Clear Notes, trainer dropdown and team sprites, save import and border controls, and enhanced Singles and Doubles workflows. A pack whose `profileId` matches an already installed profile can supplement that profile instead of creating another tile.
+A standalone imported mod pack should declare one base generation. KM Calculator then creates a selectable ROM hack tile for it, locks the active profile to that generation, and layers the pack's trainers over the canonical data. The generated profile uses the standard `base` layout, the generation's normal EV rules, and the shared Team/Box, Player Notes and Clear Notes, trainer dropdown and team sprites, save import and border controls, and enhanced Singles and Doubles workflows. A pack whose `profileId` matches an already installed profile can supplement that profile instead of creating another tile.
 
-Trainer packs are declarative data. The JSON format cannot choose, register, or execute a custom layout, and adding a layout-like property does not grant that authority. A mod that needs a custom interface requires a reviewed bundled profile and registered layout provider in KM Calculator source code.
+Trainer packs are declarative data. The JSON format cannot choose, register, or execute a custom layout, and adding a layout property does not grant that authority. A mod that needs a custom interface requires a reviewed bundled profile and registered layout provider in KM Calculator source code.
 
 ## Importing A Pack
 
@@ -34,9 +34,9 @@ Trainer packs are declarative data. The JSON format cannot choose, register, or 
 3. Select the pack JSON file.
 4. Review the pack name, version, author, source, and imported trainer count shown by the calculator.
 
-KM Calculator validates the pack structure, generation boundaries, battle type, slots, and referenced species, forms, moves, abilities, items, and types before storing it. Imported packs are saved in the desktop app's local storage and filtered to their declared generation. Importing the same pack ID again replaces that imported version and refreshes an owned generated tile. Built-in packs and bundled profiles cannot be overwritten by an imported file.
+KM Calculator validates the pack structure, generation boundaries, battle type, slots, and referenced species, forms, moves, abilities, items, and types before storing it. Imported packs are saved in the desktop app's local storage and filtered to their declared generation. Importing the same pack ID again replaces that imported version and refreshes an owned generated tile. Bundled packs and profiles cannot be overwritten by an imported file.
 
-Use **Remove Imported Trainer Data** to clear community packs without changing the built-in data.
+Use **Remove Imported Trainer Data** to clear community packs without changing the bundled data.
 
 ## Preparing Data For Bundling
 

@@ -6,15 +6,15 @@ The standard calculation data and mechanics track
 
 This audit compared the fork from its shared commit
 `1711f7e8d23af7c4727ea81b3ac9375105116e23` through that upstream revision. The
-last calculation-package change in that range is
+last calculation package change in that range is
 `6287bda767daeee7eec3ad10f70a0f94fbd4e803` (`Implement Gigantamax properly`).
 
 Intentional local differences are kept outside the standard generation data:
 
 - `RoyalSwordGenerations.get(8)` overlays the original Royal Sword species and
   item changes. `Generations.get(1)` through `Generations.get(9)` remain the
-  upstream-compatible paths.
-- Noncanonical Pokemon Champions generation-zero mechanics and data, along
+  compatible with upstream paths.
+- Noncanonical Pokemon Champions generation zero mechanics and data, along
   with Legends: Z-A additions from the pinned upstream revision, are excluded
   from canonical Generations 1 through 9. Future support belongs in explicit
   profile overlays.

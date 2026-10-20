@@ -28,7 +28,9 @@ module.exports = function registerRunTools(options) {
 			if (!event.senderFrame || event.senderFrame !== event.sender.mainFrame || !options.isAppUrl(event.senderFrame.url)) return {error: "This action is unavailable."};
 			var parent = options.BrowserWindow.fromWebContents(event.sender);
 			if (!parent || parent.isDestroyed() || event.sender.isDestroyed()) return {error: "This window is unavailable."};
-			try { return await action(parent, value); } catch (error) { return {error: "The run operation could not be completed. Check the backup file and available storage, then try again."}; } finally {
+			try { return await action(parent, value); } catch (error) {
+				return {error: channel === "km-calculator-run-reset" ? "The run could not be reset. Your saved progress has been kept. Check available storage and try again." : "The run operation could not be completed. Check the backup file and available storage, then try again."};
+			} finally {
 				if ((channel === "km-calculator-run-save" || channel === "km-calculator-run-read") && !parent.isDestroyed() && !event.sender.isDestroyed()) { parent.focus(); event.sender.focus(); }
 			}
 		});
@@ -56,6 +58,12 @@ module.exports = function registerRunTools(options) {
 		var previous = data.capture(before, backup.profile, options.version());
 		// The recovery copy and replacement must both reach disk before changing the live cache.
 		atomicWrite(recoveryPath(backup.profile), JSON.stringify(previous));
+		atomicWrite(options.storagePath(), JSON.stringify(next));
+		options.replaceStorage(next);
+		return {snapshot: next};
+	});
+	handle("km-calculator-run-reset", async function (parent, profileId) {
+		var next = data.resetProgress(options.readStorage(), profileId);
 		atomicWrite(options.storagePath(), JSON.stringify(next));
 		options.replaceStorage(next);
 		return {snapshot: next};

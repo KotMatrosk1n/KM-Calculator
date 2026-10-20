@@ -217,15 +217,15 @@ var BATTLE_SCRIPT_CRAFT_QUIP_SEEDS = [
 	"Crafting a line", "Counting damage rolls", "Checking pivot math", "Testing safer KOs",
 	"Watching recharge turns", "Comparing AI branches", "Looking for a clean endgame",
 	"Scoring sacrifice lines", "Sorting switch pressure", "Checking accuracy risk",
-	"Following weather swings", "Trying the boring but correct line", "Checking crit-free outs",
-	"Reading post-KO pressure", "Auditing move effects", "Ranking consistent paths",
+	"Following weather swings", "Trying the boring but correct line", "Checking outs without critical hits",
+	"Reading pressure after a KO", "Auditing move effects", "Ranking consistent paths",
 	"Looking past the first KO", "Testing setup value", "Checking all remaining threats",
 	"Trimming shaky branches", "Measuring return damage", "Finding the least messy win",
 	"Keeping bag items honest", "Checking Power Herb timing", "Reading terrain pressure",
-	"Counting remaining weather turns", "Testing item-assisted pivots", "Finding clean switch-ins",
+	"Counting remaining weather turns", "Testing pivots supported by items", "Finding clean switches",
 	"Checking status berry value", "Watching entry pressure", "Sorting endgame routes",
 	"Rechecking speed control", "Comparing safer finishers", "Looking for a guaranteed close",
-	"Measuring ability breakpoints", "Testing no-loss branches", "Checking all trainer outs"
+	"Measuring ability breakpoints", "Testing branches without losses", "Checking all trainer outs"
 ];
 var BATTLE_SCRIPT_CRAFT_QUIP_VERBS = [
 	"Checking", "Comparing", "Scoring", "Ranking", "Testing", "Auditing", "Threading",
@@ -238,11 +238,11 @@ var BATTLE_SCRIPT_CRAFT_QUIP_SUBJECTS = [
 	"damage rolls", "AI move scores", "safe KOs", "pivot windows", "switch pressure",
 	"item assignments", "status answers", "terrain turns", "weather turns", "entry hazard pressure",
 	"speed ties", "ability triggers", "Power Herb turns", "Berry timing", "accuracy risk",
-	"crit-free paths", "post-KO pressure", "sacrifice counts", "endgame routes",
+	"paths without critical hits", "pressure after a KO", "sacrifice counts", "endgame routes",
 	"setup value", "return damage", "survival ranges", "trainer replacements",
-	"player item locks", "remaining HP", "field duration", "two-turn moves",
+	"player item locks", "remaining HP", "field duration", "moves spanning two turns",
 	"contact punishment", "priority moves", "screen turns", "bag limits", "switch order",
-	"status pressure", "recharge turns", "trainer lock-ins", "move legality",
+	"status pressure", "recharge turns", "forced trainer choices", "move legality",
 	"recovery timing", "roll safety", "branch dominance", "search priorities"
 ];
 var BATTLE_SCRIPT_CRAFT_QUIP_ENDINGS = [
@@ -260,11 +260,11 @@ var BATTLE_SCRIPT_CRAFT_QUIP_ENDINGS = [
 ];
 var BATTLE_SCRIPT_CRAFT_QUIPS = createBattleScriptCraftQuipSource();
 var BATTLE_SCRIPT_CRAFT_TEAM_PLAN_QUIPS = [
-	"Checking Box team plans", "Testing full-party repairs", "Comparing safer swaps",
+	"Checking Box team plans", "Testing repairs across the full party", "Comparing safer swaps",
 	"Looking for a cleaner roster", "Ranking backup options", "Trying deeper Box plans",
 	"Measuring team rebuild risk", "Searching for consistent imports", "Checking who fixes the line",
-	"Auditing Box depth", "Finding safer replacements", "Testing multi-swap routes",
-	"Looking past the first swap", "Sorting rescue plans", "Checking six-slot possibilities",
+	"Auditing Box depth", "Finding safer replacements", "Testing routes with multiple swaps",
+	"Looking past the first swap", "Sorting rescue plans", "Checking possibilities across all six slots",
 	"Finding the least risky rebuild", "Testing Box answers", "Comparing consistency gains",
 	"Keeping the strong plan honest", "Looking for a team that survives"
 ];
@@ -1135,7 +1135,7 @@ function getBattleScriptHPText(range, maxHP) {
 	var minPercent = Math.max(0, Math.round(range.min * 1000 / maxHP) / 10);
 	var maxPercent = Math.max(0, Math.round(range.max * 1000 / maxHP) / 10);
 	if (range.min === range.max) return range.min + "/" + maxHP + " (" + minPercent + "%)";
-	return range.min + "-" + range.max + "/" + maxHP + " (" + minPercent + "-" + maxPercent + "%)";
+	return range.min + " to " + range.max + "/" + maxHP + " (" + minPercent + " to " + maxPercent + "%)";
 }
 
 function getBattleScriptDamageRange(result, move) {
@@ -1269,7 +1269,7 @@ function getBattleScriptDamageText(damage, defender) {
 	var minPercent = Math.round(damage.min * 1000 / maxHP) / 10;
 	var maxPercent = Math.round(damage.max * 1000 / maxHP) / 10;
 	if (damage.min === damage.max) return damage.min + " HP (" + minPercent + "%)";
-	return damage.min + "-" + damage.max + " HP (" + minPercent + "-" + maxPercent + "%)";
+	return damage.min + " to " + damage.max + " HP (" + minPercent + " to " + maxPercent + "%)";
 }
 
 function getBattleScriptRisk(damage, targetState) {
@@ -1669,7 +1669,7 @@ function getBattleScriptSpeedRelationText(candidateState, attackerState, state) 
 	var attackerSpeed = getBattleScriptSpeed(attackerState, state);
 	var candidateLast = hasBattleScriptMoveLastItem(candidateState, state);
 	var attackerLast = hasBattleScriptMoveLastItem(attackerState, state);
-	if (candidateLast !== attackerLast) return candidateLast ? "moves last from held item" : "moves before held-item lag";
+	if (candidateLast !== attackerLast) return candidateLast ? "moves last from held item" : "moves before held item lag";
 	if (isBattleScriptTrickRoomActive(state)) {
 		if (candidateSpeed < attackerSpeed) return "moves first in Trick Room (" + candidateSpeed + " < " + attackerSpeed + ")";
 		if (candidateSpeed === attackerSpeed) return "Trick Room speed tie (" + candidateSpeed + ")";
@@ -2501,7 +2501,7 @@ function getBattleScriptAbilityMoveImmunityReason(move, attackerState, defenderS
 	if (isBattleScriptBulletMove(move) && hasBattleScriptEffectiveAbility(defenderState, ["Bulletproof"], context)) return "Bulletproof blocks bullet moves";
 	if (hasBattleScriptEffectiveAbility(defenderState, ["Wonder Guard"], context) &&
 			getBattleScriptMoveEffectivenessValue(move, defenderState, state, attackerState) <= 4) {
-		return "Wonder Guard blocks non-super-effective damage";
+		return "Wonder Guard blocks damage that is not super effective";
 	}
 	return "";
 }
@@ -3304,7 +3304,7 @@ function getBattleScriptLikelyAIMoveInfo(state, attackerState, defenderState, in
 			favorable: false,
 			maxPercent: 2,
 			targetState: nextDefenderState,
-			text: "no follow-up; " + defenderState.label + " faints on switch-in"
+			text: "no further action; " + defenderState.label + " faints on entry"
 		};
 	}
 	nextState = createBattleScriptRecommendationState(state, nextDefenderState, nextAttackerState);
@@ -3333,7 +3333,7 @@ function getBattleScriptLikelyAIMoveInfo(state, attackerState, defenderState, in
 		remainingPercent = nextDefenderState.hp.max ? top.damage.max / nextDefenderState.hp.max : damagePercent;
 		favorable = Math.max(damagePercent, remainingPercent) <= 0.25;
 	} else {
-		damageText = top.notes && top.notes.length ? top.notes[0] : "non-damaging";
+		damageText = top.notes && top.notes.length ? top.notes[0] : "no damage";
 		damagePercent = 0;
 		remainingPercent = 0;
 		favorable = true;
@@ -3514,7 +3514,7 @@ function applyBattleScriptHPThresholdHeldItems(entry, details, state) {
 	if (itemKey === "lansatberry" && entry.hp.max <= threshold) {
 		entry.focusEnergy = true;
 		consumeBattleScriptHeldItem(entry);
-		details.push(entry.label + "'s Lansat Berry heightened its critical-hit chance.");
+		details.push(entry.label + "'s Lansat Berry heightened its critical hit chance.");
 		return;
 	}
 	if (itemKey === "micleberry" && entry.hp.max <= threshold) {
@@ -4614,7 +4614,7 @@ function canRunBattleScriptSwitch(state, parsed, lineNumber) {
 			lineNumber,
 			"error",
 			"Illegal switch: " + state.active[parsed.side].label + " must finish " + state.active[parsed.side].chargingMove + ".",
-			"Resolve the stored charge-move release before switching."
+			"Resolve the stored charged move release before switching."
 		);
 		return false;
 	}
@@ -4857,7 +4857,7 @@ function formatBattleScriptTrainerPrediction(prediction, defenderState) {
 	if (prediction.recharge) return "Recharge (" + prediction.certaintyText + ")";
 	if (!prediction.move) return "unknown";
 	damageText = prediction.damage ? getBattleScriptDamageText(prediction.damage, defenderState.pokemon) :
-		(prediction.score && prediction.score.notes && prediction.score.notes.length ? prediction.score.notes[0] : "non-damaging");
+		(prediction.score && prediction.score.notes && prediction.score.notes.length ? prediction.score.notes[0] : "no damage");
 	return prediction.move.name + " (" + prediction.scoreText + ", " + damageText + (prediction.guaranteed ? "" : ", " + prediction.certaintyText) + ")";
 }
 
@@ -6374,7 +6374,7 @@ function getBattleScriptCraftLoadoutItemScore(state, player, candidate, evaluati
 	if (key === "powerherb" && hasBattleScriptChargeMove(player)) {
 		return {
 			score: 450 + Math.max(0, evaluation.score || 0) + (candidate.priority || 0) / 100,
-			reason: "resolves two-turn move setup"
+			reason: "resolves setup for moves spanning two turns"
 		};
 	}
 	if (type && hasBattleScriptDamagingMoveType(player, type)) {
@@ -6386,7 +6386,7 @@ function getBattleScriptCraftLoadoutItemScore(state, player, candidate, evaluati
 	if (key === "expertbelt" && (evaluation.attackGain || 0) > 0) {
 		return {
 			score: 350 + evaluation.attackGain,
-			reason: "boosts super-effective damage"
+			reason: "boosts super effective damage"
 		};
 	}
 	if (/^(?:choiceband|choicespecs|lifeorb)$/.test(key) && evaluation && (evaluation.attackGain || 0) > 0) {
@@ -6404,7 +6404,7 @@ function getBattleScriptCraftLoadoutItemScore(state, player, candidate, evaluati
 	if (key === "focussash" && (evaluation.survivalGain || gain) > 0) {
 		return {
 			score: 325 + gain,
-			reason: "preserves a full-HP survival line"
+			reason: "preserves a survival line at full HP"
 		};
 	}
 	if (/^(?:eviolite|assaultvest)$/.test(key) && evaluation && (evaluation.defenseGain || evaluation.survivalGain || 0) > 0) {
@@ -6416,7 +6416,7 @@ function getBattleScriptCraftLoadoutItemScore(state, player, candidate, evaluati
 	if (key === "weaknesspolicy" && getPrediction() && prediction.damage && getPredictedEffectiveness() > 4 && prediction.damage.max < player.hp.min) {
 		return {
 			score: 295,
-			reason: "survives predicted super-effective hit and triggers Weakness Policy"
+			reason: "survives predicted super effective hit and triggers Weakness Policy"
 		};
 	}
 	if (BATTLE_SCRIPT_RESIST_BERRIES[key] && getPrediction() && prediction.move &&
@@ -6436,7 +6436,7 @@ function getBattleScriptCraftLoadoutItemScore(state, player, candidate, evaluati
 			Object.keys(state.sideConditions.player).length) {
 		return {
 			score: 280,
-			reason: "ignores Player-side entry hazards"
+			reason: "ignores Player side entry hazards"
 		};
 	}
 	if (key === "terrainextender" && terrain) {
@@ -6521,7 +6521,7 @@ function getBattleScriptCraftLoadoutItemScore(state, player, candidate, evaluati
 	if (key === "blacksludge" && hasBattleScriptType(player, "Poison")) {
 		return {
 			score: 188 + gain,
-			reason: "adds modeled Poison-type recovery"
+			reason: "adds modeled recovery for Poison types"
 		};
 	}
 	if (key === "rockyhelmet" && getPrediction() && prediction.move && isBattleScriptContactMove(prediction.move)) {
@@ -7245,7 +7245,7 @@ function getBattleScriptCraftLineDifference(line, baseline, index) {
 	var current = getBattleScriptCraftMeaningfulLines(line);
 	var compare = getBattleScriptCraftMeaningfulLines(baseline);
 	var max = Math.max(current.length, compare.length);
-	if (index === 0) return "Top-ranked baseline after consistency, risk, and turn count scoring.";
+	if (index === 0) return "Highest ranked baseline after consistency, risk, and turn count scoring.";
 	for (var i = 0; i < max; i++) {
 		if (current[i] === compare[i]) continue;
 		if (!compare[i]) return "Adds step " + (i + 1) + ": " + current[i] + ".";
@@ -7422,7 +7422,7 @@ function createBattleScriptCraftSearch(baseRosters, options) {
 			frontier: [],
 			results: [],
 			nodes: 0,
-			error: "No imported Player held-item inventory was found. Import a full Sword/Shield save with usable held items before Craft a Line can assign items."
+			error: "No imported Player held item inventory was found. Import a full Sword/Shield save with usable held items before Craft a Line can assign items."
 		};
 	}
 	search = {
@@ -8017,7 +8017,7 @@ function runBattleScriptMove(state, parsed, lineNumber) {
 			lineNumber,
 			"error",
 			attacker.label + " must finish " + forcedChargeMove.name + ".",
-			"Two-turn moves force the stored release before another move can be chosen."
+			"Moves spanning two turns force the stored release before another move can be chosen."
 		);
 		return;
 	}
@@ -8420,7 +8420,7 @@ function createBattleScriptResultItem(message) {
 		}
 		for (var aiIndex = 0; aiIndex < message.aiChoice.scores.length; aiIndex++) {
 			var score = message.aiChoice.scores[aiIndex];
-			var noteText = score.notes && score.notes.length ? " - " + score.notes.slice(0, 2).join("; ") : "";
+			var noteText = score.notes && score.notes.length ? ": " + score.notes.slice(0, 2).join("; ") : "";
 			aiRows.append(
 				$("<div class='battle-script-ai-choice-row'></div>")
 					.append($("<span></span>").text(score.move))
@@ -8440,7 +8440,7 @@ function createBattleScriptResultItem(message) {
 			var recommendationDetails = $("<div class='battle-script-recommendation-details'></div>");
 			var summary = $("<div class='battle-script-recommendation-summary'></div>")
 				.append($("<span class='battle-script-recommendation-name'></span>").text(recommendation.label));
-			if (recommendation.value) summary.append(document.createTextNode(" - " + recommendation.value));
+			if (recommendation.value) summary.append(document.createTextNode(": " + recommendation.value));
 			recommendationItem.append(summary);
 			if (recommendation.details && recommendation.details.length) {
 				for (var detailIndex = 0; detailIndex < recommendation.details.length; detailIndex++) {
@@ -9271,7 +9271,7 @@ function getBattleScriptPokemonAutocompleteDetail(entry) {
 			normalizeBattleScriptText(entry.source) !== normalizeBattleScriptText(entry.label)) {
 		details.push(entry.source);
 	}
-	return details.join(" - ");
+	return details.join(", ");
 }
 
 function addBattleScriptRosterAutocomplete(items, roster, side, lineText) {
@@ -9307,11 +9307,11 @@ function getBattleScriptAutocompleteItems(lineText) {
 	addBattleScriptAutocompleteItem(items, "Turn 1", "Start a turn and reset action order");
 	addBattleScriptAutocompleteItem(items, "Weather Rain 5", "Set simulator weather and remaining turns");
 	addBattleScriptAutocompleteItem(items, "Terrain Electric 5", "Set simulator terrain and remaining turns");
-	addBattleScriptAutocompleteItem(items, "Player side: Stealth Rock, Spikes 1, Toxic Spikes 1", "Set mapped Player-side hazards");
-	addBattleScriptAutocompleteItem(items, "Trainer side: Reflect 5, Tailwind 4", "Set mapped Trainer-side side conditions");
+	addBattleScriptAutocompleteItem(items, "Player side: Stealth Rock, Spikes 1, Toxic Spikes 1", "Set mapped Player side hazards");
+	addBattleScriptAutocompleteItem(items, "Trainer side: Reflect 5, Tailwind 4", "Set mapped Trainer side conditions");
 	addBattleScriptAutocompleteItem(items, "Field Gravity 5", "Set a mapped global field effect");
 	addBattleScriptAutocompleteItem(items, "Field Trick Room 5", "Set simulator action order and remaining turns");
-	addBattleScriptAutocompleteItem(items, "Clear Trainer side", "Clear mapped Trainer-side conditions");
+	addBattleScriptAutocompleteItem(items, "Clear Trainer side", "Clear mapped Trainer side conditions");
 	addBattleScriptRosterAutocomplete(items, rosters.player, "player", lineText);
 	addBattleScriptRosterAutocomplete(items, rosters.opponent, "opponent", lineText);
 	for (var side in rosters) {
