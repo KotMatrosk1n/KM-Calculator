@@ -8,7 +8,7 @@
   "homepage": "https://github.com/KotMatrosk1n/KM-Calculator",
   "repository": "github:KotMatrosk1n/KM-Calculator",
   "author": "Matroskin",
-  "license": "MIT",
+  "license": "GPL-3.0-only",
   "copyright": "Copyright 2026 Matroskin",
   "kmCalculator": {
     "project": "KM Calculator",
@@ -35,6 +35,7 @@
     "electron:dist": "npm run electron:pack && pwsh -NoProfile -File installer/windows/scripts/Build-KmCalculatorWindowsSetup.ps1",
     "generate:third-party-notices": "node scripts/generate-third-party-notices.mjs",
     "check:third-party-notices": "node scripts/generate-third-party-notices.mjs --check",
+    "release:source": "node scripts/package-release-source.mjs",
     "check:workspace": "node scripts/check-workspace-paths.mjs",
     "postinstall": "subpkg install"
   },
@@ -69,6 +70,13 @@
       "package.json"
     ],
     "extraResources": [
+      {
+        "from": "dist/licenses",
+        "to": "licenses",
+        "filter": [
+          "**/*"
+        ]
+      },
       {
         "from": "electron/sprites",
         "to": "sprites",

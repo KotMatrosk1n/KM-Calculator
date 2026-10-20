@@ -122,12 +122,34 @@ body.km-app .km-tooltip-category-icon { box-sizing: border-box; width: 36px; hei
 body.km-app a.km-source-link { display: inline-block; color: var(--km-accent); margin-right: 18px; text-decoration: underline; }
 .km-about { margin: 0 28px 24px; background: transparent; }
 body.km-app .credits { max-width: none; margin: 0; font-size: 12px; color: var(--km-muted); }
-.km-encounter-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 430px), 1fr)); gap: 12px; align-items: start; }
-.km-encounter-groups .km-reference-card { margin: 0; }
+.km-encounter-groups { --km-encounter-min-width: 300px; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--km-encounter-min-width)), 1fr)); grid-auto-rows: 1px; column-gap: 16px; row-gap: 0; align-items: start; }
+.km-encounter-groups .km-reference-card { margin: 0; min-width: 0; padding: 8px; }
+.km-encounter-card-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.km-encounter-groups .km-reference-card h3 { margin: 0; }
+.km-encounter-level { color: var(--km-muted); font-size: 12px; white-space: nowrap; }
+.km-encounter-groups .km-data-table th, .km-encounter-groups .km-data-table td { box-sizing: border-box; height: 32px; padding: 5px 8px; line-height: 20px; }
+.km-encounter-groups .km-data-table td { font-size: 13px; }
+.km-encounter-groups .km-rate { text-align: right; }
+.km-encounter-groups .km-data-table tbody tr:hover { background: var(--km-inset); }
+.km-encounter-compact .km-data-table th, .km-encounter-compact .km-data-table td { height: 24px; padding: 1px 8px; }
+.km-encounter-area-header { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 16px; }
+.km-encounter-area-header h2 { margin: 0; font-size: 20px; font-weight: 600; line-height: 1.3; }
+.km-encounter-area-header > .km-reference-note { flex-basis: 100%; margin: 0; }
 .km-area-state { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 0; font-size: 12px; }
-.km-area-state label { cursor: pointer; }
+.km-area-state label { display: inline-flex; align-items: center; gap: 5px; cursor: pointer; }
+.km-area-shared { color: var(--km-muted); }
 .km-catch-summary { display: flex; align-items: center; gap: 12px; }
-.km-encounter-modes { display: flex; gap: 6px; margin: 0 0 10px; }
+.km-encounter-modes { display: flex; gap: 6px; margin: 0 auto 0 0; }
+.km-encounters-panel .km-page-heading { flex-wrap: wrap; }
+.km-encounters-panel .km-catch-summary { flex-wrap: wrap; gap: 8px; }
+.km-encounters-panel .km-reference-filters { padding: 6px 8px; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.km-encounters-panel .km-reference-filters .km-filter { flex-direction: row; align-items: center; gap: 8px; min-width: 0; }
+.km-encounters-panel .km-reference-filters .km-filter > span { white-space: nowrap; }
+.km-encounters-panel .km-reference-filters .km-search { position: relative; min-width: 160px; }
+.km-encounters-panel .km-search > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+body.km-app .km-encounters-panel .km-filter select { width: auto; }
+.km-encounters-panel .km-reference-browser { grid-template-columns: 240px minmax(0, 1fr); gap: 12px; }
+.km-encounters-panel .km-location-list > .km-result-count { margin: 0 0 6px; }
 body.km-app .km-encounter-modes button { min-width: 96px; }
 body.km-app .km-encounter-modes [aria-selected="true"] { color: var(--km-text); background: var(--km-selection); border-color: var(--km-accent); }
 body.km-app .km-reference-panel > .km-encounter-mode-panel { display: flex; flex-direction: column; flex: 1; min-height: 0; }

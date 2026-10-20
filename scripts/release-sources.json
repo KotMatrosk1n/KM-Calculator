@@ -1,0 +1,55 @@
+{
+  "compiledPackages": {
+    "builder-util-runtime@9.7.0": "electron-builder",
+    "electron-updater@6.8.9": "electron-builder",
+    "lazy-val@1.0.5": "lazy-val",
+    "tiny-typed-emitter@2.1.0": "tiny-typed-emitter"
+  },
+  "archives": [
+    {
+      "id": "electron-builder",
+      "revision": "bed3a9c421a8a05c49f36a2af5d7ae3598cb1b95",
+      "url": "https://codeload.github.com/electron-userland/electron-builder/zip/bed3a9c421a8a05c49f36a2af5d7ae3598cb1b95",
+      "sha256": "32d3a080ebd1996314602332e59569fe543035b805a541d32b710aea2c0d74cf"
+    },
+    {
+      "id": "lazy-val",
+      "revision": "b69ad4119f1b19bdab13c61ee2fcc88d46b89071",
+      "url": "https://codeload.github.com/develar/lazy-val/zip/b69ad4119f1b19bdab13c61ee2fcc88d46b89071",
+      "sha256": "fc00e0c6d21ae6283ac834db4935acdc3ad9c227205725ca481347edd3a908b2"
+    },
+    {
+      "id": "tiny-typed-emitter",
+      "revision": "66c1b66bc159675352a6f38911e4c6cf2117f3e4",
+      "url": "https://codeload.github.com/binier/tiny-typed-emitter/zip/66c1b66bc159675352a6f38911e4c6cf2117f3e4",
+      "sha256": "32ddbfe31a388518746edffd76b698b7bfde69239a7e655d79e561d6b0a8a654"
+    },
+    {
+      "id": "wix",
+      "version": "7.0.0",
+      "revision": "2c06f3be9aadf5fa6a2e6d57687d1f1d858d0a45",
+      "url": "https://codeload.github.com/wixtoolset/wix/zip/2c06f3be9aadf5fa6a2e6d57687d1f1d858d0a45",
+      "sha256": "7e4a1e274f311a12ba4c7731bec8c7342d56b6fe53f1d2ad921bcfd388cd9abf"
+    },
+    {
+      "id": "jquery",
+      "version": "1.9.1",
+      "revision": "d71f6a53927ad02d728503385d15539b73d21ac8",
+      "url": "https://codeload.github.com/jquery/jquery/zip/d71f6a53927ad02d728503385d15539b73d21ac8",
+      "sha256": "d025ffd1e82d2b3a2b78c29ca8768766afd47737a262bea08d4d7dc387b3c737"
+    },
+    {
+      "id": "select2",
+      "version": "3.4.5",
+      "revision": "152fa071ebb95a89fa62966f219e8f901ea73112",
+      "url": "https://codeload.github.com/select2/select2/zip/152fa071ebb95a89fa62966f219e8f901ea73112",
+      "sha256": "71c2a41d2915f5890d71760dd20a09ea6dbf996d195c23cff22de0a129f0934a"
+    },
+    {
+      "id": "sizzle",
+      "revision": "c0d9badeb5dac649d0ba7824efaebbe4155369b5",
+      "url": "https://codeload.github.com/jquery/sizzle/zip/c0d9badeb5dac649d0ba7824efaebbe4155369b5",
+      "sha256": "2f59c3d09dab5b32454226be186a065312b597a662823b6dc2d051d605696173"
+    }
+  ]
+}

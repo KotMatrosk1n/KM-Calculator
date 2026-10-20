@@ -4,7 +4,7 @@
 
 KM Calculator depends on and bundles software maintained by other projects. This notice records the direct npm projects and the package-declared license categories in the root, calculator-engine, and save-import dependency trees.
 
-The repository's own source license remains [`LICENSE`](LICENSE). That file retains the existing Honko and contributor copyright notice; this generated inventory supplements it and does not replace or modify it.
+The combined calculator uses [GNU GPL version 3](LICENSE). The original Honko, contributor, and Matroskin MIT notices are preserved in [`LICENSES/MIT-legacy.txt`](LICENSES/MIT-legacy.txt). Separately licensed components retain their terms; see [`LICENSING.md`](LICENSING.md) for scope and compatibility.
 
 Project links and package-declared license values below are attribution and inventory data. They are not assertions that a package author, maintainer, or repository owner is the sole copyright holder. Each project and each incorporated file remains subject to its own license text and notices.
 
@@ -476,6 +476,8 @@ Tags use `root`, `calc`, or `import` for the dependency tree; `prod` or `dev` re
 ## Other Distributed Notices
 
 - Generated save-import data has source-revision and license notices in [`import/THIRD_PARTY_NOTICES.md`](import/THIRD_PARTY_NOTICES.md).
+- The save importer's 127-byte Switch XOR constant uses PKHeX's GPLv3 terms; its pinned source and adaptation are identified in the same notice.
+- The separate Windows installer retains its MIT code license and WiX MS-RL components. WiX is not linked into the calculator. See [`LICENSING.md`](LICENSING.md).
 - Pokémon data, sprites, names, trademarks, artwork, ROM-hack data, and other non-npm material are credited separately in [`CREDITS.md`](CREDITS.md); they are not relicensed by this file.
 - Electron binary distributions include Electron's own `LICENSE` and `LICENSES.chromium.html`. The npm package's MIT declaration in this inventory is not a summary of every Chromium component license.
 - This inventory is generated from package metadata and is not a substitute for reading the license and notice files distributed by each upstream project.

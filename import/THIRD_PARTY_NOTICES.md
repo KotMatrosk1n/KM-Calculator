@@ -1,6 +1,6 @@
 # Save-import third-party notices
 
-The generated save-import lookup bundle uses factual name and game-index data from the following permissively licensed projects. PKHeX is not bundled; it is used only as an external compatibility-validation reference.
+The generated save-import lookup bundle uses factual name and game-index data from the following permissively licensed projects. The importer also includes the Switch XOR constant under PKHeX's GPLv3 terms as described below. The PKHeX application and libraries are not bundled.
 
 ## PokéAPI
 
@@ -40,8 +40,12 @@ Source: <https://github.com/kwsch/PKHeX>
 Audited revision: `6169d60cfdd2bfe30e17805f8677523e8d498d67`
 License: GPL-3.0
 
-No PKHeX source code or generated resource bundle is intentionally included by this save-import work. The pinned revision is an external behavioral oracle used to compare supported game families, entity sizes, offsets, and expected outcomes. GPL attribution does not grant permission to copy PKHeX implementation expression into this MIT repository.
+This revision remains an external behavioral oracle used to compare supported game families, entity sizes, offsets, and expected outcomes. The surrounding parser and keystream implementation are independently written. The separately identified constant below is included under GPLv3.
 
-## Release-review disclosure: Switch XOR interoperability constant
+## PKHeX Switch XOR constant
 
-`src/js/save_import.js` retains a pre-existing 127-byte static XOR constant required to open supported Switch save containers. Its original provenance and licensing could not be independently established during this audit. The surrounding parser and keystream implementation were independently rewritten, but this isolated constant must receive legal/provenance review before release; this notice does not represent it as MIT-licensed or as authorized by PKHeX attribution.
+`src/js/save_import.js` includes the 127-byte `StaticXorpad` from PKHeX's [Sword/Shield update of 2019-11-16](https://github.com/kwsch/PKHeX/blob/cefb56a749a1e2b434516d4cd27c4d3886a63ec1/PKHeX.Core/Saves/MemeCrypto/SwishCrypto.cs), by kwsch and contributors, under that revision's [GNU GPL version 3 license](https://github.com/kwsch/PKHeX/blob/cefb56a749a1e2b434516d4cd27c4d3886a63ec1/LICENSE.md). This distribution uses `GPL-3.0-only`.
+
+The adaptation changes the C# declaration to the JavaScript array `SWISH_STATIC_XORPAD`; all 127 values are identical. The byte sequence has SHA-256 `26853bada5fbbf36cd4de4dea4d89d44f89bb3ccf5dc6e5a47c3bc90c9f515ac`. The licensing notice was updated on 2026-10-20 without changing import behavior. No PKSM-Core or PKSE implementation is incorporated by this change.
+
+The combined calculator is distributed under GPLv3 with its complete text in [LICENSE](../LICENSE). Original permissive notices remain intact. This adopts the identified GPL reference as the licensing basis for the constant; it does not claim an independent MIT grant or determine whether format constants are copyrightable. See [LICENSING.md](../LICENSING.md) for source distribution requirements and component boundaries.

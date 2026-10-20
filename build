@@ -375,3 +375,5 @@ fs.rmSync(path.resolve(rootDir, 'dist'), {recursive: true, force: true});
 cpdir('src', 'dist', {skip: shouldSkipSrcRuntimeFile});
 cpdir('calc/dist', 'dist/calc', {skip: shouldSkipRuntimeCalcFile});
 makeCachebuster('src/index.html', 'dist/index.html');
+require('./scripts/copy-distribution-licenses.cjs')
+	.copyDistributionLicenses(rootDir, path.join(rootDir, 'dist', 'licenses'));
