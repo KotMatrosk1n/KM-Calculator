@@ -118,6 +118,6 @@ Before opening a pull request, make sure:
 * Profile layouts mount and dispose cleanly, preserve required calculator controls and shared workflow tools, and leave the standard layout functional.
 * Data authors, sources, versions, licenses, and redistribution permission are recorded where required.
 * User documentation and credits are updated when the shipped workflow changed.
-* Original project code and documentation are compatible with the project's [MIT License](LICENSE), while separately licensed data or assets are clearly identified and permitted for the proposed use.
+* Original project code and documentation are compatible with [GPLv3](LICENSE), while separately licensed components, data, and assets retain their notices and permission for the proposed use. See [LICENSING.md](LICENSING.md).
 
-By submitting original project code or documentation, you agree that it may be distributed under the repository's MIT License. Separately licensed third-party data and assets remain under their documented terms and must be submitted with permission that covers the proposed use.
+By submitting original project code or documentation, you agree that it may be distributed under GNU GPL version 3 only. Contributions to the separately MIT-licensed engine, import-data tools, or installer remain under those components' MIT licenses. Separately licensed third-party code, data, and assets retain their documented terms and must be submitted with permission that covers the proposed use.

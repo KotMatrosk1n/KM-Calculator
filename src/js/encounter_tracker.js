@@ -80,7 +80,7 @@
 		var modeTabs = el("nav", "km-encounter-modes"); modeTabs.setAttribute("role", "tablist"); modeTabs.setAttribute("aria-label", "Encounter rules");
 		var modePanel = el("div", "km-encounter-mode-panel"); modePanel.id = "km-encounter-mode-panel"; modePanel.setAttribute("role", "tabpanel");
 		Array.prototype.slice.call(options.panel.children).forEach(function (child) { if (child !== options.heading) modePanel.appendChild(child); });
-		options.panel.appendChild(modeTabs); options.panel.appendChild(modePanel);
+		options.heading.appendChild(modeTabs); options.panel.appendChild(modePanel);
 		var modeButtons = modes.map(function (item, index) {
 			var tab = button(item.name, function () { changeMode(item.id); });
 			tab.id = "km-encounter-mode-" + item.id; tab.setAttribute("role", "tab"); tab.setAttribute("aria-controls", modePanel.id);
@@ -93,7 +93,7 @@
 		});
 		var summary = el("div", "km-catch-summary");
 		var count = el("span", "km-muted");
-		var logButton = button("Catch log / add gift or trade", openLog);
+		var logButton = button("Catch log", openLog);
 		summary.appendChild(count); summary.appendChild(logButton);
 		options.heading.appendChild(summary);
 		var dialog = el("dialog", "km-catch-dialog");
@@ -284,18 +284,20 @@
 				var status = rules.describe(area, state);
 				var bar = el("div", "km-area-state");
 				bar.appendChild(el("span", "km-tag", progressText(status)));
+				if (status.areas.length > 1) bar.appendChild(el("span", "km-area-shared", "Shared with " + status.areas.filter(function (id) { return id !== area.id; }).map(areaName).join(" + ")));
 				bar.appendChild(el("span", "km-muted", status.manual ? "Manually closed" : status.closed ? "Complete" : "Available"));
 				var label = el("label"); var check = el("input"); check.type = "checkbox";
+				check.id = "km-area-used-" + encodeURIComponent(area.id);
 				check.checked = status.manual;
 				check.addEventListener("change", function () {
 					var next = copyState(); next.usedAreas = next.usedAreas.filter(function (id) { return status.areas.indexOf(id) === -1; });
 					if (check.checked) next.usedAreas = next.usedAreas.concat(status.areas);
-					commit(next); container.querySelector(".km-area-state input").focus({preventScroll: true});
+					commit(next);
+					var replacement = document.getElementById(check.id); if (replacement) replacement.focus({preventScroll: true});
 				});
 				label.appendChild(check); label.appendChild(document.createTextNode(status.areas.length > 1 ? " Close both areas early" : " Mark used / missed without a catch"));
 				if (mode !== "normal") bar.appendChild(label);
 				container.appendChild(bar);
-				if (status.areas.length > 1) container.appendChild(el("p", "km-reference-note", "Shared limit of " + status.allowances[0].limit + " catches across " + status.areas.map(areaName).join(" + ") + "."));
 				if (status.unmatched) container.appendChild(el("p", "km-reference-note", status.unmatched + " saved catch(es) do not match these allowances. Review them in the catch log."));
 			},
 			decorateLocation: function (node, area) {

@@ -12,7 +12,7 @@ The KM Calculator name, desktop integration, ROM-hack profile framework, trainer
 
 - Profile, calculation overlay, mechanics integration, and bundled trainer data: Matroskin
 - Base calculation generation: Generation 8
-- Redistribution terms for the bundled profile code and data: [MIT](LICENSE)
+- Original bundled profile code and data retain their [MIT notice](LICENSES/MIT-legacy.txt); the combined application is distributed under [GPLv3](LICENSE).
 
 Royal Sword is the first bundled profile. Its data is kept separate from canonical Generation 8 so it does not change standard generation lookups or future ROM-hack profiles.
 
@@ -42,7 +42,7 @@ Trainer move effect descriptions and accuracy values are adapted from Pokémon S
 
 ### PokéSprite
 
-The item artwork in `src/img/items/` and move category icons in `src/img/move-categories/` come from [PokéSprite](https://github.com/msikma/pokesprite), maintained by Mike Sikma and its [contributors](https://github.com/msikma/pokesprite/blob/master/contributors.md), at revision `c5aaa610ff2acdf7fd8e2dccd181bca8be9fcb3e`. The app uses the Sword/Shield-style item outlines and Generation 8 move category icons. PokéSprite's code and metadata use the MIT License; the sprite images are © Nintendo / Creatures Inc. / GAME FREAK inc. and are excluded from KM Calculator's MIT License.
+The item artwork in `src/img/items/` and move category icons in `src/img/move-categories/` come from [PokéSprite](https://github.com/msikma/pokesprite), maintained by Mike Sikma and its [contributors](https://github.com/msikma/pokesprite/blob/master/contributors.md), at revision `c5aaa610ff2acdf7fd8e2dccd181bca8be9fcb3e`. The app uses the Sword/Shield-style item outlines and Generation 8 move category icons. PokéSprite's code and metadata use the MIT License; the sprite images are © Nintendo / Creatures Inc. / GAME FREAK inc. and are excluded from KM Calculator's software license.
 
 ### PokéAPI
 
@@ -52,9 +52,9 @@ The pinned Pokémon Showdown and PokéAPI revisions and their complete license n
 
 ### PKHeX
 
-[PKHeX](https://github.com/kwsch/PKHeX), by kwsch and contributors, is a GPL-3.0 project used as an external behavioral compatibility reference when auditing save families, entity layouts, offsets, and expected parsing results. The PKHeX application is not intentionally bundled. Save-import source and data provenance are reviewed separately; PKHeX attribution alone is not a claim that every compatibility constant has independent provenance.
+[PKHeX](https://github.com/kwsch/PKHeX), by kwsch and contributors, supplies the 127-byte Switch save-container XOR constant under GPLv3. The combined calculator adopts GPLv3 while preserving save importing. The precise source revision, adaptation, and license are recorded in [import/THIRD_PARTY_NOTICES.md](import/THIRD_PARTY_NOTICES.md).
 
-One pre-existing 127-byte Switch save-container interoperability constant remains isolated in the importer with unresolved historical provenance. It is documented for legal review rather than being represented as permissively licensed implementation code.
+PKHeX is also an external compatibility reference for save families and entity layouts. Its application and libraries are not bundled. The surrounding parser remains independently written.
 
 ### ForwardFeed Run & Bun Calculator
 
@@ -69,7 +69,8 @@ One pre-existing 127-byte Switch save-container interoperability constant remain
 - [Electron](https://github.com/electron/electron) — OpenJS Foundation and Electron contributors, MIT License
 - [electron-builder](https://github.com/electron-userland/electron-builder) and [electron-updater](https://github.com/electron-userland/electron-builder) — Electron Userland contributors, MIT License
 - [electron-winstaller](https://github.com/electron/windows-installer) — Electron contributors, MIT License
-- [WiX Toolset v7](https://wixtoolset.org/) - FireGiant, .NET Foundation, and WiX contributors; used to build the MSI and Burn bundle, which embeds the WiX Burn engine and WixStdBA runtime. WiX source is available under the [Microsoft Reciprocal License](https://github.com/wixtoolset/wix/blob/main/LICENSE.TXT), while obtaining and using the v7 build packages is separately subject to the [Open Source Maintenance Fee EULA](https://wixtoolset.org/osmf/). EULA acceptance is an external build-environment decision and is not recorded by this repository.
+- [.NET](https://github.com/dotnet/runtime) and [Windows Desktop](https://github.com/dotnet/windowsdesktop) - Microsoft and contributors, MIT and retained third-party notices. The separate installer uses the self-contained .NET 8 runtime; the notices in `LICENSES/` are from version 8.0.28.
+- [WiX Toolset v7](https://wixtoolset.org/) - FireGiant, .NET Foundation, and WiX contributors; the separate installer embeds the Burn engine and uses the bootstrapper API with the project's custom WPF interface. WiX retains the [Microsoft Reciprocal License](LICENSES/WiX-MS-RL.txt), independently of the GPL calculator payload. Obtaining and using v7 build packages is separately subject to the [Open Source Maintenance Fee EULA](https://wixtoolset.org/osmf/). EULA acceptance is an external build-environment decision and is not recorded by this repository.
 - [TypeScript](https://github.com/microsoft/TypeScript) — Microsoft and contributors, Apache License 2.0
 - [ESLint](https://github.com/eslint/eslint) — JS Foundation and contributors, MIT License
 - [`@pkmn/eslint-config`](https://github.com/pkmn/ps) — pkmn contributors, MIT License
@@ -81,8 +82,8 @@ The package manifests and lockfiles record the installed dependency versions and
 
 Trainer ability and held-item descriptions use the official English Pokémon Sword and Shield game text. Game text and artwork remain the property of their respective rights holders.
 
-The trainer portraits in `src/img/trainers/` are rendered from Pokémon Sword and Shield character models and poses. Model and texture reading uses [KM Editor](https://github.com/KotMatrosk1n/KM-Editor), and the portraits are rendered with [Blender](https://www.blender.org/). These rendered game assets are excluded from KM Calculator's MIT License; their character designs, models, and textures remain the property of their respective rights holders.
+The trainer portraits in `src/img/trainers/` are rendered from Pokémon Sword and Shield character models and poses. Model and texture reading uses [KM Editor](https://github.com/KotMatrosk1n/KM-Editor), and the portraits are rendered with [Blender](https://www.blender.org/). These rendered game assets are excluded from KM Calculator's software license; their character designs, models, and textures remain the property of their respective rights holders.
 
 Pokémon names, character names, game titles, trademarks, and artwork are owned by their respective rights holders. KM Calculator is an unofficial fan-made tool and is not affiliated with or endorsed by Nintendo, Creatures Inc., GAME FREAK inc., The Pokémon Company, or the creators of third-party supported ROM hacks.
 
-The [KM Calculator MIT License](LICENSE) applies to the project source covered by that license. Third-party code, generated data, external references, and artwork remain under their own licenses and applicable rights.
+The combined application uses [GPLv3](LICENSE), with the original [MIT attribution](LICENSES/MIT-legacy.txt) preserved. Separately licensed components, generated data, external references, and artwork retain their licenses and applicable rights. See [LICENSING.md](LICENSING.md).

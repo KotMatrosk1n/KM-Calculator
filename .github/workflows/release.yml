@@ -44,6 +44,9 @@ jobs:
     - name: Install dependencies
       run: npm ci
 
+    - name: Prepare matching application and dependency sources
+      run: npm run release:source
+
     - name: Require authorized WiX v7 EULA acceptance
       shell: pwsh
       env:
@@ -112,10 +115,32 @@ jobs:
         $latestPath = Join-Path "release" "latest.yml"
         $checksumsPath = Join-Path "release" "SHA256SUMS.txt"
         $receiptPath = Join-Path "release" "KM-Calculator-Setup-$packageVersion.receipt.json"
+        $sourceManifestPath = Join-Path "release" "KM-Calculator-Source-$packageVersion.json"
+        $sourceManifest = Get-Content -LiteralPath $sourceManifestPath -Raw | ConvertFrom-Json
+        $headCommit = (git rev-parse HEAD).Trim()
+        if ($LASTEXITCODE -ne 0 -or $sourceManifest.commit -ne $headCommit -or
+            $sourceManifest.version -ne $packageVersion) {
+          throw "Source archive must match the exact installer commit and version."
+        }
+        $sourceChanges = git status --porcelain --untracked-files=normal
+        if ($LASTEXITCODE -ne 0 -or $sourceChanges) {
+          throw "Release sources changed after the matching source archive was prepared."
+        }
+        foreach ($sourceFile in $sourceManifest.files) {
+          $sourcePath = Join-Path "release" $sourceFile.name
+          if ((Get-FileHash -LiteralPath $sourcePath -Algorithm SHA256).Hash.ToLowerInvariant() -ne $sourceFile.sha256) {
+            throw "Source archive hash mismatch: $($sourceFile.name)"
+          }
+        }
+        $sourceChecksumsPath = Join-Path "release" "KM-Calculator-Source-$packageVersion.sha256"
+        Get-Content -LiteralPath $sourceChecksumsPath | Add-Content -LiteralPath $checksumsPath
         $assets = @(
           Get-Item -LiteralPath $installerTarget
           Get-Item -LiteralPath $latestPath
           Get-Item -LiteralPath $checksumsPath
+          Get-Item -LiteralPath (Join-Path "release" "KM-Calculator-Source-$packageVersion.zip")
+          Get-Item -LiteralPath (Join-Path "release" "KM-Calculator-Dependencies-$packageVersion.tar.gz")
+          Get-Item -LiteralPath $sourceManifestPath
         )
 
         $receipt = Get-Content -LiteralPath $receiptPath -Raw | ConvertFrom-Json
@@ -148,6 +173,13 @@ jobs:
         Write-Host "Uploading release assets:"
         $assets | ForEach-Object { Write-Host " - $($_.Name)" }
 
+        $releaseNotesPath = Join-Path $env:RUNNER_TEMP "km-calculator-release-notes.md"
+        @"
+        KM Calculator is free software under GNU GPL version 3, without warranty.
+        Download KM-Calculator-Source-$packageVersion.zip and KM-Calculator-Dependencies-$packageVersion.tar.gz below for the matching application and dependency sources, including the separate installer's WiX source.
+        Build instructions, retained third-party notices, and component license boundaries are included in LICENSING.md.
+        "@ | Set-Content -LiteralPath $releaseNotesPath -Encoding utf8
         gh release create "${{ github.ref_name }}" $assets.FullName `
           --title "KM Calculator ${{ github.ref_name }}" `
+          --notes-file $releaseNotesPath `
           --generate-notes

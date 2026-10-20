@@ -5,11 +5,15 @@ clearTeamBoxState, getZeroEVs, removeAllCustomSetsFromDex */
  * Main-series Pokemon save and entity import.
  *
  * Format behavior was checked against PKHeX at the exact revision below. PKHeX is
- * GPL-3.0; it is a validation reference only. The parser implementation is
- * independently written, and generated names/public game-index facts come from
- * the permissive sources recorded in data/save_import_text.js. One retained
- * Switch XOR interoperability constant has unresolved provenance; see its inline
- * release-review warning and import/THIRD_PARTY_NOTICES.md.
+ * GPL-3.0; that revision remains an external validation reference. The parser
+ * implementation is independently written. The Switch XOR constant below is
+ * included under PKHeX's GPLv3 terms; generated names/public game-index facts
+ * retain the permissive notices in data/save_import_text.js.
+ *
+ * SPDX-License-Identifier: GPL-3.0-only
+ * Copyright (c) 2026 Matroskin
+ * Licensing notice updated 2026-10-20; parsing behavior and constants unchanged.
+ * See LICENSE and import/THIRD_PARTY_NOTICES.md.
  *
  * PKHeX revision: 6169d60cfdd2bfe30e17805f8677523e8d498d67
  * https://github.com/kwsch/PKHeX/commit/6169d60cfdd2bfe30e17805f8677523e8d498d67
@@ -37,9 +41,11 @@ var SAVE_IMPORT_HELD_ITEM_POUCHES = [
 ];
 
 /*
- * Switch save-container interoperability constant retained from the pre-existing
- * importer. Its upstream provenance is unresolved; keep it isolated pending a
- * legal review rather than representing it as permissively licensed source code.
+ * Switch save-container XOR constant from PKHeX, by kwsch and contributors,
+ * distributed here under GPL-3.0-only. The 127 values match StaticXorpad at:
+ * https://github.com/kwsch/PKHeX/blob/cefb56a749a1e2b434516d4cd27c4d3886a63ec1/PKHeX.Core/Saves/MemeCrypto/SwishCrypto.cs
+ * Adaptation: JavaScript array/name in place of the C# declaration; values unchanged.
+ * The upstream license at that revision is LICENSE.md (GNU GPL version 3).
  */
 var SWISH_STATIC_XORPAD = [
 	0xA0, 0x92, 0xD1, 0x06, 0x07, 0xDB, 0x32, 0xA1, 0xAE, 0x01, 0xF5, 0xC5, 0x1E, 0x84, 0x4F, 0xE3,

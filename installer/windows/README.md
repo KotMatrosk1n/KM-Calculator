@@ -2,7 +2,7 @@
 
 KM Calculator uses an independently authored WiX Toolset v7 Burn bundle and MSI. The public setup executable is a small launcher that embeds and SHA-256 verifies the Burn bundle, translates the legacy `electron-updater` installer arguments, waits for setup, and returns Burn's exact exit code.
 
-The design intentionally does not copy KM Editor's GPL-3.0-only installer source. KM Editor is a behavioral and visual reference only.
+The installer remains a separate MIT-licensed program and does not copy KM Editor's GPL-3.0-only installer source. KM Editor is a behavioral and visual reference only. The calculator payload is GPLv3; WiX retains MS-RL and .NET retains its own notices. See [LICENSING.md](../../LICENSING.md) for these boundaries and matching-source distribution.
 
 ## Custom setup interface
 
@@ -56,6 +56,14 @@ The driver validates the package version and Electron executable metadata, stage
 - a local ignored build receipt
 
 Intermediate payloads and local validation artifacts stay under ignored `installer/windows/obj` and `release` paths. Do not commit generated installers, smoke-test output, or local logs.
+
+Before distributing a version, run `npm run release:source` from its clean version
+tag. Publish the application source ZIP, dependency source archive, source
+manifest, and checksums beside the installer. The dependency archive includes the
+exact unmodified WiX source. The official release workflow prepares these before
+building and verifies their hashes before upload. Do not pair a modified local
+installer with source from a different commit. Electron and installer runtime
+notices must accompany the payload; refresh `LICENSES/` when changing runtimes.
 
 ## Release signing
 

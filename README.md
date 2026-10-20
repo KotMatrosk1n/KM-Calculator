@@ -4,7 +4,7 @@
 ![Built with](https://img.shields.io/badge/built%20with-Electron%2042-47848F)
 ![Calculation engine](https://img.shields.io/badge/calculation%20engine-Generations%201--9-red)
 ![Bundled profile](https://img.shields.io/badge/bundled%20profile-Royal%20Sword-blue)
-[![License](https://img.shields.io/badge/license-MIT-lightgrey)](LICENSE)
+[![License](https://img.shields.io/badge/license-GPLv3-lightgrey)](LICENSE)
 
 KM Calculator is a Windows desktop damage calculator built for Pokémon ROM hacks and the game generations beneath them.
 
@@ -152,8 +152,10 @@ Suspected vulnerabilities should be reported privately through the [Security Pol
 
 KM Calculator is built on the Smogon damage calculator and uses data or compatibility references from Pokémon Showdown, PokéAPI, PKHeX, and the projects listed in [Credits](CREDITS.md). The [Dependency Notices](THIRD_PARTY_NOTICES.md) inventory the JavaScript dependency trees and bundled browser libraries; source-revision notices for generated save-import data are kept separately in [Save-Import Third-Party Notices](import/THIRD_PARTY_NOTICES.md).
 
-Pokémon sprites are downloaded from Pokémon Showdown's public `gen5` and `ani` directories for desktop packaging. The [Pokémon Showdown credits](https://pokemonshowdown.com/credits) document contributing artists and upstream sources. These assets are excluded from KM Calculator's MIT license, and this repository does not grant additional rights to them.
+Pokémon sprites are downloaded from Pokémon Showdown's public `gen5` and `ani` directories for desktop packaging. The [Pokémon Showdown credits](https://pokemonshowdown.com/credits) document contributing artists and upstream sources. These assets are excluded from KM Calculator's software license, and this repository does not grant additional rights to them.
 
 KM Calculator is an unofficial fan-made project and is not affiliated with or endorsed by Nintendo, Creatures Inc., GAME FREAK inc., The Pokémon Company, or the creators of third-party supported ROM hacks. Pokémon names, trademarks, and artwork belong to their respective owners.
 
-KM Calculator source code is distributed under the [MIT License](LICENSE). Third-party code, data, references, and assets remain subject to their own applicable licenses and terms.
+KM Calculator as a combined application is free software under the [GNU General Public License version 3](LICENSE) (`GPL-3.0-only`), without warranty. Save importing remains built in. The original MIT notices are preserved in [LICENSES/MIT-legacy.txt](LICENSES/MIT-legacy.txt); the engine, import-data tools, and separate installer retain their explicitly documented MIT terms.
+
+See [LICENSING.md](LICENSING.md) for license boundaries, dependency compatibility, and binary/source distribution instructions. Third-party code, data, references, and assets retain their applicable licenses and rights.
