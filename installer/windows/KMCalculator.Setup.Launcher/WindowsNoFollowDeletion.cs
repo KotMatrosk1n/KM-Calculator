@@ -8,7 +8,7 @@ using Microsoft.Win32.SafeHandles;
 namespace KMCalculator.Setup.Launcher;
 
 /// <summary>
-/// Deletes Windows file-system entries without following reparse points or
+/// Deletes Windows file system entries without following reparse points or
 /// resolving recursive children through mutable path strings.
 /// </summary>
 internal static class WindowsNoFollowDeletion
@@ -561,7 +561,7 @@ internal static class WindowsNoFollowDeletion
         }
         if (fileSystemName.Length == 0)
         {
-            throw new IOException($"Windows returned no cleanup target file-system identity: {displayPath}");
+            throw new IOException($"Windows returned no cleanup target file system identity: {displayPath}");
         }
         return fileSystemName.ToString();
     }
@@ -570,7 +570,7 @@ internal static class WindowsNoFollowDeletion
     {
         if ((information.FileAttributes & FileAttributeReparsePoint) != 0)
         {
-            throw new IOException($"The cleanup target is a file-system reparse point: {displayPath}");
+            throw new IOException($"The cleanup target is a file system reparse point: {displayPath}");
         }
     }
 
@@ -598,7 +598,7 @@ internal static class WindowsNoFollowDeletion
                 ref writableInformation,
                 (uint)Marshal.SizeOf<FileBasicInformation>()))
         {
-            throw CreateWin32Exception($"The cleanup target is read-only and could not be made writable: {displayPath}");
+            throw CreateWin32Exception($"The cleanup target is read only and could not be made writable: {displayPath}");
         }
     }
 
@@ -636,7 +636,7 @@ internal static class WindowsNoFollowDeletion
                 normalizedPath,
                 StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidDataException("A file-system root cannot be a cleanup target.");
+            throw new InvalidDataException("A file system root cannot be a cleanup target.");
         }
 
         return normalizedPath;
@@ -676,7 +676,7 @@ internal static class WindowsNoFollowDeletion
     {
         if (status == StatusReparsePointEncountered)
         {
-            return new IOException(message + " A file-system reparse point was encountered.");
+            return new IOException(message + " A file system reparse point was encountered.");
         }
 
         var error = unchecked((int)RtlNtStatusToDosError(status));

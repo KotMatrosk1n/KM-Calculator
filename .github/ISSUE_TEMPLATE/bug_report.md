@@ -10,7 +10,7 @@ assignees: ""
 
 Use the version shown in **Settings**, or give the commit when testing source.
 
-# ROM-hack profile and generation
+# ROM hack profile and generation
 
 Name the selected profile and its base generation.
 

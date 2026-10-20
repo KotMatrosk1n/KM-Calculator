@@ -117,5 +117,17 @@
 		if (packs.length || Object.prototype.hasOwnProperty.call(records, trainerData.DEFAULT_STORAGE_KEY)) next[trainerData.DEFAULT_STORAGE_KEY] = JSON.stringify(packs);
 		return next;
 	}
-	return {MAX_BYTES: MAX_BYTES, capture: capture, validate: validate, apply: apply, fixedKeys: fixedKeys, owns: owns};
+	function resetProgress(records, profileId) {
+		ensure(typeof profileId === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(profileId) && profileId.length < 150, "Choose a profile before resetting a run.");
+		var next = Object.assign({}, records);
+		// Empty legacy progress also prevents an older catch log from being imported again.
+		next["km-calculator.encounters.v1." + profileId] = JSON.stringify({version: 1, catches: [], usedAreas: []});
+		modes.forEach(function (mode) {
+			next["km-calculator.encounters.v2." + profileId + "." + mode] = JSON.stringify({version: 2, catches: [], usedAreas: []});
+		});
+		next["km-calculator.trainers.v1." + profileId] = JSON.stringify({version: 1, beaten: []});
+		next["km-calculator.route-items.v1." + profileId] = JSON.stringify({version: 1, pickedUp: []});
+		return next;
+	}
+	return {MAX_BYTES: MAX_BYTES, capture: capture, validate: validate, apply: apply, fixedKeys: fixedKeys, owns: owns, resetProgress: resetProgress};
 });

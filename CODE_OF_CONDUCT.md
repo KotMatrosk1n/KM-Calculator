@@ -16,7 +16,7 @@ Good participation does not require formal language. It does require care.
 
 * Explain what happened and provide enough context for someone else to investigate it.
 * Critique code, data, documentation, behavior, and decisions without attacking the person behind them.
-* Be patient with different experience levels. New players, ROM-hack authors, data researchers, and people who know the damage formula by heart all belong here.
+* Be patient with different experience levels. New players, ROM hack authors, data researchers, and people who know the damage formula by heart all belong here.
 * Correct mistakes clearly, accept corrections gracefully, and move the conversation forward.
 * Credit data authors and respect privacy, ownership, licensing, and legal boundaries when sharing examples or references.
 * Step back when a maintainer asks for a conversation to cool down or return to the issue.
@@ -27,7 +27,7 @@ The following behavior is not welcome:
 
 * Harassment, threats, slurs, stalking, doxxing, or personal attacks.
 * Targeting someone because of identity, ability, experience, mistakes, or game and mod preferences.
-* Repeated hostile replies, bad-faith arguments, spam, or deliberately misleading reports.
+* Repeated hostile replies, arguments made in bad faith, spam, or deliberately misleading reports.
 * Sexualized attention or content directed at another participant.
 * Publishing someone else's private information or work without clear permission.
 * Pressuring anyone to provide ROMs, game dumps, console keys, private saves, access tokens, personal data, paid content, private research, or other files they should not share.

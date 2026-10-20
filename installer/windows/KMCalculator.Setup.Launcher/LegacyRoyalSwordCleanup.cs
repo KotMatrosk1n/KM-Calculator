@@ -390,7 +390,7 @@ internal static class LegacyRoyalSwordCleanup
 
     private static IReadOnlyDictionary<string, IReadOnlyList<string>> GetKnownLegacyProgramRoots()
     {
-        var localProgramsRoot = GetKnownFolderPath(UserProgramFilesFolderId, "per-user Programs");
+        var localProgramsRoot = GetKnownFolderPath(UserProgramFilesFolderId, "Programs for the current user");
         var royalRoot = NormalizePath(GetKnownChild(localProgramsRoot, "Royal Sword Calculator"));
         var pokemonRoot = NormalizePath(GetKnownChild(localProgramsRoot, "Pokemon Royal Sword"));
         var nestedRoyalRoot = NormalizePath(GetKnownChild(pokemonRoot, "Royal Sword Calculator"));
@@ -638,7 +638,7 @@ internal static class LegacyRoyalSwordCleanup
                 }
                 throw new IOException(
                     "Cleanup stopped before the old calculator program folder could be quarantined. " +
-                    "Setup cannot distinguish that folder from an in-place reinstall and will not delete it. " +
+                    "Setup cannot distinguish that folder from a reinstall in the same location and will not delete it. " +
                     "Remove the old app manually, then run KM Calculator Setup again.");
             }
             return leases;
@@ -656,7 +656,7 @@ internal static class LegacyRoyalSwordCleanup
     private static string GetQuarantinePath(string originalPath, string cleanupReceipt)
     {
         ValidateCleanupReceipt(cleanupReceipt);
-        var localProgramsRoot = GetKnownFolderPath(UserProgramFilesFolderId, "per-user Programs");
+        var localProgramsRoot = GetKnownFolderPath(UserProgramFilesFolderId, "Programs for the current user");
         var royalRoot = NormalizePath(GetKnownChild(localProgramsRoot, "Royal Sword Calculator"));
         var pokemonRoot = NormalizePath(GetKnownChild(localProgramsRoot, "Pokemon Royal Sword"));
         var nestedRoyalRoot = NormalizePath(GetKnownChild(pokemonRoot, "Royal Sword Calculator"));
@@ -922,7 +922,7 @@ internal static class LegacyRoyalSwordCleanup
         }
 
         throw new InvalidOperationException(
-            "Royal Sword Calculator is registered in a custom per-user folder that KM Calculator Setup " +
+            "Royal Sword Calculator is registered in a custom folder for the current user that KM Calculator Setup " +
             "will not delete or assume is gone. Uninstall Royal Sword Calculator from Windows Settings, " +
             "then run KM Calculator Setup again.");
     }
@@ -1425,7 +1425,7 @@ internal static class LegacyRoyalSwordCleanup
         if ((kmUserDataAttributes & (FileAttributes.Directory | FileAttributes.ReparsePoint)) !=
             FileAttributes.Directory)
         {
-            throw new IOException("The KM Calculator user-data root is not a safe directory.");
+            throw new IOException("The KM Calculator user data root is not a safe directory.");
         }
 
         foreach (var candidatePath in Directory.EnumerateFiles(

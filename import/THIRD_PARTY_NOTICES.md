@@ -1,6 +1,6 @@
-# Save-import third-party notices
+# Save import third party notices
 
-The generated save-import lookup bundle uses factual name and game-index data from the following permissively licensed projects. The importer also includes the Switch XOR constant under PKHeX's GPLv3 terms as described below. The PKHeX application and libraries are not bundled.
+The generated save import lookup bundle uses factual name and game index data from the following permissively licensed projects. The importer also includes the Switch XOR constant under PKHeX's GPLv3 terms as described below. The PKHeX application and libraries are not bundled.
 
 ## PokéAPI
 
@@ -44,7 +44,7 @@ This revision remains an external behavioral oracle used to compare supported ga
 
 ## PKHeX Switch XOR constant
 
-`src/js/save_import.js` includes the 127-byte `StaticXorpad` from PKHeX's [Sword/Shield update of 2019-11-16](https://github.com/kwsch/PKHeX/blob/cefb56a749a1e2b434516d4cd27c4d3886a63ec1/PKHeX.Core/Saves/MemeCrypto/SwishCrypto.cs), by kwsch and contributors, under that revision's [GNU GPL version 3 license](https://github.com/kwsch/PKHeX/blob/cefb56a749a1e2b434516d4cd27c4d3886a63ec1/LICENSE.md). This distribution uses `GPL-3.0-only`.
+`src/js/save_import.js` includes the `StaticXorpad` of 127 bytes from PKHeX's [Sword/Shield update of 2019-11-16](https://github.com/kwsch/PKHeX/blob/cefb56a749a1e2b434516d4cd27c4d3886a63ec1/PKHeX.Core/Saves/MemeCrypto/SwishCrypto.cs), by kwsch and contributors, under that revision's [GNU GPL version 3 license](https://github.com/kwsch/PKHeX/blob/cefb56a749a1e2b434516d4cd27c4d3886a63ec1/LICENSE.md). This distribution uses `GPL-3.0-only`.
 
 The adaptation changes the C# declaration to the JavaScript array `SWISH_STATIC_XORPAD`; all 127 values are identical. The byte sequence has SHA-256 `26853bada5fbbf36cd4de4dea4d89d44f89bb3ccf5dc6e5a47c3bc90c9f515ac`. The licensing notice was updated on 2026-10-20 without changing import behavior. No PKSM-Core or PKSE implementation is incorporated by this change.
 

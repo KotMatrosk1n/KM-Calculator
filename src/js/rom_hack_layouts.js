@@ -435,7 +435,7 @@
 
 	function install(registry) {
 		if (!registry || typeof registry.registerLayoutProvider !== "function") {
-			throw new TypeError("A KM Calculator ROM-hack registry with layout support is required.");
+			throw new TypeError("A KM Calculator ROM hack registry with layout support is required.");
 		}
 		registry.registerLayoutProvider(BASE_LAYOUT_ID, baseLayoutProvider);
 		registry.registerLayoutProvider("royal-sword", royalSwordLayoutProvider);

@@ -1,6 +1,6 @@
 /*global module */
 
-/* Accessible startup chooser for bundled KM Calculator ROM-hack profiles. */
+/* Accessible startup chooser for bundled KM Calculator ROM hack profiles. */
 (function (root, factory) {
 	if (typeof module === "object" && module.exports) {
 		module.exports = factory();
@@ -218,7 +218,7 @@
 		while (this.tiles.firstChild) this.tiles.removeChild(this.tiles.firstChild);
 		for (i = 0; i < profiles.length; i++) this.tiles.appendChild(this._createTile(profiles[i]));
 		if (!profiles.length) {
-			this.status.textContent = "No ROM-hack profiles are available in this build.";
+			this.status.textContent = "No ROM hack profiles are available in this build.";
 		} else {
 			this.status.textContent = "";
 		}
@@ -323,7 +323,7 @@
 		var selector = this;
 		if (this.started) return this;
 		if (!this.window || !this.document || !this.registry || !this.layoutManager) {
-			throw new Error("The ROM-hack selector requires window, document, registry, and layout manager.");
+			throw new Error("The ROM hack selector requires window, document, registry, and layout manager.");
 		}
 		this.started = true;
 		this._build();

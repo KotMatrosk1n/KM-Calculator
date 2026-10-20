@@ -12,7 +12,7 @@ Use the version shown in **Settings**, or give the commit when testing source.
 
 # Profile, generation, and battle format
 
-Name the selected ROM-hack profile, base generation, Singles or Doubles format, and any active field rules.
+Name the selected ROM hack profile, base generation, Singles or Doubles format, and any active field rules.
 
 # Attacker
 
@@ -28,9 +28,9 @@ Name the move and give the result KM Calculator displayed. Remove private nickna
 
 # Expected result and source
 
-Explain the expected behavior and link a public authoritative source or a reproducible comparison when available. Clearly distinguish canonical game behavior from ROM-hack changes.
+Explain the expected behavior and link a public authoritative source or a reproducible comparison when available. Clearly distinguish canonical game behavior from ROM hack changes.
 
-# Imported-data context
+# Imported data context
 
 If the report involves a save, trainer pack, or profile adapter, give its public name, version, authors, and source. Do not upload the private source file.
 

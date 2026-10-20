@@ -1,13 +1,13 @@
 ## Summary
 
-<!-- Describe the shipped outcome in one short, user-focused paragraph. -->
+<!-- Describe the shipped outcome in one short paragraph focused on the user. -->
 
 ## What Changed
 
 <!--
 Use two or three compact paragraphs. For a fix, explain the user impact and root cause. For a feature, explain the complete KM Calculator workflow it improves.
 
-Name affected generations, ROM-hack profiles, battle modes, or desktop surfaces when scope matters. For profile or trainer-data contributions, include the authors, public source, version, and redistribution basis.
+Name affected generations, ROM hack profiles, battle modes, or desktop surfaces when scope matters. For profile or trainer data contributions, include the authors, public source, version, and redistribution basis.
 
 Mention documentation, data ownership, cleanup, or compatibility boundaries only when they help reviewers understand the shipped behavior. Do not include validation commands or results.
 

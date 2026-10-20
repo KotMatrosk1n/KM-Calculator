@@ -99,6 +99,12 @@ function createDesktopBridge() {
 			save: function (backup) { return ipcRenderer.invoke("km-calculator-run-save", backup); },
 			read: function () { return ipcRenderer.invoke("km-calculator-run-read"); },
 			recovery: function (profile) { return ipcRenderer.invoke("km-calculator-run-recovery", profile); },
+			resetProgress: function (profileId) {
+				return ipcRenderer.invoke("km-calculator-run-reset", profileId).then(function (result) {
+					if (result.snapshot) storageSnapshot = result.snapshot;
+					return result;
+				});
+			},
 			restore: function (backup) {
 				return ipcRenderer.invoke("km-calculator-run-restore", backup).then(function (result) {
 					if (result.snapshot) storageSnapshot = result.snapshot;

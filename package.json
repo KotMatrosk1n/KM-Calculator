@@ -2,7 +2,7 @@
   "name": "km-calculator",
   "productName": "KM Calculator",
   "version": "0.4.26",
-  "description": "A multi-generation Pokemon damage calculator with mod support.",
+  "description": "A Pokemon damage calculator supporting multiple generations and mods.",
   "private": true,
   "main": "electron/main.js",
   "homepage": "https://github.com/KotMatrosk1n/KM-Calculator",
@@ -73,6 +73,13 @@
       {
         "from": "dist/licenses",
         "to": "licenses",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "dist/licenses/node_modules",
+        "to": "licenses/node_modules",
         "filter": [
           "**/*"
         ]

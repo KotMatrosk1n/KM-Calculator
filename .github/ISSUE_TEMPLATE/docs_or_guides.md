@@ -8,7 +8,7 @@ assignees: ""
 
 # Page or section
 
-Which README, guide, schema, release note, security text, or in-app wording needs attention?
+Which README, guide, schema, release note, security text, or app wording needs attention?
 
 # What is wrong or confusing?
 

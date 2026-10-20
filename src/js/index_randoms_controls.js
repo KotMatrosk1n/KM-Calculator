@@ -1,4 +1,4 @@
-/*global applyTeamBoxFilters, getActiveCalcGeneration, getDisplayGeneration, getDoublesActiveSlot, getDoublesSlotSelection, getModifiedDisplayValue, isDoublesFormatSelected, isRoyalSwordProfileActive, refreshColorCode, renderMoveResultDisplay, setMoveResultDisplay, updateModifiedStatsDisplay */
+/*global applyTeamBoxFilters, formatDamageResultText, getActiveCalcGeneration, getDisplayGeneration, getDoublesActiveSlot, getDoublesSlotSelection, getModifiedDisplayValue, isDoublesFormatSelected, isRoyalSwordProfileActive, refreshColorCode, renderMoveResultDisplay, setMoveResultDisplay, updateModifiedStatsDisplay */
 
 var pendingCalculationTimer = null;
 var PC_HANDLER = function () {
@@ -203,7 +203,7 @@ function renderMoveListWithoutDamage(pokemon, locations, headerSelector, emptyLa
 	$(headerSelector).text(pokemon ? pokemon.name : emptyLabel);
 	for (var i = 0; i < 4; i++) {
 		setResultMoveLabel(locations[i], pokemon && pokemon.moves[i] ? getResultMoveLabel(pokemon.moves[i]) : "Assign Slot 2");
-		setMoveResultDisplay(locations[i], "??? - ???%", "pending");
+		setMoveResultDisplay(locations[i], "Pending", "pending");
 	}
 }
 
@@ -265,8 +265,7 @@ function getRoyalSwordFullDesc(result) {
 
 function renderMainResult(result, targets) {
 	var desc = getRoyalSwordFullDesc(result);
-	if (desc.indexOf('--') === -1) desc += ' -- possibly the worst move ever';
-	$(targets.main).text(desc);
+	$(targets.main).text(formatDamageResultText(desc));
 	var summary = displayDamageHits(result.damage);
 	var rest = "";
 	var newLine = summary.indexOf('\n');

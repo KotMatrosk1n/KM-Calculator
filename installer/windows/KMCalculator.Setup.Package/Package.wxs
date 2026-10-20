@@ -19,7 +19,7 @@
     <Property Id="ARPPRODUCTICON" Value="KmCalculatorProductIcon.ico" />
     <Property Id="ARPHELPLINK" Value="https://github.com/KotMatrosk1n/KM-Calculator" />
     <Property Id="ARPURLINFOABOUT" Value="https://github.com/KotMatrosk1n/KM-Calculator" />
-    <Property Id="ARPCOMMENTS" Value="A multi-generation Pokemon damage calculator with mod support." />
+    <Property Id="ARPCOMMENTS" Value="A Pokemon damage calculator supporting multiple generations and mods." />
     <Property Id="MSIRESTARTMANAGERCONTROL" Value="Disable" />
 
     <Property Id="KM_CREATE_DESKTOP_SHORTCUT" Value="1" Secure="yes" />
